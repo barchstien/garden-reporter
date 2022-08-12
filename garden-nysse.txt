@@ -1,0 +1,90 @@
+ * nano every
+   + XBEE-4NANO - gravitech
+OR
+ * arduino fio
+ * arduino fio v3 sparfun, coz usb prog too
+   https://learn.sparkfun.com/tutorials/pro-micro--fio-v3-hookup-guide/hardware-overview-fio-v3
+   https://www.sparkfun.com/products/11520
+OR
+* XBee3 Thing Plus
+  https://learn.sparkfun.com/tutorials/xbee3-thing-plus-hookup-guide?_ga=2.246549569.43451573.1658021661-269221102.1656328418
+ 
+ * xbee 3, pcb antenna, 802.15.4, 40 mA @ 3.3V => 132mW
+ * soil capacitive sensor (TLC555C), 1mW @5V
+ * dht22 temp + humidity air sensor, 1.5mA @3.3V => 5mW
+  |-- upgrade to :
+  |-- SHT30 Temperature And Humidity Sensor - Wired Enclosed Shell < 1mW
+ 
+ Only sensors + rf = 140mW
+ 
+ ???
+  * Gravity: Analog Ambient Light Sensor for Arduino (1~6000 Lux) ? 2.6$ 70mW
+  * TMP35 alternative for cheap temp sensor
+  * BME 280, temp, pressure, humidity, 15 $  :-(
+  * Adafruit Si7021 Temperature & Humidity Sensor, 10$, all good
+    https://www.adafruit.com/product/5064
+  * SHT-30 Mesh-protected Weather-proof Temperature/Humidity Sensor - 1M Cable 30$
+    https://www.adafruit.com/product/4099
+  
+Xbee 
+ * doc https://learn.sparkfun.com/tutorials/exploring-xbees-and-xctu
+
+Power - battery
+ * Expect arduino 10mA when sleep, ignore work coz <10% of time
+ * xbee 40mA @ 3.3V
+ * sensors < 2mA
+ TOTAL = 52mA
+ |--> too much !
+ 
+Power - battery - standby only, xbee sleeping too
+ * arduino 10mA sleep
+   https://forum.arduino.cc/t/guide-using-arduino-nano-for-battery-powered-projects/402598
+   --> 1mA
+ * xbee < 1mA
+ * sensors < 2mA
+TOTAL 12mA
+ 
+---> https://forum.arduino.cc/t/fio-xbee-current-consumption-during-sleep/74619
+  This dues says fio + xbee < 1mA
+TOTAL 3mA
+---> https://forum.arduino.cc/t/guide-using-arduino-nano-for-battery-powered-projects/402598
+ 
+ fio v3 also works with Li-Ion
+ 
+ battery Li-ion 2Ah ==> @3mA ==> 2000/3 = 666h = 27 days...
+                10Ah => @3mA ==> 10000/3 = 3333h = 138 days
+ |-- https://www.sparkfun.com/products/13189
+ |-- 
+ 
+----->> Use 5V solar pannel waterproof, and hook it up to batteyr charger !
+ * FP3 is 3Ah, could be half charged in 1 afternoon
+   |--> 1 afternoon is 40 days of standby
+   
+Solar
+ * AM-5904CAR PANASONIC, 5VDC out
+
+--------------------------------------------------
+
+Enclosing 
+ * IP 55 (dust resist, water spray)
+ * Dimensions : 
+   - fio + xbee = 80 x 30 x 15
+   - battery 18650 cell, 65 x 18
+   - --> 90 x 40 x 30
+ * output
+   - moist sensor
+   - temp/humid sensor
+   - solar panel
+ * solar panel, on top, 45deg
+
+
+  * boites
+    - https://www.tme.eu/fr/details/obo-2000003/boites-de-raccordement/obo-bettermann/a-6-hf-ro/
+    - confiture ? ou tupperware ?
+    
+--------------------------------------------------
+
+Reference 
+ * avoid bad soil moisture sensor : https://www.youtube.com/watch?v=IGP38bz-K48
+ * arduino nano low power : https://forum.arduino.cc/t/guide-using-arduino-nano-for-battery-powered-projects/402598
+ * xbee sampling https://www.digi.com/support/knowledge-base/digital-and-analog-sampling-using-xbee-radios
