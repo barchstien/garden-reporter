@@ -21053,7 +21053,7 @@
   (gr_text "+" (at 140.716 108.204) (layer "F.SilkS") (tstamp 7ba5aea4-0531-4279-b6c0-c0acbeaf0e33)
     (effects (font (size 1.5 1.5) (thickness 0.3)))
   )
-  (gr_text "no metal here" (at 153.67 58.166) (layer "F.SilkS") (tstamp b5e839cf-76bc-4f15-a2b0-0cc7eca0812b)
+  (gr_text "no metal here !" (at 153.67 58.166) (layer "F.SilkS") (tstamp b5e839cf-76bc-4f15-a2b0-0cc7eca0812b)
     (effects (font (size 1.5 1.5) (thickness 0.3)))
   )
   (gr_text "din" (at 158.242 108.204) (layer "F.SilkS") (tstamp befccad2-1f46-48e7-9b93-98efa9efc5db)
