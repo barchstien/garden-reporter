@@ -1092,15 +1092,15 @@
   )
 
   (no_connect (at 95.25 143.51) (uuid 01383cac-f444-4826-be6f-2d78fe504a7f))
-  (no_connect (at 130.81 148.59) (uuid 01383cac-f444-4826-be6f-2d78fe504a7f))
-  (no_connect (at 130.81 151.13) (uuid 01383cac-f444-4826-be6f-2d78fe504a7f))
-  (no_connect (at 95.25 135.89) (uuid 01383cac-f444-4826-be6f-2d78fe504a7f))
-  (no_connect (at 130.81 143.51) (uuid 01383cac-f444-4826-be6f-2d78fe504a7f))
-  (no_connect (at 130.81 138.43) (uuid 01383cac-f444-4826-be6f-2d78fe504a7f))
-  (no_connect (at 130.81 140.97) (uuid 01383cac-f444-4826-be6f-2d78fe504a7f))
+  (no_connect (at 130.81 148.59) (uuid 01383cac-f444-4826-be6f-2d78fe504a80))
+  (no_connect (at 130.81 151.13) (uuid 01383cac-f444-4826-be6f-2d78fe504a81))
+  (no_connect (at 95.25 135.89) (uuid 01383cac-f444-4826-be6f-2d78fe504a82))
+  (no_connect (at 130.81 143.51) (uuid 01383cac-f444-4826-be6f-2d78fe504a83))
+  (no_connect (at 130.81 138.43) (uuid 01383cac-f444-4826-be6f-2d78fe504a84))
+  (no_connect (at 130.81 140.97) (uuid 01383cac-f444-4826-be6f-2d78fe504a85))
   (no_connect (at 95.25 140.97) (uuid 3d56ca77-a7b8-401f-b5d3-e7b56eb4fa4e))
   (no_connect (at 95.25 148.59) (uuid ba0b1ad8-aa6e-4330-88a1-952307e1e476))
-  (no_connect (at 95.25 146.05) (uuid ba0b1ad8-aa6e-4330-88a1-952307e1e476))
+  (no_connect (at 95.25 146.05) (uuid ba0b1ad8-aa6e-4330-88a1-952307e1e477))
   (no_connect (at 95.25 138.43) (uuid e76e351f-6bba-4c34-9459-7229dcfac8c1))
 
   (wire (pts (xy 54.61 124.46) (xy 54.61 128.27))
@@ -2089,6 +2089,22 @@
     (pin "3" (uuid 100a6455-072c-4b94-8e44-292f13bd30af))
   )
 
+  (symbol (lib_id "power:+3.3VADC") (at 95.25 22.86 0) (unit 1)
+    (in_bom yes) (on_board yes)
+    (uuid b06b4308-ed5c-4cf7-9c6f-ddf10a56cb44)
+    (property "Reference" "#PWR?" (id 0) (at 99.06 24.13 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Value" "+3.3VADC" (id 1) (at 95.25 17.78 0))
+    (property "Footprint" "" (id 2) (at 95.25 22.86 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (id 3) (at 95.25 22.86 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid 2562123f-985d-4836-81b3-8bcf557207a5))
+  )
+
   (symbol (lib_id "power:+3.3VADC") (at 220.98 26.67 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid b572fc77-6d71-4ca3-92e7-c2136b2ec087)
@@ -2319,22 +2335,6 @@
     (pin "3" (uuid f9e5f0ab-0371-4456-8ca3-d3aa5da6105e))
   )
 
-  (symbol (lib_id "power:+BATT") (at 95.25 22.86 0) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
-    (uuid f3a0231f-7ba3-48dc-9d0b-ed2692750d42)
-    (property "Reference" "#PWR011" (id 0) (at 95.25 26.67 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "+BATT" (id 1) (at 95.25 17.78 0))
-    (property "Footprint" "" (id 2) (at 95.25 22.86 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (id 3) (at 95.25 22.86 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid e1a5c401-7074-4fa9-8d97-d2f5b4e1282a))
-  )
-
   (symbol (lib_id "power:-BATT") (at 26.67 46.99 180) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid fd3a3c4f-ee2b-4324-894a-20e436689f64)
@@ -2392,9 +2392,6 @@
     (path "/35b07814-be3f-41eb-bc04-1b66959934d8"
       (reference "#PWR010") (unit 1) (value "GND") (footprint "")
     )
-    (path "/f3a0231f-7ba3-48dc-9d0b-ed2692750d42"
-      (reference "#PWR011") (unit 1) (value "+BATT") (footprint "")
-    )
     (path "/8838c3d2-eb16-4de4-b06c-9de5f335cde8"
       (reference "#PWR012") (unit 1) (value "-BATT") (footprint "")
     )
@@ -2433,6 +2430,9 @@
     )
     (path "/75bde217-83ab-4c85-88cb-591af8f58557"
       (reference "#PWR024") (unit 1) (value "GND1") (footprint "")
+    )
+    (path "/b06b4308-ed5c-4cf7-9c6f-ddf10a56cb44"
+      (reference "#PWR?") (unit 1) (value "+3.3VADC") (footprint "")
     )
     (path "/d73750cc-a6d9-4a7f-87a2-5ca595640ba3"
       (reference "C1") (unit 1) (value "1uF") (footprint "Capacitor_THT:C_Disc_D3.0mm_W2.0mm_P2.50mm")
