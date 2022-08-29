@@ -1,39 +1,9 @@
 # Overview
-```
-  ┌────────────────┐
-  │ Battery Nimh   ├───────────┐
-  │  * 3.6 - 6V    │      ┌────▼─────┐
-  └─────┬──────────┘      │V divider │
-        │                 └────┬─────┘
-  ┌─────▼────┐  ┌──────────────▼────┐
-  │ Reg 3.3V ├──► Xbee              │
-  └─────┬────┘  │  - cycle sleep    │
-        │       │  - read analog    │
-  ┌─────▼────┐  │    * soil         │
-┌─┤  Switch  ◄──┤    * air temp     │
-│ └──────────┘  │    * air humidity │
-│               │    * light        │
-│               └────▲──────────────┘
-│                    │
-│ ┌────────────────┐ │
-├─► Soil moisture  ├─┤
-│ │  * 3.3V analog │ │
-│ └────────────────┘ │
-│                    │
-│ ┌────────────────┐ │
-├─► TMP36          ├─┤
-│ │  * 3.3V analog │ │
-│ └────────────────┘ │
-│                    │
-│ ┌────────────────┐ │
-└─► Photo resistor ├─┘
-  │  * 3.3V analog │
-  └────────────────┘
-```
+![probe overview](/resources/probe-board-overview.png)
 
-# Provider
- [XXX-XX] : mouser order number
+**Note :** [XXX-XX] : mouser order number
 
+# Components
 ## Xbee
  * XB24CAPIT-001, TH, s2c 802.15.4 [888-XB24CAPIT-001]
     - give 1uF and 8pf cap on supply
@@ -86,20 +56,20 @@
    with 2x 10K resitor 1%
    with zener diode 1N4620 3.3V, [610-1N4620BK]
 
-# Case
- * bicycle bottle, ~750mL, 20cm high, 7cm diameter
-
-# Connector
+## Connector
  * sensor to board, 3ways
   - 70543-0002 [538-70543-0002] pcb straigth header
     70543-0107 for even more gold plating !
   - 79758-0011 [538-79758-0011] crimped wire, 30cm, 22awg
-  - 50-57-9403 [538-50-57-9403] cable mount
+  - 50-57-9403 [538-50-57-9403  ] cable mount
  * battery to board, same with 2 pins
    [538-70543-0106]
  * Use kicad Molex_SL_171971
+ 
+## Case
+ * bicycle bottle, ~750mL, 20cm high, 7cm diameter
 
-# Verious
+## Various
  * R 10K 1% metal film : [603-MFR-25FRF5210K]
  * c 10uF ceramic : [710-860010472002] 25VDC 85degC max
  * C 1uF ceramic : [810-FG18X7R1E105KRT0] 25VDC
