@@ -66,6 +66,23 @@ Probes have unit specific characteristics which need to be stored at the collect
  - full yaml/json config
  - full yaml/json for probe profiles
 
+#### influxdb playground
+https://docs.influxdata.com/influxdb/v2.4/reference/sample-data/
+```bash
+docker network create --driver bridge influxdb-telegraf-net
+
+# influxdb
+# should used a named volume instead of mount
+docker run -d --name=influxdb -p 8086:8086 -v /tmp/testdata/influx:/root/.influxdb2 --net=influxdb-telegraf-net influxdb
+
+# telegraf
+# set INFLUX_TOKEN as given in web ui
+# set --config as given in web ui
+docker run -d --name=telegraf --net=influxdb-telegraf-net --env INFLUX_TOKEN=PbVKP1f50nMWl9BfQCHA-e9NKtqvHi-6rceeJQ9ACMwmeH5dclucL6M_gkd4C4hgpaTrtLrPRoXJctcrLA3R-g== telegraf --config http://influxdb:8086/api/v2/telegrafs/09e09cfc1d337000
+```
+
+Screw telegraf, but use python directly to feed database
+telegraf might be used for data replication or batch processing
 
 ## IRL
 TODO pictures of probe and collector
