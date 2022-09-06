@@ -1,9 +1,25 @@
 # Overview
 ![probe overview](/resources/probe-board-overview.png)
 
-**Note :** [XXX-XX] : mouser order number
+![probe pcb 3d](/resources/probe-board-3d.png)
+
+# Mechanic and water consideration
+ - case should be wateproof
+   - plastic bottles are inexpensive and water proof
+     - bottom is filled with gravel for stability and in case of leak
+   - sensors are attached to case
+   - wires from sensors to probe board are water resistent
+     - make an angle to avoid water drip
+     - use plumbing goo/joint/paste
+   - sensors are environment protected :
+     - luminosity is already in epoxy case, wire nail polished
+     - temp and wires are nail polished
+     - soil moisture bottom is (home made) epoxy coated (water + abrasive)
+     - soild moisture top is nail polished
 
 # Components
+**Note :** [XXX-XX] : mouser order number
+
 ## Xbee
  * XB24CAPIT-001, TH, s2c 802.15.4 [888-XB24CAPIT-001]
     - give 1uF and 8pf cap on supply
