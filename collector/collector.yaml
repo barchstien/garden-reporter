@@ -1,0 +1,24 @@
+---
+  xbee:
+    port: "/dev/ttyUSB0"
+    baudrate: 9600
+
+  influxdb:
+    hostname: "http://localhost:8086"
+    measurement: "proto4"
+
+  probes:
+    - name: "Proto"
+      id: 0x100
+      battery:
+        v-divider: 6.3
+      soil-moisture:
+        v-divider: 3
+        immerged-value: 500
+    - name: "Proto-v2"
+      id: 0x101
+      battery:
+        v-divider: 6.3
+      soil-moisture:
+        v-divider: 3
+        immerged-value: 500
