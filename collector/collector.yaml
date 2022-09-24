@@ -15,6 +15,8 @@
       soil-moisture:
         v-divider: 3
         immerged-value: 500
+      temperature:
+        offset: -1.5
     - name: "Proto-v2"
       id: 0x101
       battery:
@@ -22,3 +24,5 @@
       soil-moisture:
         v-divider: 3
         immerged-value: 500
+      temperature:
+        offset: -1.5

@@ -61,11 +61,10 @@ class XbeeFrameDecoder:
             # 1 - soil moisture
             # 2 - temperature
             # 3 - light
-            record['battery_level'] = int.from_bytes(f[11:13], "big")
+            record['battery_level'] = float(int.from_bytes(f[11:13], "big"))
             record['soil_moisture'] = int.from_bytes(f[13:15], "big")
-            record['temp'] = int.from_bytes(f[15:17], "big")
+            record['temp'] = float(int.from_bytes(f[15:17], "big"))
             record['light'] = int.from_bytes(f[17:19], "big")
-            record['measurement'] = "proto4"
             
             self.records.put(record)
         # other frames ignored

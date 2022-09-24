@@ -10,14 +10,19 @@ class InfluxDBWriter:
     bucket = "set by env_file"
     client = None
 
-    def __init__(self):
+    def __init__(self, config):
+        self.url         = config['influxdb']['hostname']
+        self.measurement = config['influxdb']['measurement']
         # Get influxdb API token and friends from env_file
         self.token = os.environ['INFLUX_TOKEN']
         self.org = os.environ['ORG']
         self.bucket = os.environ['BUCKET']
         
-        self.client = InfluxDBClient(url="http://localhost:8086", 
-        token=self.token, org=self.org)
+        self.client = InfluxDBClient(
+            url = self.url,
+            token = self.token,
+            org = self.org
+        )
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
     
     def __exit__(self, exc_type, exc_value, traceback):
@@ -25,6 +30,7 @@ class InfluxDBWriter:
     
     def write(self, record):
         try:
+            record['measurement'] = self.measurement
             p = Point(record['measurement']).tag("probe_id", record['source_id'])\
                 .field("batt", record['battery_level'])\
                 .field("moist", record['soil_moisture'])\
@@ -32,5 +38,6 @@ class InfluxDBWriter:
                 .field("light", record['light'])\
                 .field("rssi", record['rssi'])
             self.write_api.write(bucket=self.bucket, record=p)
-        except:
+        except Exception as e:
             print('Cant reach influx-db')
+            print(e)

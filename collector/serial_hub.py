@@ -2,14 +2,16 @@ import serial
 
 class SerialHub:
 
-    def __init__(self):
+    def __init__(self, config):
+        self.port = config['xbee']['port']
+        self.baud = config['xbee']['baudrate']
         self.serial = serial.Serial(
-            port = '/dev/ttyUSB0',
-            baudrate = 9600,
+            port = self.port,
+            baudrate = self.baud,
             parity = serial.PARITY_NONE,
             stopbits = serial.STOPBITS_ONE,
             bytesize = serial.EIGHTBITS,
-            timeout = 0.5 # sec
+            timeout = 0.1 # sec
         )
 
     def read(self, n_bytes):
