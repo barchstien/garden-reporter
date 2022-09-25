@@ -1,5 +1,9 @@
 import serial
 
+'''
+Connect to Xbee via Serial. Allows TCP client to read/Write to the same port.
+Data received from XBEE is duplictaed to any connected clients
+'''
 class SerialHub:
 
     def __init__(self, config):

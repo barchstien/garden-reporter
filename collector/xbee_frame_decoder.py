@@ -67,10 +67,10 @@ class XbeeFrameDecoder:
             record['light'] = int.from_bytes(f[17:19], "big")
             
             self.records.put(record)
-        # other frames ignored
         else:
+            # other frames are ignored
             # log it for curiosity
-            print('drop frame :', f)
+            print('Ignore incoming frame (unsupported type :', f)
 
 
 '''
