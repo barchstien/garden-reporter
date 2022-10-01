@@ -3,7 +3,7 @@ import queue
 '''Consumes bytes, extract frames, parse for ADC values &co'''
 class XbeeFrameDecoder:
     byte_stash = list()
-    records = queue.Queue()
+    frames = queue.Queue()
     
     def consume(self, b):
         # add bytes to working stash
@@ -66,7 +66,7 @@ class XbeeFrameDecoder:
             record['temp'] = float(int.from_bytes(f[15:17], "big"))
             record['light'] = int.from_bytes(f[17:19], "big")
             
-            self.records.put(record)
+            self.frames.put(record)
         else:
             # other frames are ignored
             # log it for curiosity

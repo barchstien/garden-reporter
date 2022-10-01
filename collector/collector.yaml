@@ -3,6 +3,10 @@
     port: "/dev/ttyUSB0"
     baudrate: 9600
 
+  serial-tcp:
+    host: 0.0.0.0
+    port: 8087
+
   influxdb:
     hostname: "http://localhost:8086"
     measurement: "proto4"

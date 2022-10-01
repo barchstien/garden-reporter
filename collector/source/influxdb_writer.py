@@ -31,7 +31,9 @@ class InfluxDBWriter:
     def write(self, record):
         try:
             record['measurement'] = self.measurement
-            p = Point(record['measurement']).tag("probe_id", record['source_id'])\
+            p = Point(
+                record['measurement'])\
+                .tag("probe_id", record['source_id'])\
                 .field("batt", record['battery_level'])\
                 .field("moist", record['soil_moisture'])\
                 .field("temp", record['temp'])\
