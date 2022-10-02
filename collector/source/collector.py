@@ -1,7 +1,9 @@
-from serial_hub import *
-from xbee_frame_decoder import *
-from influxdb_writer import *
 from data_calibrator import *
+from influxdb_writer import *
+from serial_hub import *
+from tcp_listener import *
+from xbee_frame_decoder import *
+
 import yaml, time
 
 
@@ -15,6 +17,7 @@ if __name__ == "__main__":
     decoder = XbeeFrameDecoder()
     data_calib = DataCalibrator(config)
     db_writer = InfluxDBWriter(config)
+    tcp_listener = TcpListener(config, serial)
     
     #while run_loop.is_set():
     while True:
@@ -27,3 +30,5 @@ if __name__ == "__main__":
                 data_calib.apply(f)
                 db_writer.write(f)
 
+
+    print("Aaarrggh..........")
