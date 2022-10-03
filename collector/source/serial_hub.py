@@ -20,7 +20,7 @@ class SerialHub:
             parity = serial.PARITY_NONE,
             stopbits = serial.STOPBITS_ONE,
             bytesize = serial.EIGHTBITS,
-            timeout = 0.1 # sec
+            timeout = 0.01 # sec
         )
         while self.serial_thread_run.is_set():
             b = serial_dev.read(4096)

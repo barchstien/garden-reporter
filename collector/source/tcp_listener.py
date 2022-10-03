@@ -30,7 +30,7 @@ class TcpListener:
             print('Ready to accept on: ', self.host, self.port)
             connection, client_address = self.sock.accept()
             print("Accepted connection from:", client_address)
-            connection.settimeout(0.1)
+            connection.settimeout(0.01)
             #connection.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
             #connection.setsockopt(socket.SOL_TCP, socket.TCP_KEEPIDLE, 1)
             #connection.setsockopt(socket.SOL_TCP, socket.TCP_KEEPCNT, 3)

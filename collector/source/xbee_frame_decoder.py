@@ -8,7 +8,7 @@ class XbeeFrameDecoder:
     def consume(self, b):
         # add bytes to working stash
         self.byte_stash = self.byte_stash + list(b)
-        print("stash:", self.byte_stash)
+        #print("stash:", self.byte_stash)
         if len(self.byte_stash) < 3 :
             # need first 3 bytes to start decode
             # wait for more bytes
@@ -45,27 +45,28 @@ class XbeeFrameDecoder:
 
 
     def parse_frame(self, f) :
-        if f[3] == 0x83 :
+        if f[3] == 0x82 :
             record = dict()
-            # 16 bit IO Sample Indicator
-            record['source_id'] = int(f[4]) << 8 + f[5]
-            record['rssi'] = -1 * f[6]
-            # expect 4 samples
-            if f[8] != 1 :
-                print('drop frame coz received ', f[8], 'samples instead of 1')
-                return
+            # 64 bit IO Sample Indicator
+            record['source_id'] = int.from_bytes(f[4:12], byteorder='big')
+            record['rssi'] = -1 * f[12]
+            # 1 sample containes 4 ADC values
+            num_of_samples = f[14]
+            #if f[14] != 1 :
+            #    print('drop frame coz received ', f[8], 'samples instead of 1')
+            #    return
             # expect bitmask with ADC{0-4} enabled
-            if f[9] != 0b00011110 or f[10] != 0 :
-                print('drop frame coz it\'s not ADC but', "{0:08b} {1:08b}".format(f[9], f[8]))
+            if f[15] != 0b00011110 or f[16] != 0 :
+                print('drop frame coz it\'s not ADC but', "{0:08b} {1:08b}".format(f[15], f[16]))
             # extract ADC values
             # 0 - battery level
             # 1 - soil moisture
             # 2 - temperature
             # 3 - light
-            record['battery_level'] = float(int.from_bytes(f[11:13], "big"))
-            record['soil_moisture'] = int.from_bytes(f[13:15], "big")
-            record['temp'] = float(int.from_bytes(f[15:17], "big"))
-            record['light'] = int.from_bytes(f[17:19], "big")
+            record['battery_level'] = float(int.from_bytes(f[16:19], "big"))
+            record['soil_moisture'] = int.from_bytes(f[19:21], "big")
+            record['temp'] = float(int.from_bytes(f[21:23], "big"))
+            record['light'] = int.from_bytes(f[23:25], "big")
             
             self.frames.put(record)
         else:
