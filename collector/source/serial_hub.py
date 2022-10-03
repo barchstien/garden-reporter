@@ -20,15 +20,14 @@ class SerialHub:
             parity = serial.PARITY_NONE,
             stopbits = serial.STOPBITS_ONE,
             bytesize = serial.EIGHTBITS,
-            timeout = 0.2 # sec
+            timeout = 0.1 # sec
         )
         while self.serial_thread_run.is_set():
-            # read, for maximum 0.1s
             b = serial_dev.read(4096)
             if len(b) > 0:
                 self.read_q_mutex.acquire()
                 for q in self.read_q_list:
-                    q.put(b)
+                    q.put(bytes(b))
                 self.read_q_mutex.release()
             # write, everything that's in the q
             # but loop after 1024 bytes written to be nice
@@ -71,13 +70,13 @@ class SerialHub:
         self.write_q.put(data)
     
     '''@return (read queue, write queue)'''
-    def request_r_w_queues():
+    def request_r_w_queues(self):
         self.read_q_mutex.acquire()
         self.read_q_list.append(queue.Queue())
         self.read_q_mutex.release()
         return (self.read_q_list[-1], self.write_q)
 
-    def release_r_w_queues(r_q, w_q):
+    def release_r_w_queues(self, r_q, w_q):
         self.read_q_list.remove(r_q)
 
 

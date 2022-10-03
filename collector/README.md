@@ -67,9 +67,9 @@ pipenv run python3 collector.py
 nohup pipenv run python3 main.py > log.txt &
 
 # fwd serial to tcp
-socat /dev/ttyUSB0,raw,echo=0 tcp-listen:8888,reuseaddr
+socat tcp-listen:8088,reuseaddr file:/dev/ttyUSB0,nonblock,b9600,raw,echo=0 
 # virtual serial
-socat -d -d pty,raw,echo=0 
+socat pty,link=/dev/garden0,raw,echo=0 tcp:192.168.1.66:8088
 ```
 
 ## influxdb

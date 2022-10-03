@@ -5,6 +5,16 @@ from tcp_listener import *
 from xbee_frame_decoder import *
 
 import yaml, time
+import sys, signal
+
+
+# Not really working...
+run = True
+def signal_handler(sig, frame):
+    print('You pressed Ctrl+C!')
+    run = False
+    sys.exit(0)
+#signal.signal(signal.SIGINT, signal_handler)
 
 
 if __name__ == "__main__":
@@ -29,6 +39,5 @@ if __name__ == "__main__":
                 f = decoder.frames.get()
                 data_calib.apply(f)
                 db_writer.write(f)
-
 
     print("Aaarrggh..........")

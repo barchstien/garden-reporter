@@ -8,6 +8,7 @@ class XbeeFrameDecoder:
     def consume(self, b):
         # add bytes to working stash
         self.byte_stash = self.byte_stash + list(b)
+        print("stash:", self.byte_stash)
         if len(self.byte_stash) < 3 :
             # need first 3 bytes to start decode
             # wait for more bytes
