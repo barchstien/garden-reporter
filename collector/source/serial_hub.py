@@ -25,8 +25,11 @@ class SerialHub:
         while self.serial_thread_run.is_set():
             b = serial_dev.read(4096)
             if len(b) > 0:
+                #print("==== serial read bytes:", len(b))
+                #print("==== serial self.read_q_list len:", len(self.read_q_list))
                 self.read_q_mutex.acquire()
                 for q in self.read_q_list:
+                    #print("  == serial put bytes:", len(b))
                     q.put(bytes(b))
                 self.read_q_mutex.release()
             # write, everything that's in the q
@@ -44,6 +47,8 @@ class SerialHub:
         # list of read q for multiple clients
         self.read_q_mutex = threading.Lock()
         self.read_q_list = [queue.Queue(), ]
+        print("==== serial init self.read_q_list:", self.read_q_list)
+        print("==== serial init self.read_q_list len:", len(self.read_q_list))
         self.write_q = queue.Queue()
         #self.serial_thread_lock = threading.Lock()
         self.serial_thread_run = threading.Event()
