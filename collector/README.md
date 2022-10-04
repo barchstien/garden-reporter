@@ -26,6 +26,41 @@ Install and launch XCTU config SW
 ```
 Load .xpro profiles for collector, and for each probe
 
+### xbee config notes
+ * Use 64bit address, coz 64bit address is required to send config
+   MY should be set to 0xFFFF
+ * Channel (CH) B seams to have better RSSI
+ * endpoint destination (DH and DL) should be set to collector MAC
+ * IR is millisec between samples. IR = 0 means no auto-sampling
+ * SO Sleep option, default 0b00, 0b01 disable wakeup poll, 0b10 no sample on wakeup
+ * 0x17 Remote AT Command Request, p137
+ * 0x97 Remote AT Command Response, p155
+ * 0x82 64-bit I/O Sample Indicator, p144
+   |---> Replace by use of 0x92 ?
+         legacy Digi RF products, does this apply to SC2 ?
+
+#### Questions :
+ * What about TX Request ?
+ * use IS (Force Sample) ?
+   p114 not much here, expect that it's an AT command
+   |--> use 0x17 remote AT command with IS inside
+        answered by 0x97
+        https://www.digi.com/support/knowledge-base/digital-and-analog-sampling-using-xbee-radios
+        AT command IS == 0x49 0x53
+ * for zigbee
+   "Queried samples (IS) can be sent to sleeping End Devices. This is because the End Device’s 
+   parent will buffer the IS command until the End Device’s next wake period. This is makes ZigBee 
+   an ideal choice for remote sampling applications."
+ * 0x97 AT cmd response frame ?
+ * use IT to fit N sample per pkt ?
+   |-> manual says that with short addr, 53 samples max per pkt
+ * what is wakeup poll ?
+ * BD (baud), increase to 115200 ?
+   default 0x3 9600
+   0x7 115200
+ * EC (CCA failure), counter, what about pooling it ?
+ * EA (ACK failure)
+
 ## Python
 Use **pipenv** to manage virtual env and packages
 ```bash
