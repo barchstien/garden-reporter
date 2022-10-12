@@ -257,7 +257,7 @@ class XbeePopulationModel:
             if p.mac == mac:
                 p.config_mode.set()
                 return
-        print('Cannot hold_in_config:', mac)
+        print('Cannot hold_in_config, no such mac:', mac)
     
     '''Release endpoint from config, ie enable back Cycle Sleep'''
     def release_from_config(self, mac):
@@ -265,7 +265,7 @@ class XbeePopulationModel:
             if p.mac == mac:
                 p.config_mode.clear()
                 return
-        print('Cannot hold_in_config:', mac)
+        print('Cannot release_from_config, no such mac:', mac)
 
 
 # Debug test

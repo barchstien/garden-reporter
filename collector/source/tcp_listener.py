@@ -47,6 +47,7 @@ class TcpListener:
             #  - MAC of endpoint to hold in config
             #  - 0 no endpoint is held in config
             #  - 0xffffffffffffffff to hold all registered endpoints
+            self.xbee_pop.hold_in_config("blop")
             
             # get serial read and write queues
             (self.hub_r_q, self.hub_w_q) = self.serial_hub.request_r_w_queues()
@@ -75,6 +76,8 @@ class TcpListener:
             # release serial_hub queues
             self.serial_hub.release_r_w_queues(self.hub_r_q, self.hub_w_q)
             # TODO release from config
+            self.xbee_pop.release_from_config("blop")
+            
             connection.close()
             print("Connection closed")
 
