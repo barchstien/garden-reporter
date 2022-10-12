@@ -1,4 +1,4 @@
-import serial, threading, queue
+import serial, threading, queue, time
 
 '''
 Connect to Xbee via Serial and allow to read and write bytes
@@ -11,48 +11,60 @@ Tcp listener for serial port for config with XCTU
 '''
 class SerialHub:
 
-    def thread_handler(self, config):
-        port = config['xbee']['port']
-        baud = config['xbee']['baudrate']
-        serial_dev = serial.Serial(
-            port = port,
-            baudrate = baud,
-            parity = serial.PARITY_NONE,
-            stopbits = serial.STOPBITS_ONE,
-            bytesize = serial.EIGHTBITS,
-            timeout = 0.01 # sec
-        )
+    def thread_handler_read(self):
         while self.serial_thread_run.is_set():
-            b = serial_dev.read(4096)
+            b = self.serial_dev.read(1)
             if len(b) > 0:
                 self.read_q_mutex.acquire()
                 for q in self.read_q_list:
                     q.put(b)
                 self.read_q_mutex.release()
-            # write, everything that's in the q
-            # but stop after 4096 bytes written to avoid taking over
-            w_cnt = 0
-            while not self.write_q.empty() and w_cnt <= 4096:
-                b = self.write_q.get()
-                w_cnt += len(b)
-                # blocks until all is written
-                serial_dev.write(b)
-        serial_dev.close()
-                
+    
+    def thread_handler_write(self):
+        while self.serial_thread_run.is_set():
+            # blocks until it gets some
+            b = self.write_q.get()
+            if b == None:
+                break
+            # blocks until all is written
+            self.serial_dev.write(b)
+        
 
     def __init__(self, config):
         # list of read q for multiple clients
         self.read_q_mutex = threading.Lock()
         self.read_q_list = []
+        # bytes to write to serial_dev
         self.write_q = queue.Queue()
+        # serial
+        port = config['xbee']['port']
+        baud = config['xbee']['baudrate']
+        self.serial_dev = serial.Serial(
+            port = port,
+            baudrate = baud,
+            parity = serial.PARITY_NONE,
+            stopbits = serial.STOPBITS_ONE,
+            bytesize = serial.EIGHTBITS
+        )
+        # thread
         self.serial_thread_run = threading.Event()
         self.serial_thread_run.set()
-        self.serial_thread = threading.Thread(target=self.thread_handler, args=(config,))
-        self.serial_thread.start()
+        # thread read
+        self.serial_thread_read = threading.Thread(target=self.thread_handler_read)
+        self.serial_thread_read.start()
+        # thread write
+        self.serial_thread_write = threading.Thread(target=self.thread_handler_write)
+        self.serial_thread_write.start()
     
     def stop(self):
         self.serial_thread_run.clear()
-        self.serial_thread.join()
+        # read
+        self.serial_dev.cancel_read()
+        self.serial_thread_read.join()
+        # write
+        self.write_q.put(None)
+        self.serial_thread_write.join()
+        self.serial_dev.close()
     
     '''@return (read queue, write queue)'''
     def request_r_w_queues(self):
