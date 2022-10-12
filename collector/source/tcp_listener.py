@@ -27,17 +27,16 @@ class TcpListener:
     
     def stop(self):
         self.thread_run.clear()
+        self.sock.shutdown(socket.SHUT_RDWR)
         self.sock.close()
         self.thread.join()
     
     def thread_handler(self):
-        self.sock.settimeout(1.0)
         while self.thread_run.is_set():
             self.sock.listen(1)
             try:
+                # blocks here, canceled by shutdown()
                 connection, client_address = self.sock.accept()
-            except socket.timeout:
-                continue
             except:
                 print("TcpListener stop accepting")
                 break;

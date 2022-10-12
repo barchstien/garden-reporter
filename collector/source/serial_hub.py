@@ -25,6 +25,7 @@ class SerialHub:
             # blocks until it gets some
             b = self.write_q.get()
             if b == None:
+                # happens when got to stop
                 break
             # blocks until all is written
             self.serial_dev.write(b)
