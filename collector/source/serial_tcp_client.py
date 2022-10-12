@@ -12,7 +12,7 @@ if __name__ == "__main__":
     #subprocess.Popen(["socat","pty,link=/dev/garden0,raw,echo=0","tcp:192.168.1.66:8087"], shell=True)
     p = subprocess.Popen(
         [
-            "socat","pty,link=/tmp/garden0,raw,echo=0",
+            "socat pty,link=/tmp/garden0,raw,echo=0 " +\
             "tcp:" + COLLECTOR_IP + ":" + str(COLLECTOR_PORT)
         ],
         #["ls","-al"], 
@@ -32,6 +32,7 @@ if __name__ == "__main__":
             time.sleep(1)
         except KeyboardInterrupt:
             print("Exiting...")
+            break
 
     # kill socat
     p.kill()

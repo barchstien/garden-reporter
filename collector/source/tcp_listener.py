@@ -3,15 +3,17 @@ import threading, socket
 
 '''
 Listen on given ip:port
-
+Interpret the first 8 bytes received as the MAC of the endpoint that should be held in config
+Remaining bytes read/written are forwarded to collector serial
 '''
 class TcpListener:
 
-    def __init__(self, config, serial_hub):
+    def __init__(self, config, serial_hub, xbee_pop):
         # config
         self.host = config['serial-tcp']['host']
         self.port = config['serial-tcp']['port']
         self.serial_hub = serial_hub
+        self.xbee_pop = xbee_pop
         # create/bind socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
