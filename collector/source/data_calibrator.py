@@ -26,17 +26,16 @@ class DataCalibrator:
             print('ERROR, dropping record:', record)
             return
         
-        # ADC to V (1.2V 1024 resolution
-        # v divider 6.25
+        # ADC to V (1023 = 1.2V)
         record['battery_level'] = (record['battery_level']*1.2/1023) * battery_v_divider
         
-        # ADC to V (1.2V 1024 resolution
-        # 750mV at 25deg, 10mV per deg
+        # ADC to V (1023 = 1.2V)
+        # 750mV at 25deg, 10mV per deg (from datasheet)
         # --> deg = V*100 - 50
-        # and calibration offset
+        # also mind calibration offset
         record['temp'] = (record['temp']*1.2/1023) * 100 - 50 + temp_offset
         
         print("{} >{:04x} rssi:{:d} adcs: {: 5.1f} {: 5.1f} {: 5.1f} {: 5.1f}".format(
-            datetime.now(), record['source_id'], record['rssi'], record['battery_level'], record['soil_moisture'], record['temp'], record['light']))
+            datetime.now(), record['source_id'], record['local_rssi'], record['battery_level'], record['soil_moisture'], record['temp'], record['light']))
 
 

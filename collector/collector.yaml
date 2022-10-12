@@ -1,7 +1,7 @@
 ---
   xbee:
     port: "/dev/ttyUSB0"
-    baudrate: 9600
+    baudrate: 115200
 
   serial-tcp:
     host: 0.0.0.0

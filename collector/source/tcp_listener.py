@@ -1,6 +1,10 @@
 from serial_hub import *
-import socket
+import threading, socket
 
+'''
+Listen on given ip:port
+
+'''
 class TcpListener:
 
     def __init__(self, config, serial_hub):
@@ -19,23 +23,25 @@ class TcpListener:
         self.thread = threading.Thread(target=self.thread_handler)
         self.thread.start()
     
-    def __del__(self):
+    def stop(self):
         self.thread_run.clear()
+        self.sock.close()
         self.thread.join()
     
     def thread_handler(self):
-        #self.sock.listen(1)
+        self.sock.settimeout(1.0)
         while self.thread_run.is_set():
             self.sock.listen(1)
-            print('Ready to accept on: ', self.host, self.port)
-            connection, client_address = self.sock.accept()
+            try:
+                connection, client_address = self.sock.accept()
+            except socket.timeout:
+                continue
+            except:
+                print("TcpListener stop accepting")
+                break;
             print("Accepted connection from:", client_address)
             connection.settimeout(0.01)
-            #connection.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-            #connection.setsockopt(socket.SOL_TCP, socket.TCP_KEEPIDLE, 1)
-            #connection.setsockopt(socket.SOL_TCP, socket.TCP_KEEPCNT, 3)
-            #connection.setsockopt(socket.SOL_TCP, socket.TCP_KEEPINTVL, 1)
-            # get read and write queues
+            # get serial read and write queues
             (self.hub_r_q, self.hub_w_q) = self.serial_hub.request_r_w_queues()
             while self.thread_run.is_set():
                 try:

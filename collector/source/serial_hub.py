@@ -25,15 +25,12 @@ class SerialHub:
         while self.serial_thread_run.is_set():
             b = serial_dev.read(4096)
             if len(b) > 0:
-                #print("==== serial read bytes:", len(b))
-                #print("==== serial self.read_q_list len:", len(self.read_q_list))
                 self.read_q_mutex.acquire()
                 for q in self.read_q_list:
-                    #print("  == serial put bytes:", len(b))
-                    q.put(bytes(b))
+                    q.put(b)
                 self.read_q_mutex.release()
             # write, everything that's in the q
-            # but loop after 1024 bytes written to be nice
+            # but stop after 4096 bytes written to avoid taking over
             w_cnt = 0
             while not self.write_q.empty() and w_cnt <= 4096:
                 b = self.write_q.get()
@@ -46,43 +43,29 @@ class SerialHub:
     def __init__(self, config):
         # list of read q for multiple clients
         self.read_q_mutex = threading.Lock()
-        self.read_q_list = [queue.Queue(), ]
-        print("==== serial init self.read_q_list:", self.read_q_list)
-        print("==== serial init self.read_q_list len:", len(self.read_q_list))
+        self.read_q_list = []
         self.write_q = queue.Queue()
-        #self.serial_thread_lock = threading.Lock()
         self.serial_thread_run = threading.Event()
         self.serial_thread_run.set()
         self.serial_thread = threading.Thread(target=self.thread_handler, args=(config,))
         self.serial_thread.start()
     
-    def __del__(self):
+    def stop(self):
         self.serial_thread_run.clear()
         self.serial_thread.join()
-
-    def read(self):
-        # return all read bytes
-        l = list()
-        # blocks until it gets some data
-        b = self.read_q_list[0].get()
-        l.append(b)
-        while not self.read_q_list[0].empty():
-            b = self.read_q_list[0].get()
-            l.append(b)
-        return b''.join(l)
-
-    def write(self, data):
-        self.write_q.put(data)
     
     '''@return (read queue, write queue)'''
     def request_r_w_queues(self):
         self.read_q_mutex.acquire()
         self.read_q_list.append(queue.Queue())
+        r_q = self.read_q_list[-1]
         self.read_q_mutex.release()
-        return (self.read_q_list[-1], self.write_q)
+        return (r_q, self.write_q)
 
     def release_r_w_queues(self, r_q, w_q):
+        self.read_q_mutex.acquire()
         self.read_q_list.remove(r_q)
+        self.read_q_mutex.release()
 
 
 
