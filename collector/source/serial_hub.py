@@ -13,7 +13,11 @@ class SerialHub:
 
     def thread_handler_read(self):
         while self.serial_thread_run.is_set():
-            b = self.serial_dev.read(1)
+            to_read = self.serial_dev.in_waiting
+            if to_read <= 0:
+                # always try to read 1 to block for incoming
+                to_read = 1
+            b = self.serial_dev.read(to_read)
             if len(b) > 0:
                 self.read_q_mutex.acquire()
                 for q in self.read_q_list:
