@@ -49,6 +49,10 @@ class Xbee:
         # errors last values
         self.error_ack = -1
         self.error_cca = -1
+        # config mode
+        # when enable, that device is connected to XCTU
+        # and collector does not read/write anything to that device
+        self.config_mode = threading.Event()
     
     def get_next_frame_id(self):
         self.frame_id = (self.frame_id + 1) % 256
@@ -151,6 +155,7 @@ class Xbee:
         ]
         return "\n".join(s)
 
+
 '''
 Keep an up to date model of xbee endpoints
 Endpoints are noticed when they wake up, then probed
@@ -242,6 +247,25 @@ class XbeePopulationModel:
         while not self.db_records.empty():
             l.append(self.db_records.get())
         return l
+    
+    '''
+    Set the Xbee with specified mac as config.
+    Meaning the next time the endpoint wakes up, Cycle Sleep is disabled.
+    '''
+    def hold_in_config(self, mac):
+        for p in self.register:
+            if p.mac == mac:
+                p.config_mode.set()
+                return
+        print('Cannot hold_in_config:', mac)
+    
+    '''Release endpoint from config, ie enable back Cycle Sleep'''
+    def release_from_config(self, mac):
+        for p in self.register:
+            if p.mac == mac:
+                p.config_mode.clear()
+                return
+        print('Cannot hold_in_config:', mac)
 
 
 # Debug test

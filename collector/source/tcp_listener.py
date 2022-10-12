@@ -40,7 +40,12 @@ class TcpListener:
                 print("TcpListener stop accepting")
                 break;
             print("Accepted connection from:", client_address)
-            connection.settimeout(0.01)
+            connection.settimeout(0.1)
+            # TODO wait for 8 byte that could be
+            #  - MAC of endpoint to hold in config
+            #  - 0 no endpoint is held in config
+            #  - 0xffffffffffffffff to hold all registered endpoints
+            
             # get serial read and write queues
             (self.hub_r_q, self.hub_w_q) = self.serial_hub.request_r_w_queues()
             while self.thread_run.is_set():
@@ -67,6 +72,7 @@ class TcpListener:
                     break;
             # release serial_hub queues
             self.serial_hub.release_r_w_queues(self.hub_r_q, self.hub_w_q)
+            # TODO release from config
             connection.close()
             print("Connection closed")
 
