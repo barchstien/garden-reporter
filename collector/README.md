@@ -38,6 +38,9 @@ Load .xpro profiles for collector, and for each probe
  * 0x82 64-bit I/O Sample Indicator, p144
    |---> Replace by use of 0x92 ?
          legacy Digi RF products, does this apply to SC2 ?
+ * Remote AT cmd of IS does not return RSSI...
+   Use remote AT cmd DB (Last Packet RSSI)
+   DO not use local, coz don't know from where last frame is from
 
 #### Questions :
  * What about TX Request ?
@@ -47,6 +50,11 @@ Load .xpro profiles for collector, and for each probe
         answered by 0x97
         https://www.digi.com/support/knowledge-base/digital-and-analog-sampling-using-xbee-radios
         AT command IS == 0x49 0x53
+   |--> Remote AT cmd with IS
+        7E 00 0F 17 01 00 13 A2 00 41 F2 61 50 FF FE 02 49 53 B3
+   |--> Remote AT cmd DB (RSSI)
+        7E 00 0F 17 01 00 13 A2 00 41 F2 61 50 FF FE 02 44 42 C9
+   Takes 100 to 200msec to get response
  * for zigbee
    "Queried samples (IS) can be sent to sleeping End Devices. This is because the End Device’s 
    parent will buffer the IS command until the End Device’s next wake period. This is makes ZigBee 
@@ -60,6 +68,24 @@ Load .xpro profiles for collector, and for each probe
    0x7 115200
  * EC (CCA failure), counter, what about pooling it ?
  * EA (ACK failure)
+
+#### Conclusions
+ * setup End Point as :
+   - Cycle Sleep
+   - IR = 0
+   - keep SO default
+   End Point send a sample on wake up
+   Use this as a signal
+   0x82 (RX (Receive) Packet 64-bit Address IO)
+ * use RSSI from wake up sample frame
+ * send remote AT cmd 
+   - IS to get samples
+   - DB for last RSSI
+     ! Different from pervious RSSI
+   - EA ACK failure cnt
+     ! For collector too
+   - EC CCA failure cnt
+     ! collector too
 
 ## Python
 Use **pipenv** to manage virtual env and packages
@@ -114,7 +140,8 @@ docker run -d --restart always -p 8086:8086 -v influxdb:/var/lib/influxdb --name
 docker exec -it influxdb influx
 
 # backup
-bastien@gnome-server:~/dev/garden-reporter/collector$ docker exec -it garden-reporter-influxdb bash -c "influx backup -b gr-bucket -t $INFLUX_TOKEN /tmp/$(date +%y_%m_%d-%H_%M_%S)"
+bastien@gnome-server:~/dev/garden-reporter/collector$ 
+docker exec -it garden-reporter-influxdb bash -c "influx backup -b $BUCKET -t $INFLUX_TOKEN /tmp/$(date +%y_%m_%d-%H_%M_%S)"
 docker cp garden-reporter-influxdb:/tmp/* ./backup_influxdb/
 
 ```

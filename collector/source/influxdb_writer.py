@@ -29,6 +29,7 @@ class InfluxDBWriter:
         self.client.close()
     
     def write(self, record):
+        print('InfluxDBWriter write:', record)
         try:
             record['measurement'] = self.measurement
             p = Point(
@@ -38,7 +39,10 @@ class InfluxDBWriter:
                 .field("moist", record['soil_moisture'])\
                 .field("temp", record['temp'])\
                 .field("light", record['light'])\
-                .field("rssi", record['rssi'])
+                .field("rssi", record['local_rssi'])\
+                .field("remote_rssi", record['remote_rssi'])\
+                .field("error_cca", record['error_cca'])\
+                .field("error_ack", record['error_ack'])
             self.write_api.write(bucket=self.bucket, record=p)
         except Exception as e:
             print('Cant reach influx-db')

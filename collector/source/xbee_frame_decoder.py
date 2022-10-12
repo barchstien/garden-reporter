@@ -5,10 +5,23 @@ class XbeeFrameDecoder:
     byte_stash = list()
     frames = queue.Queue()
     
+    API_SYNC = 0x7e
+    API_REMOTE_AT_REQUEST = 0x17
+    API_REMOTE_AT_RESPONSE = 0x97
+    API_64_BIT_IO_SAMPLE = 0x82
+    
+    AT_IS_FORCE_SAMPLE = "IS"
+    AT_EA_ACK_FAILURE = "EA"
+    AT_EC_CCA_FAILURE = "EC"
+    AT_DB_LAST_RSSI = "DB"
+    AT_FR_SW_RESET = "FR"
+    AT_NI_IDENTIFIER = "NI"
+    
+    AT_SM_CYCLE_SLEEP = "SM"
+    
     def consume(self, b):
         # add bytes to working stash
         self.byte_stash = self.byte_stash + list(b)
-        #print("stash:", self.byte_stash)
         if len(self.byte_stash) < 3 :
             # need first 3 bytes to start decode
             # wait for more bytes
@@ -37,7 +50,7 @@ class XbeeFrameDecoder:
                     print('Checksum failed !', hex(s))
                     # ignore frame
                     return
-                # parse the frame
+                # parse the frame based on type
                 self.parse_frame(frame)
             else :
                 # not enough byte to complete the frame
@@ -45,54 +58,65 @@ class XbeeFrameDecoder:
 
 
     def parse_frame(self, f) :
-        if f[3] == 0x82 :
-            record = dict()
+        frame = dict()
+        frame['type'] = f[3]
+        if f[3] == XbeeFrameDecoder.API_64_BIT_IO_SAMPLE :
             # 64 bit IO Sample Indicator
-            record['source_id'] = int.from_bytes(f[4:12], byteorder='big')
-            record['rssi'] = -1 * f[12]
+            frame['source_id'] = int.from_bytes(f[4:12], byteorder='big')
+            frame['rssi'] = -1 * f[12]
             # 1 sample containes 4 ADC values
             num_of_samples = f[14]
-            #if f[14] != 1 :
-            #    print('drop frame coz received ', f[8], 'samples instead of 1')
-            #    return
             # expect bitmask with ADC{0-4} enabled
             if f[15] != 0b00011110 or f[16] != 0 :
-                print('drop frame coz it\'s not ADC but', "{0:08b} {1:08b}".format(f[15], f[16]))
+                print('drop frame coz it\'s not ADC (0b00011110) but', 
+                    "{0:08b} {1:08b}".format(f[15], f[16]))
             # extract ADC values
             # 0 - battery level
             # 1 - soil moisture
             # 2 - temperature
             # 3 - light
-            record['battery_level'] = float(int.from_bytes(f[16:19], "big"))
-            record['soil_moisture'] = int.from_bytes(f[19:21], "big")
-            record['temp'] = float(int.from_bytes(f[21:23], "big"))
-            record['light'] = int.from_bytes(f[23:25], "big")
+            frame['battery_level'] = float(int.from_bytes(f[17:19], "big"))
+            frame['soil_moisture'] = int.from_bytes(f[19:21], "big")
+            frame['temp'] = float(int.from_bytes(f[21:23], "big"))
+            frame['light'] = int.from_bytes(f[23:25], "big")
             
-            self.frames.put(record)
+            self.frames.put(frame)
+            
+        elif f[3] == self.API_REMOTE_AT_RESPONSE :
+            # Remote Command Response
+            frame['frame_id'] = f[4]
+            frame['source_id'] = int.from_bytes(f[5:13], byteorder='big')
+            frame['AT'] = ''.join([chr(f[15]), chr(f[16])])
+            # status error
+            status = f[17]
+            if status != 0x00:
+                print("AT cmd:", frame['AT'], "returned non OK (0): ", status)
+                return
+            print("---- AT response:", frame['AT'])
+            if frame['AT'] == self.AT_IS_FORCE_SAMPLE:
+                # expect 1 sample, contains 4 ADC values
+                num_of_samples = f[18]
+                # expect 00011110 which enables A3 to A0
+                if f[19] != 0b00011110 or f[20] != 0 :
+                    print('drop frame coz it\'s not (0b00011110) 0x0 but', 
+                        "{0:08b} {1:08b}".format(f[19], f[20]))
+                
+                frame['battery_level'] = float(int.from_bytes(f[21:23], "big"))
+                frame['soil_moisture'] = int.from_bytes(f[23:25], "big")
+                frame['temp'] = float(int.from_bytes(f[25:27], "big"))
+                frame['light'] = int.from_bytes(f[27:29], "big")
+            if frame['AT'] == self.AT_DB_LAST_RSSI:
+                frame['remote_rssi'] = -1 * f[18]
+            if frame['AT'] == self.AT_EA_ACK_FAILURE:
+                frame['error_ack'] = int.from_bytes(f[18:20], "big")
+            if frame['AT'] == self.AT_EC_CCA_FAILURE:
+                frame['error_cca'] = int.from_bytes(f[18:20], "big")
+            
+            self.frames.put(frame)
+        
         else:
             # other frames are ignored
             # log it for curiosity
             print('Ignore incoming frame (unsupported type :', f)
 
 
-'''
-RX (Receive) Packet 16-bit Address IO (API 1)
-
-7E 00 10 83 01 00 2F 00 01 1E 00 02 A8 02 20 02 83 00 00 DC
-
-Start delimiter: 7E
-Length: 00 10 (16)
-Frame type: 83 (RX (Receive) Packet 16-bit Address IO)
-16-bit source address: 01 00
-RSSI: 2F
-Options: 00
-Number of samples: 01
-Digital channel mask: 00 00
-Analog channel mask: 1E 00
-Sample 1: - DIO0/AD0 analog value: 02 A8 (680)
-- DIO1/AD1 analog value: 02 20 (544)
-- DIO2/AD2 analog value: 02 83 (643)
-- DIO3/AD3 analog value: 00 00 (0)
-
-Checksum: DC
-'''
