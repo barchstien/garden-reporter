@@ -65,16 +65,33 @@ class TcpListener:
                 print("TcpListener stop accepting")
                 break
             print("Accepted connection from:", client_address)
-            # set as non-blocking, to read whatever is available using select()
-            self.connection.settimeout(0)
+            
             # TODO wait for 8 byte that could be
             #  - MAC of endpoint to hold in config
             #  - 0 no endpoint is held in config
             #  - 0xffffffffffffffff to hold all registered endpoints
+            # set as blocking
+            self.connection.settimeout(None)
+            # receives 8 first bytes which contains MAC to hold in config
+            try:
+                print('--- waiting for first 8 bytes')
+                mac_bytes = self.connection.recv(8)
+                if len(mac_bytes) == 0:
+                    raise
+                print('--- first 8 bytes:', mac_bytes.hex())
+            except:
+                print('TCP Listener failed to get first 8 bytes, closing...')
+                self.connection.close()
+                self.connection = None
+                continue
+            
+            # debug hard coded MAC
             self.xbee_pop.hold_in_config(0x0013A20041F26150)
             
             # get serial read and write queues
             (hub_r_q, hub_w_q) = self.serial_hub.request_r_w_queues()
+            # set as non-blocking, to read whatever is available using select()
+            self.connection.settimeout(0)
             # start write thread
             w_thread = threading.Thread(target=self.thread_write_to_stream, 
                 args=(hub_r_q,)
