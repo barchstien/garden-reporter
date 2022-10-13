@@ -70,11 +70,11 @@ class TcpListener:
             #  - MAC of endpoint to hold in config
             #  - 0 no endpoint is held in config
             #  - 0xffffffffffffffff to hold all registered endpoints
-            # set as blocking
-            self.connection.settimeout(None)
+            # set a long enough timeout
+            self.connection.settimeout(3.0)
             # receives 8 first bytes which contains MAC to hold in config
             try:
-                print('--- waiting for first 8 bytes')
+                print('--- TCP Listener waiting for first 8 bytes')
                 mac_bytes = self.connection.recv(8)
                 if len(mac_bytes) == 0:
                     raise

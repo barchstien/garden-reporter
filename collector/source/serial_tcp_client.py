@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import subprocess, time, sys
+import subprocess, time, sys, os
 
 COLLECTOR_IP = "192.168.1.66"
 COLLECTOR_PORT = 8087
@@ -64,10 +64,20 @@ if __name__ == "__main__":
         shell=True, 
         stdout=subprocess.PIPE
     )
+    # wait for popen to startup
+    time.sleep(1.0)
     
     # TODO open pty
     # TODO Send 8 bytes MAC
     # TODO close pty
+    pty = os.open(PTY_PATH, os.O_RDWR)
+    os.write(pty, mac.to_bytes(8, byteorder='big'))
+    # waiting for feedback :
+    # 0 --> got a hold on requestd MAC
+    # 1 --> MAC not found
+    fb = os.read(pty, 1)
+    os.close(pty)
+    print('-----feedback:', fb)
 
     # keep alive to keep alive subprocess
     print("Serial ready")
