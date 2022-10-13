@@ -29,7 +29,7 @@ class InfluxDBWriter:
         self.client.close()
     
     def write(self, record):
-        print('InfluxDBWriter write:', record)
+        #print('InfluxDBWriter write:', record)
         try:
             record['measurement'] = self.measurement
             p = Point(

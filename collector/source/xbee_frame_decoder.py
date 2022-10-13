@@ -92,7 +92,7 @@ class XbeeFrameDecoder:
             if status != 0x00:
                 print("AT cmd:", frame['AT'], "returned non OK (0): ", status)
                 return
-            print("---- AT response:", frame['AT'])
+            #print("---- AT response:", frame['AT'])
             if frame['AT'] == self.AT_IS_FORCE_SAMPLE:
                 # expect 1 sample, contains 4 ADC values
                 num_of_samples = f[18]
