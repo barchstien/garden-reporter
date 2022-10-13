@@ -76,7 +76,10 @@ class Xbee:
         while len(self.incoming) > 0:
             in_f = self.incoming[0]
             self.incoming.pop(0)
-            print('### in_f:', in_f)
+            if self.config_mode.is_set():
+                print('### Hold in config, ignore data')
+                continue
+            #print('### in_f:', in_f)
             if in_f['type'] == XbeeFrameDecoder.API_64_BIT_IO_SAMPLE:
                 # This is considered as a wakeup frame
                 # ADCs values are ignored coz sensors need startup delay
