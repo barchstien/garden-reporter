@@ -53,6 +53,7 @@ class Xbee:
         # when enable, that device is connected to XCTU
         # and collector does not read/write anything to that device
         self.config_mode = threading.Event()
+        self.config_holding = threading.Event()
     
     def get_next_frame_id(self):
         self.frame_id = (self.frame_id + 1) % 256
@@ -258,9 +259,11 @@ class XbeePopulationModel:
     def hold_in_config(self, mac):
         for p in self.register:
             if p.mac == mac:
+                p.config_holding.clear()
                 p.config_mode.set()
-                return
+                return p
         print('Cannot hold_in_config, no such mac:', mac)
+        return None
     
     '''Release endpoint from config, ie enable back Cycle Sleep'''
     def release_from_config(self, mac):

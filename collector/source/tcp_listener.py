@@ -8,6 +8,10 @@ Remaining bytes read/written are forwarded to collector serial
 '''
 class TcpListener:
 
+    STATUS_READY = 0 # requested endpoint is awake
+    STATUS_WAIT = 1  # ask client to wait, test that link is up
+    STATUS_ERROR = 2 # error, try again later
+
     def __init__(self, config, serial_hub, xbee_pop):
         # config
         self.host = config['serial-tcp']['host']
@@ -26,6 +30,8 @@ class TcpListener:
         self.thread_stop.clear()
         self.thread = threading.Thread(target=self.thread_handler)
         self.thread.start()
+        #
+        self.xbee_held = None
     
     def stop(self):
         self.thread_stop.set()
@@ -46,13 +52,12 @@ class TcpListener:
                 if b == None:
                     # happens when got to stop
                     break
-                print('----- get write:', len(b))
                 self.connection.sendall(b)
             except BrokenPipeError:
                 print("BrokenPipeError, quit thread_write_to_stream()")
                 break
             except Exception as e:
-                print("tcp connection exception, quit thread_write_to_stream(), what:", e.what())
+                print("tcp connection exception, quit thread_write_to_stream(), what:", e)
                 break
     
     def thread_handler(self):
@@ -66,11 +71,11 @@ class TcpListener:
                 break
             print("Accepted connection from:", client_address)
             
-            # TODO wait for 8 byte that could be
+            # Wait for 8 byte that could be
             #  - MAC of endpoint to hold in config
-            #  - 0 no endpoint is held in config
-            #  - 0xffffffffffffffff to hold all registered endpoints
-            # set a long enough timeout
+            #  - TODO 0 no endpoint is held in config
+            #  - TODO 0xffffffffffffffff to hold all registered endpoints
+            # 3 sec is long enough for client to request a MAC to hold
             self.connection.settimeout(3.0)
             # receives 8 first bytes which contains MAC to hold in config
             try:
@@ -79,15 +84,33 @@ class TcpListener:
                 if len(mac_bytes) == 0:
                     raise
                 print('--- first 8 bytes:', mac_bytes.hex())
-            except:
-                print('TCP Listener failed to get first 8 bytes, closing...')
+                # waits until target in held in config
+                held_mac = int.from_bytes(mac_bytes, 'big')
+                self.xbee_held = self.xbee_pop.hold_in_config(held_mac)
+                if self.xbee_held == None:
+                    # no such mac, return non zero value
+                    self.connection.sendall((TcpListener.STATUS_ERROR).to_bytes(1, byteorder='big'))
+                    raise
+                # wait for target to be held
+                while not self.xbee_held.config_holding.is_set():
+                    time.sleep(1.0)
+                    # send a byte every sec, to check that client is connected
+                    # if it fails, excpetion is raised
+                    self.connection.sendall((TcpListener.STATUS_WAIT).to_bytes(1, byteorder='big'))
+                # target is up, notify client
+                self.connection.sendall((TcpListener.STATUS_READY).to_bytes(1, byteorder='big'))
+            except Exception as e:
+                print('TCP Listener failed to get MAC, closing...\nwhat(): ', e)
                 self.connection.close()
                 self.connection = None
+                self.xbee_pop.release_from_config(self.xbee_held.mac)
                 continue
             
             # debug hard coded MAC
-            self.xbee_pop.hold_in_config(0x0013A20041F26150)
+            #self.xbee_pop.hold_in_config(0x0013A20041F26150)
             
+            ### early MAC exchange achieved
+            ### now in normal serial - tcp mode
             # get serial read and write queues
             (hub_r_q, hub_w_q) = self.serial_hub.request_r_w_queues()
             # set as non-blocking, to read whatever is available using select()

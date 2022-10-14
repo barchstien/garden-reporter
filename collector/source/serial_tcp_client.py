@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+from tcp_listener import *
 import subprocess, time, sys, os
 
 COLLECTOR_IP = "192.168.1.66"
@@ -72,12 +73,20 @@ if __name__ == "__main__":
     # TODO close pty
     pty = os.open(PTY_PATH, os.O_RDWR)
     os.write(pty, mac.to_bytes(8, byteorder='big'))
-    # waiting for feedback :
-    # 0 --> got a hold on requestd MAC
-    # 1 --> MAC not found
-    fb = os.read(pty, 1)
+    # wait for targeted endpoint to be up and held (no cycle sleep)
+    print('Waiting for target to become available...')
+    while True:
+        fb = os.read(pty, 1)
+        fb = int.from_bytes(fb, byteorder='big')
+        if fb == TcpListener.STATUS_READY:
+            break;
+        elif fb == TcpListener.STATUS_WAIT:
+            print('.', end='', flush=True)
+            continue;
+        elif fb == TcpListener.STATUS_ERROR:
+            print('Received STATUS_ERROR from TcpListener, exit...')
+            sys.exit(51)
     os.close(pty)
-    print('-----feedback:', fb)
 
     # keep alive to keep alive subprocess
     print("Serial ready")
