@@ -22,6 +22,10 @@ class XbeeFrameDecoder:
     AT_SM_VALUE_NO_SLEEP = 0
     AT_SM_VALUE_CYCLE_SLEEP = 4
     
+    AT_CMD_RESPONSE = {
+        0:"OK", 1:"ERROR", 2:"Invalid cmd", 3:"Invalid param", 4:"Tx failure", 5:"Encrypt error"
+    }
+    
     def consume(self, b):
         # add bytes to working stash
         self.byte_stash = self.byte_stash + list(b)
@@ -93,7 +97,9 @@ class XbeeFrameDecoder:
             # status error
             status = f[17]
             if status != 0x00:
-                print("AT cmd:", frame['AT'], "returned non OK (0): ", status)
+                print("AT cmd:", frame['AT'], 
+                    "returned non OK (0): ", status, 
+                    ", ie ", XbeeFrameDecoder.AT_CMD_RESPONSE[status])
                 return
             #print("---- AT response:", frame['AT'])
             if frame['AT'] == self.AT_IS_FORCE_SAMPLE:
