@@ -74,6 +74,8 @@ class TcpListener:
             # Wait for 8 byte that could be
             #  - MAC of endpoint to hold in config
             #  - TODO 0 no endpoint is held in config
+            #    usefull to config collector
+            #    usefull when an xbee is already stuck in "no sleep"
             #  - TODO 0xffffffffffffffff to hold all registered endpoints
             # 3 sec is long enough for client to request a MAC to hold
             self.connection.settimeout(3.0)
@@ -86,20 +88,24 @@ class TcpListener:
                 print('--- first 8 bytes:', mac_bytes.hex())
                 # waits until target in held in config
                 held_mac = int.from_bytes(mac_bytes, 'big')
-                self.xbee_held = self.xbee_pop.hold_in_config(held_mac)
-                if self.xbee_held == None:
-                    # no such mac, return non zero value
-                    self.connection.sendall((TcpListener.STATUS_ERROR).to_bytes(1, byteorder='big'))
-                    raise
-                # wait for target to be held
-                while not self.xbee_held.config_holding.is_set():
-                    time.sleep(1.0)
-                    # send a byte every sec, to check that client is connected
-                    # if it fails, excpetion is raised
-                    self.connection.sendall((TcpListener.STATUS_WAIT).to_bytes(1, byteorder='big'))
-                # target is up, notify client
-                self.connection.sendall((TcpListener.STATUS_READY).to_bytes(1, byteorder='big'))
-                print('--- TCP Listener target is up (no cycle sleep)')
+                if held_mac == 0:
+                    self.connection.sendall((TcpListener.STATUS_READY).to_bytes(1, byteorder='big'))
+                    print ('--- Tcp Listener no MAC to wait for')
+                else:
+                    self.xbee_held = self.xbee_pop.hold_in_config(held_mac)
+                    if self.xbee_held == None:
+                        # no such mac, return non zero value
+                        self.connection.sendall((TcpListener.STATUS_ERROR).to_bytes(1, byteorder='big'))
+                        raise
+                    # wait for target to be held
+                    while not self.xbee_held.config_holding.is_set():
+                        time.sleep(1.0)
+                        # send a byte every sec, to check that client is connected
+                        # if it fails, excpetion is raised
+                        self.connection.sendall((TcpListener.STATUS_WAIT).to_bytes(1, byteorder='big'))
+                    # target is up, notify client
+                    self.connection.sendall((TcpListener.STATUS_READY).to_bytes(1, byteorder='big'))
+                    print('--- TCP Listener target is up (no cycle sleep)')
             except Exception as e:
                 print('TCP Listener failed to get MAC, closing...\nwhat(): ', e)
                 self.connection.close()

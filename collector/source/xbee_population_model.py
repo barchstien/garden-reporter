@@ -77,11 +77,12 @@ class Xbee:
         
         # check if Cycle sleep should be re-enabled
         if not self.config_mode.is_set() and self.config_holding.is_set():
-            print('Re-enable Cycle Sleep !! <<<<<<--------------')
+            print(self.mac + ' Re-enable Cycle Sleep !')
             to_send.append({
                 'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
                 'frame_id': self.get_next_frame_id(),
                 'dest_id': self.mac,
+                'options': 0x02, # apply changes now
                 'AT': XbeeFrameDecoder.AT_SM_CYCLE_SLEEP,
                 'AT_value' : XbeeFrameDecoder.AT_SM_VALUE_CYCLE_SLEEP
             })
@@ -95,18 +96,19 @@ class Xbee:
             # deal with conifg mode
             if self.config_mode.is_set() or self.config_holding.is_set():
                 if not self.config_holding.is_set():
-                    print('Disable Cycle Sleep !! <<<<<<--------------')
+                    print(self.mac + ' Disable Cycle Sleep !')
                     # Just consider that it always returns OK
                     to_send.append({
                         'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
                         'frame_id': self.get_next_frame_id(),
                         'dest_id': self.mac,
+                        'options': 0x02, # apply changes now
                         'AT': XbeeFrameDecoder.AT_SM_CYCLE_SLEEP,
                         'AT_value' : XbeeFrameDecoder.AT_SM_VALUE_NO_SLEEP
                     })
                     self.config_holding.set()
                 else:
-                    print('### Held in config, ignore data')
+                    print(self.mac + ' Held in config, ignore rx data')
                 # avoid the rest of the loop, including ACK of sleep off cmd
                 # ... until config mode is exited
                 continue
