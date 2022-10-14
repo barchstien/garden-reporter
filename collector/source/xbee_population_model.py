@@ -49,6 +49,11 @@ class Xbee:
         # errors last values
         self.error_ack = -1
         self.error_cca = -1
+        # config mode
+        # when enable, that device is connected to XCTU
+        # and collector does not read/write anything to that device
+        self.config_mode = threading.Event()
+        self.config_holding = threading.Event()
     
     def get_next_frame_id(self):
         self.frame_id = (self.frame_id + 1) % 256
@@ -63,16 +68,52 @@ class Xbee:
     def do_your_thing(self):
         to_send = []
         to_rec = []
+        
         # check that current awakening hasn't timed out
         if self.awakening != None:
             if (datetime.now() - self.awakening.start).total_seconds() > XbeeAwakening.TIMEOUT_SEC:
                 # awakening has timed out, delete it
                 self.awakening = None
+        
+        # check if Cycle sleep should be re-enabled
+        if not self.config_mode.is_set() and self.config_holding.is_set():
+            print(self.mac + ' Re-enable Cycle Sleep !')
+            to_send.append({
+                'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
+                'frame_id': self.get_next_frame_id(),
+                'dest_id': self.mac,
+                'options': 0x02, # apply changes now
+                'AT': XbeeFrameDecoder.AT_SM_CYCLE_SLEEP,
+                'AT_value' : XbeeFrameDecoder.AT_SM_VALUE_CYCLE_SLEEP
+            })
+            self.config_holding.clear()
+        
         # process incoming packets
         while len(self.incoming) > 0:
             in_f = self.incoming[0]
             self.incoming.pop(0)
-            print('### in_f:', in_f)
+            
+            # deal with conifg mode
+            if self.config_mode.is_set() or self.config_holding.is_set():
+                if not self.config_holding.is_set():
+                    print(self.mac + ' Disable Cycle Sleep !')
+                    # Just consider that it always returns OK
+                    to_send.append({
+                        'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
+                        'frame_id': self.get_next_frame_id(),
+                        'dest_id': self.mac,
+                        'options': 0x02, # apply changes now
+                        'AT': XbeeFrameDecoder.AT_SM_CYCLE_SLEEP,
+                        'AT_value' : XbeeFrameDecoder.AT_SM_VALUE_NO_SLEEP
+                    })
+                    self.config_holding.set()
+                else:
+                    print(self.mac + ' Held in config, ignore rx data')
+                # avoid the rest of the loop, including ACK of sleep off cmd
+                # ... until config mode is exited
+                continue
+            
+            #print('### in_f:', in_f)
             if in_f['type'] == XbeeFrameDecoder.API_64_BIT_IO_SAMPLE:
                 # This is considered as a wakeup frame
                 # ADCs values are ignored coz sensors need startup delay
@@ -150,6 +191,7 @@ class Xbee:
             "{}".format(self.mac),
         ]
         return "\n".join(s)
+
 
 '''
 Keep an up to date model of xbee endpoints
@@ -242,6 +284,27 @@ class XbeePopulationModel:
         while not self.db_records.empty():
             l.append(self.db_records.get())
         return l
+    
+    '''
+    Set the Xbee with specified mac as config.
+    Meaning the next time the endpoint wakes up, Cycle Sleep is disabled.
+    '''
+    def hold_in_config(self, mac):
+        for p in self.register:
+            if p.mac == mac:
+                p.config_holding.clear()
+                p.config_mode.set()
+                return p
+        print('Cannot hold_in_config, no such mac:', mac)
+        return None
+    
+    '''Release endpoint from config, ie enable back Cycle Sleep'''
+    def release_from_config(self, mac):
+        for p in self.register:
+            if p.mac == mac:
+                p.config_mode.clear()
+                return
+        print('Cannot release_from_config, no such mac:', mac)
 
 
 # Debug test

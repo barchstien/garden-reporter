@@ -3,11 +3,6 @@ from xbee_frame_decoder import *
 class XbeeFrameEncoder:
 
     API_REMOTE_AT_REQUEST_MIN_LEN = 15
-    
-    # TODO support to set sleep mode 
-    AT_LEN_SET_SM_SLEEP_MODE = 1
-    AT_SM_NO_SLEEP = 0
-    AT_SM_CYCLE_SLEEP = 4
 
     def checksum(self, bytes):
         cs = 0
@@ -38,6 +33,8 @@ class XbeeFrameEncoder:
                 coded_f.append((XbeeFrameDecoder.API_SYNC).to_bytes(1, byteorder='big'))
                 # length (excludes start, length, checksum --> 4 bytes)
                 length = XbeeFrameEncoder.API_REMOTE_AT_REQUEST_MIN_LEN
+                # look for value now, so it is included in length
+                AT_value_bytes = None
                 if 'AT_value' in f:
                     if f['AT'] != XbeeFrameDecoder.AT_SM_CYCLE_SLEEP:
                         raise Excpetion('Setting AT value other than SM Cycle Sleep is not suported')
@@ -63,7 +60,9 @@ class XbeeFrameEncoder:
                 coded_f.append((ord(f['AT'][0])).to_bytes(1, byteorder='big'))
                 coded_f.append((ord(f['AT'][1])).to_bytes(1, byteorder='big'))
                 # parameter value (only if it is a set, not a get)
-                
+                if AT_value_bytes != None:
+                    # only code AT SM (Cycle Sleep), ie 1 byte value
+                    coded_f.append(AT_value_bytes)
                 # checksum
                 # makes a byte, and exclude first 3 that aren't counted in checksum
                 cs = self.checksum(b''.join(coded_f)[3:])

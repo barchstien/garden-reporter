@@ -18,12 +18,12 @@ if __name__ == "__main__":
 
     # owns serial to collector
     serial = SerialHub(config)
-    # allow TCP connection to serial (for XCTU)
-    tcp_listener = TcpListener(config, serial)
     # extracte frames and decode it to dict
     decoder = XbeeFrameDecoder()
     # population model, keep tracks of enpoint
     population_model = XbeePopulationModel(config)
+    # allow TCP connection to serial (for XCTU)
+    tcp_listener = TcpListener(config, serial, population_model)
     # apply calib and makes meaningful values from ADC readings
     data_calib = DataCalibrator(config)
     # write to influxdb
