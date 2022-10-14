@@ -99,6 +99,7 @@ class TcpListener:
                     self.connection.sendall((TcpListener.STATUS_WAIT).to_bytes(1, byteorder='big'))
                 # target is up, notify client
                 self.connection.sendall((TcpListener.STATUS_READY).to_bytes(1, byteorder='big'))
+                print('--- TCP Listener target is up (no cycle sleep)')
             except Exception as e:
                 print('TCP Listener failed to get MAC, closing...\nwhat(): ', e)
                 self.connection.close()

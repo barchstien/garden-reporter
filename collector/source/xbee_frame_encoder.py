@@ -3,11 +3,6 @@ from xbee_frame_decoder import *
 class XbeeFrameEncoder:
 
     API_REMOTE_AT_REQUEST_MIN_LEN = 15
-    
-    # TODO support to set sleep mode 
-    AT_LEN_SET_SM_SLEEP_MODE = 1
-    AT_SM_NO_SLEEP = 0
-    AT_SM_CYCLE_SLEEP = 4
 
     def checksum(self, bytes):
         cs = 0

@@ -68,9 +68,7 @@ if __name__ == "__main__":
     # wait for popen to startup
     time.sleep(1.0)
     
-    # TODO open pty
-    # TODO Send 8 bytes MAC
-    # TODO close pty
+    # Open pty to negotiate the endpoint to hold
     pty = os.open(PTY_PATH, os.O_RDWR)
     os.write(pty, mac.to_bytes(8, byteorder='big'))
     # wait for targeted endpoint to be up and held (no cycle sleep)

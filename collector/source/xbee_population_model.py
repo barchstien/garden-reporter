@@ -68,18 +68,49 @@ class Xbee:
     def do_your_thing(self):
         to_send = []
         to_rec = []
+        
         # check that current awakening hasn't timed out
         if self.awakening != None:
             if (datetime.now() - self.awakening.start).total_seconds() > XbeeAwakening.TIMEOUT_SEC:
                 # awakening has timed out, delete it
                 self.awakening = None
+        
+        # check if Cycle sleep should be re-enabled
+        if not self.config_mode.is_set() and self.config_holding.is_set():
+            print('Re-enable Cycle Sleep !! <<<<<<--------------')
+            to_send.append({
+                'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
+                'frame_id': self.get_next_frame_id(),
+                'dest_id': self.mac,
+                'AT': XbeeFrameDecoder.AT_SM_CYCLE_SLEEP,
+                'AT_value' : XbeeFrameDecoder.AT_SM_VALUE_CYCLE_SLEEP
+            })
+            self.config_holding.clear()
+        
         # process incoming packets
         while len(self.incoming) > 0:
             in_f = self.incoming[0]
             self.incoming.pop(0)
-            if self.config_mode.is_set():
-                print('### Hold in config, ignore data')
+            
+            # deal with conifg mode
+            if self.config_mode.is_set() or self.config_holding.is_set():
+                if not self.config_holding.is_set():
+                    print('Disable Cycle Sleep !! <<<<<<--------------')
+                    # Just consider that it always returns OK
+                    to_send.append({
+                        'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
+                        'frame_id': self.get_next_frame_id(),
+                        'dest_id': self.mac,
+                        'AT': XbeeFrameDecoder.AT_SM_CYCLE_SLEEP,
+                        'AT_value' : XbeeFrameDecoder.AT_SM_VALUE_NO_SLEEP
+                    })
+                    self.config_holding.set()
+                else:
+                    print('### Held in config, ignore data')
+                # avoid the rest of the loop, including ACK of sleep off cmd
+                # ... until config mode is exited
                 continue
+            
             #print('### in_f:', in_f)
             if in_f['type'] == XbeeFrameDecoder.API_64_BIT_IO_SAMPLE:
                 # This is considered as a wakeup frame

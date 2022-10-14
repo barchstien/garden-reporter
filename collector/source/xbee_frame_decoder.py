@@ -19,6 +19,9 @@ class XbeeFrameDecoder:
     
     AT_SM_CYCLE_SLEEP = "SM"
     
+    AT_SM_VALUE_NO_SLEEP = 0
+    AT_SM_VALUE_CYCLE_SLEEP = 4
+    
     def consume(self, b):
         # add bytes to working stash
         self.byte_stash = self.byte_stash + list(b)
