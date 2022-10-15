@@ -3,16 +3,22 @@ The collector receives data from probes via an USB/Serial connection to an XBEE 
 Then interprets the data and apply calibration, on a per probe basis.
 Finally it records the data in influxdb.
 The data that are recorded are :
- * probe id (16 bit source address)
- * rssi (RF link level)
+ * probe id (64 bit source address)
+ * rssi (RF link level), from both sites
  * battery level
  * soil moisture
  * temperature
  * light
 
+The collector allows to connect to a TCP port
+Using negotiation, a specific endpoint may be kept awake
+Then the TCP just forwards serial
+Client can connect, negotiate, and use socat to forward to local pty
+The local pty can be used by XCTU
+
 The data flow follows
 ```
-Xbee --> Serial/USB --> python3 --> influxdb --> grafana
+Xbee --> Serial/USB --> python3 --> influxdb
 ```
 
 # Modules
@@ -27,53 +33,15 @@ Install and launch XCTU config SW
 Load .xpro profiles for collector, and for each probe
 
 ### xbee config notes
- * Use 64bit address, coz 64bit address is required to send config
-   MY should be set to 0xFFFF
- * Channel (CH) B seams to have better RSSI
- * endpoint destination (DH and DL) should be set to collector MAC
- * IR is millisec between samples. IR = 0 means no auto-sampling
- * SO Sleep option, default 0b00, 0b01 disable wakeup poll, 0b10 no sample on wakeup
- * 0x17 Remote AT Command Request, p137
- * 0x97 Remote AT Command Response, p155
- * 0x82 64-bit I/O Sample Indicator, p144
-   |---> Replace by use of 0x92 ?
-         legacy Digi RF products, does this apply to SC2 ?
- * Remote AT cmd of IS does not return RSSI...
-   Use remote AT cmd DB (Last Packet RSSI)
-   DO not use local, coz don't know from where last frame is from
-
-#### Questions :
- * What about TX Request ?
- * use IS (Force Sample) ?
-   p114 not much here, expect that it's an AT command
-   |--> use 0x17 remote AT command with IS inside
-        answered by 0x97
-        https://www.digi.com/support/knowledge-base/digital-and-analog-sampling-using-xbee-radios
-        AT command IS == 0x49 0x53
-   |--> Remote AT cmd with IS
-        7E 00 0F 17 01 00 13 A2 00 41 F2 61 50 FF FE 02 49 53 B3
-   |--> Remote AT cmd DB (RSSI)
-        7E 00 0F 17 01 00 13 A2 00 41 F2 61 50 FF FE 02 44 42 C9
-   Takes 100 to 200msec to get response
- * for zigbee
-   "Queried samples (IS) can be sent to sleeping End Devices. This is because the End Device’s 
-   parent will buffer the IS command until the End Device’s next wake period. This is makes ZigBee 
-   an ideal choice for remote sampling applications."
- * 0x97 AT cmd response frame ?
- * use IT to fit N sample per pkt ?
-   |-> manual says that with short addr, 53 samples max per pkt
- * what is wakeup poll ?
- * BD (baud), increase to 115200 ?
-   default 0x3 9600
-   0x7 115200
- * EC (CCA failure), counter, what about pooling it ?
- * EA (ACK failure)
-
-#### Conclusions
  * setup End Point as :
    - Cycle Sleep
    - IR = 0
-   - keep SO default
+     millisec between samples. IR = 0 means no auto-sampling
+   - keep SO (Sleep Option) default
+     default 0b00, 0b01 disable wakeup poll, 0b10 no sample on wakeup
+   - Use 64bit address, coz 64bit address is required to send config
+     MY should be set to 0xFFFF
+   - endpoint destination (DH and DL) should be set to collector MAC
    End Point send a sample on wake up
    Use this as a signal
    0x82 (RX (Receive) Packet 64-bit Address IO)
@@ -86,6 +54,10 @@ Load .xpro profiles for collector, and for each probe
      ! For collector too
    - EC CCA failure cnt
      ! collector too
+ * 0x17 Remote AT Command Request, p137
+ * 0x97 Remote AT Command Response, p155
+ * 0x82 64-bit I/O Sample Indicator, p144
+ * Channel (CH) B seams to have better RSSI
 
 ## Python
 Use **pipenv** to manage virtual env and packages
