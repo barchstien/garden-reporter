@@ -1429,6 +1429,10 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 11a699de-3f01-4d54-a893-200d13ccf537)
   )
+  (text "TODO better attchment of PCB" (at 165.1 119.38 0)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 2ae0ed89-cd81-4ff3-a6aa-ff3db7bb218d)
+  )
   (text "Use V-divider x1/6\nwith zener diode to ensure line is <= 3.3V\nR 1/4W 1% metal film, could be:\n - 603-MFR-25FRF5210K\n - 603-MFR-25FRF5202K"
     (at 137.16 29.21 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
@@ -1449,7 +1453,7 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 780f18d6-e3ae-44e9-b7f2-d101719bceac)
   )
-  (text "TMP36GT9Z\nAdd 1uF next to body, ie on wire\n750mV at 25degC, 10mV per degC\nADC saturates at 1.2V -> 70deg\nUse thermally conductive epox on ic"
+  (text "TMP36GT9Z (can use LM61BIZ)\nAdd 1uF next to body, ie on wire\n750mV at 25degC, 10mV per degC\nADC saturates at 1.2V -> 70deg\nUse thermally conductive epox on ic"
     (at 210.82 100.33 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 7a329a6d-68e8-4725-b3bf-a021a8a40e34)
@@ -1468,7 +1472,7 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid da69d1e7-7c24-4896-873d-ed1ca2a291bd)
   )
-  (text "TEPT5700\nRead Voltage, with U=RI I=U/R\nUse datasheet to translate I to DegC\n--> Keep R lowest possible ?\n    so that can measure higher I values\n    ... ie higher lux values ?\n--> Max Ice = 20mA so aim for 18mA\n    3.3V / 0.018A = 183 Ohm\n    Use 180"
+  (text "TEPT5700 with MCP1700-1202 (1.2V reg)\nRead Voltage, with U=RI I=U/R\nUse datasheet to translate I to DegC\n--> Keep R lowest possible ?\n    so that can measure higher I values\n    ... ie higher lux values ?\n--> Max Ice = 20mA so aim for 18mA\n    1.2V / 0.018A = 66.6667 Ohm\n    Use 65"
     (at 186.69 163.83 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid e4a76a53-c7d6-484a-a0c4-7ba1d6a9cabd)
