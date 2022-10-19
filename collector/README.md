@@ -21,6 +21,13 @@ The data flow follows
 Xbee --> Serial/USB --> python3 --> influxdb
 ```
 
+# Deploy
+```bash
+docker run -it --rm -p 8087:8087 -v/dev/ttyUSB0:/dev/ttyUSB0 -it --rm garden-collector /bin/bash
+
+docker run -it --rm mytag /bin/bash
+```
+
 # Modules
 
 ## xbee
