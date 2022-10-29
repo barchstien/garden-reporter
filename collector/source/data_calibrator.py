@@ -19,6 +19,8 @@ class DataCalibrator:
             p = self.probe_from_id(record['source_id'])
             battery_v_divider = float(p['battery']['v-divider'])
             temp_offset = float(p['temperature']['offset'])
+            moisture_dry = float(p['soil-moisture']['dry-value'])
+            moisture_immerged = float(p['soil-moisture']['immerged-value'])
         except Exception as e:
             print('Error while applying calibration of record:', record, '\nExcpetion :', e)
             return
@@ -34,6 +36,17 @@ class DataCalibrator:
         # --> deg = V*100 - 50
         # also mind calibration offset
         record['temp'] = (record['temp']*1.2/1023) * 100 - 50 + temp_offset
+        
+        # ADC value to %
+        # min = immerged
+        # max = dry
+        # range = max - min
+        # % = 100 - (record - min) / range * 100
+        moisture_range = moisture_dry - moisture_immerged
+        record['soil_moisture'] = \
+            100.0 - (float(record['soil_moisture']) - moisture_immerged) / moisture_range * 100.0
+        # round and make an integer
+        record['soil_moisture'] = int(record['soil_moisture'] + 0.5)
         
         print("{} >{:04x} rssi:{:d} adcs: {: 5.1f} {: 5.1f} {: 5.1f} {: 5.1f}".format(
             datetime.now(), record['source_id'], record['local_rssi'], record['battery_level'], record['soil_moisture'], record['temp'], record['light']))
