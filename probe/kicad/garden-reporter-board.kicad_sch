@@ -1533,7 +1533,8 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 11a699de-3f01-4d54-a893-200d13ccf537)
   )
-  (text "TODO better attchment of PCB" (at 166.37 59.69 0)
+  (text "TODO V-divider no work !\n  I remember that I had to put the tripot to an edge\n  There's something about a single R being enough \n  coz there's already an R on sensor board"
+    (at 228.6 20.32 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 2ae0ed89-cd81-4ff3-a6aa-ff3db7bb218d)
   )
