@@ -10,12 +10,10 @@ Xbee modules shoud be configured to :
  - send data to the collector
 
 # TODO
- - add 1.2V reg to light sensor
- - buy selected components for 1?2V reg
- - find better form to fix PCB in case
  - generalise formula for light calibration
    formalise calibration protocol (lamp watt + distance)
  - test soil moisture with trimpot on wires OR on breadboard
+   ------> V-divider DOES NOT WORK !!
 
 # Probe
 ![probe overview](/resources/probe-board-overview.png)
