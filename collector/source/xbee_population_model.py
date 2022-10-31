@@ -142,6 +142,9 @@ class Xbee:
                         if error_cca < 0:
                             # probe has been rebooted, counter is reset
                             error_cca = in_f['error_cca']
+                    else:
+                        # first read, assume no error that round
+                        error_cca = 0
                     self.error_cca = in_f['error_cca']
                     self.awakening.record['error_cca'] = error_cca
                     to_send.append({
@@ -158,6 +161,9 @@ class Xbee:
                         if error_ack < 0:
                             # probe has been rebooted, counter is reset
                             error_ack = in_f['error_ack']
+                    else:
+                        # first read, assume no error that round
+                        error_ack = 0
                     self.error_ack = in_f['error_ack']
                     self.awakening.record['error_ack'] = error_ack
                     to_send.append({

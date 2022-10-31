@@ -23,9 +23,17 @@ Xbee --> Serial/USB --> python3 --> influxdb
 
 # Deploy
 ```bash
-docker run -it --rm -p 8087:8087 -v/dev/ttyUSB0:/dev/ttyUSB0 -it --rm garden-collector /bin/bash
+docker build . -t garden-collector
 
-docker run -it --rm mytag /bin/bash
+## TODO make a garden-network with influxdb
+
+# if influxdb is on host
+docker run -d --restart always --name garden-collector --group-add dialout --network host --env-file env_file --device=/dev/ttyUSB0 garden-collector
+
+# else
+docker run -d --restart always --name garden-collector --group-add dialout -p 8087:8087 --env-file env_file --device=/dev/ttyUSB0 garden-collector
+
+
 ```
 
 # Modules
