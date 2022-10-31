@@ -129,8 +129,9 @@ docker exec -it influxdb influx
 # backup
 bastien@gnome-server:~/dev/garden-reporter/collector$ 
 docker exec -it garden-reporter-influxdb bash -c "influx backup -b $BUCKET -t $INFLUX_TOKEN /tmp/$(date +%y_%m_%d-%H_%M_%S)"
-docker cp garden-reporter-influxdb:/tmp/* ./backup_influxdb/
-
+docker cp garden-reporter-influxdb:/tmp/ ./backup_influxdb/
+# then mv folder
+# then cleanup /tmp/
 ```
 
 ## grafana
