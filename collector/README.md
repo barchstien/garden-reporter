@@ -21,6 +21,22 @@ The data flow follows
 Xbee --> Serial/USB --> python3 --> influxdb
 ```
 
+# Notes
+ * only poll ADC
+  - awakening is 0.2, and moisture read looks ok
+ * set time before sleep to 0.1
+ ==> All that should give a factor of:
+ 25 days (measured)
+ / 0.62 (measured 62% of battery used)
+ x 15/10 (10 to 15 min cycle)
+ x 1.8 (sec old awakening + time befre sleep)
+ / 0.3 (sec awakening + time before sleep)
+ = 362 days
+ 
+## TODO
+ * poll error_ack and error_cca once a day or so
+ * ? delete remote rssi ?
+
 # Deploy
 ```bash
 docker build . -t garden-collector
@@ -32,8 +48,6 @@ docker run -d --restart always --name garden-collector --group-add dialout --net
 
 # else
 docker run -d --restart always --name garden-collector --group-add dialout -p 8087:8087 --env-file env_file --device=/dev/ttyUSB0 garden-collector
-
-
 ```
 
 # Modules
