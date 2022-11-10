@@ -129,8 +129,8 @@ class Xbee:
                 # no need to go any further if no awakening is going on
                 break
             elif in_f['frame_id'] != self.frame_id:
-                print('Error, frame_id({}) does not match last_frame_id({})'.format(
-                    in_f['frame_id'], self.awakening.last_frame_id
+                print('Error, frame_id({}) does not match frame_id({})'.format(
+                    in_f['frame_id'], self.frame_id
                 ))
                 break
             elif in_f['type'] == XbeeFrameDecoder.API_REMOTE_AT_RESPONSE:
