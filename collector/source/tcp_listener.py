@@ -101,7 +101,7 @@ class TcpListener:
                     while not self.xbee_held.config_holding.is_set():
                         time.sleep(1.0)
                         # send a byte every sec, to check that client is connected
-                        # if it fails, excpetion is raised
+                        # if it fails, exception is raised, and tcp socket is closed
                         self.connection.sendall((TcpListener.STATUS_WAIT).to_bytes(1, byteorder='big'))
                     # target is up, notify client
                     self.connection.sendall((TcpListener.STATUS_READY).to_bytes(1, byteorder='big'))
