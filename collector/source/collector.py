@@ -72,7 +72,9 @@ if __name__ == "__main__":
             
             # if nothing received, sent or written, sleep
             if cnt == 0:
-                time.sleep(0.1)
+                # 1msec wastes CPU
+                # but this drives the max delay at which a request is answered
+                time.sleep(0.01)
     except KeyboardInterrupt:
         print("Keyboard Interrupt ------> exiting all...")
 

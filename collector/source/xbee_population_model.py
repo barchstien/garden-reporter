@@ -119,19 +119,25 @@ class Xbee:
                 # ADCs values are ignored coz sensors need startup delay
                 self.awakening = XbeeAwakening(in_f)
                 # send EC CCA_Failure request
-                to_send.append({
-                    'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
-                    'frame_id': self.get_next_frame_id(),
-                    'dest_id': in_f['source_id'],
-                    'AT': XbeeFrameDecoder.AT_EC_CCA_FAILURE
-                })
+                # AT_IS_FORCE_SAMPLE
+                # AT_EC_CCA_FAILURE
+                for i in range(1):
+                    to_send.append({
+                        'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
+                        'frame_id': self.get_next_frame_id(),
+                        'dest_id': in_f['source_id'],
+                        'AT': XbeeFrameDecoder.AT_IS_FORCE_SAMPLE
+                    })
+                # debug
+                # 10 msec settling remote sensors
+                time.sleep(0.05)
             elif self.awakening == None:
                 # no need to go any further if no awakening is going on
-                break
+                '''break
             elif in_f['frame_id'] != self.frame_id:
                 print('Error, frame_id({}) does not match frame_id({})'.format(
                     in_f['frame_id'], self.frame_id
-                ))
+                ))'''
                 break
             elif in_f['type'] == XbeeFrameDecoder.API_REMOTE_AT_RESPONSE:
                 if in_f['AT'] == XbeeFrameDecoder.AT_EC_CCA_FAILURE:
@@ -189,7 +195,7 @@ class Xbee:
                         (datetime.now() - self.awakening.start).total_seconds())
                     to_rec.append(self.awakening.record)
                     # no more to request, clean up awakening
-                    self.awakening = None
+                    #self.awakening = None
         return (to_send, to_rec)
     
     def __str__(self):
@@ -265,7 +271,7 @@ class XbeePopulationModel:
                 
             # only sleep when nothing was received or generated
             if cnt == 0:
-                time.sleep(0.1)
+                time.sleep(0.01)
 
     def __str__(self):
         l = []

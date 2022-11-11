@@ -33,6 +33,9 @@ class SerialHub:
                 break
             # blocks until all is written
             self.serial_dev.write(b)
+            # avoid writting to fast, else xbee draws power like crazy
+            # ... and sensor readings, including battery level sinks down
+            time.sleep(0.05)
         
 
     def __init__(self, config):
