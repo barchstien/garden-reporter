@@ -29,9 +29,14 @@ Xbee --> Serial/USB --> python3 --> influxdb
  25 days (measured)
  / 0.62 (measured 62% of battery used)
  x 15/10 (10 to 15 min cycle)
- x 1.8 (sec old awakening + time befre sleep)
- / 0.3 (sec awakening + time before sleep)
- = 362 days
+ x 1.8 (sec old awakening + 1 sec time before sleep)
+ / 0.25 (sec awakening max 0.125 + 0.1 time before sleep)
+ = 435 days
+ 
+ if sleep 1 msec only, and only poll adc
+  * 11% cpu
+  * awakening 50 msec (min 32 msec)
+    actually, with sleep 100 usec, awakening is 32 msec, but CPU 50%
  
 ## TODO
  * poll error_ack and error_cca once a day or so
