@@ -22,5 +22,5 @@ RUN chown -R garden:garden ${PROJECT_DIR}
 USER garden
 
 #CMD ["/bin/bash -c pipenv run python3 /home/garden/source/collector.py"]
-CMD ["python", "./source/collector.py"]
+CMD ["python", "-u", "./source/collector.py"]
 
