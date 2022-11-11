@@ -119,6 +119,8 @@ class Xbee:
                 # ADCs values are ignored coz sensors need startup delay
                 self.awakening = XbeeAwakening(in_f)
                 # send EC CCA_Failure request
+                # HACKED !!!
+                # directly send sample request, once only
                 # AT_IS_FORCE_SAMPLE
                 # AT_EC_CCA_FAILURE
                 for i in range(1):
@@ -132,6 +134,7 @@ class Xbee:
                 # 10 msec settling remote sensors
                 time.sleep(0.05)
             elif self.awakening == None:
+                # HACKED ! ignore frame, so hack above can send multi frames for tests
                 # no need to go any further if no awakening is going on
                 '''break
             elif in_f['frame_id'] != self.frame_id:
