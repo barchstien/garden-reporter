@@ -14,7 +14,7 @@ Things such as :
  * the build of a record aggregating various pulled data
 '''
 class XbeeAwakening:
-    TIMEOUT_SEC = 50.0
+    TIMEOUT_SEC = 10.0
     
     def __init__(self, io_sample_frame):
         # io_sample received upon awakening
@@ -29,7 +29,7 @@ class XbeeAwakening:
         # log messages sent and their answers
         self.log = ()
         # debug
-        self.debug = 3
+        self.debug = 1
 
 
 '''
@@ -132,15 +132,15 @@ class Xbee:
                     })
                 # debug
                 # 10 msec settling remote sensors
-                time.sleep(0.05)
+                #time.sleep(0.5)
             elif self.awakening == None:
                 # HACKED ! ignore frame, so hack above can send multi frames for tests
                 # no need to go any further if no awakening is going on
-                '''break
+                break
             elif in_f['frame_id'] != self.frame_id:
                 print('Error, frame_id({}) does not match frame_id({})'.format(
                     in_f['frame_id'], self.frame_id
-                ))'''
+                ))
                 break
             elif in_f['type'] == XbeeFrameDecoder.API_REMOTE_AT_RESPONSE:
                 if in_f['AT'] == XbeeFrameDecoder.AT_EC_CCA_FAILURE:
@@ -194,11 +194,23 @@ class Xbee:
                     self.awakening.record['soil_moisture'] = in_f['soil_moisture']
                     self.awakening.record['temp'] = in_f['temp']
                     self.awakening.record['light'] = in_f['light']
-                    print('awakening end after sec:', 
-                        (datetime.now() - self.awakening.start).total_seconds())
                     to_rec.append(self.awakening.record)
-                    # no more to request, clean up awakening
-                    #self.awakening = None
+                    self.awakening.debug -= 1
+                    print('------ self.awakening.debug:', self.awakening.debug)
+                    if self.awakening.debug > 0:
+                        to_send.append({
+                            'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
+                            'frame_id': self.get_next_frame_id(),
+                            'dest_id': in_f['source_id'],
+                            'AT': XbeeFrameDecoder.AT_IS_FORCE_SAMPLE
+                        })
+                        #time.sleep(0.5)
+                    else:
+                        print('awakening end after sec:', 
+                            (datetime.now() - self.awakening.start).total_seconds())
+                        
+                        # no more to request, clean up awakening
+                        self.awakening = None
         return (to_send, to_rec)
     
     def __str__(self):
@@ -229,52 +241,33 @@ class XbeePopulationModel:
         self.register = []
         for p in config['probes']:
             self.register.append(Xbee(p['id']))
-        # thread
-        self.thread_run = threading.Event()
-        self.thread_run.set()
-        self.thread = threading.Thread(target=self.thread_handler)
-        self.thread.start()
     
-    def stop(self):
-        self.thread_run.clear()
-        self.thread.join()
-    
-    def thread_handler(self):
-        while self.thread_run.is_set():
-            # generic counter for incoming/outgoing/records
-            cnt = 0
-            # distribute frames to endpoint it is destined
-            while not self.incoming.empty():
-                f = self.incoming.get()
-                # keep cnt of incoming frames processed
-                cnt += 1
-                delivered = False
-                for p in self.register:
-                    if p.mac == f['source_id']:
-                        p.incoming.append(f)
-                        delivered = True
-                        break
-                if not delivered:
-                    print('Warning, frame not delivered coz unknown destination mac:', f['source_id'])
+    def execute(self):
+        # distribute frames to endpoint it is destined to
+        while not self.incoming.empty():
+            f = self.incoming.get()
+            delivered = False
+            for p in self.register:
+                if p.mac == f['source_id']:
+                    p.incoming.append(f)
+                    delivered = True
+                    break
+            if not delivered:
+                print('Warning, frame not delivered coz unknown destination mac:', f['source_id'])
 
-            # execute states of each endpoint
-            for ep in self.register:
-                # do logic of each xbee
-                (frames, records) = ep.do_your_thing()
-                # keep count of frames and records generated
-                cnt += len(frames) + len(records)
-                # enque frames to send via collector
-                while len(frames) > 0:
-                    self.outgoing.put(frames[0])
-                    frames.pop(0)
-                # enque records to be put to influxdb
-                while len(records) > 0:
-                    self.db_records.put(records[0])
-                    records.pop(0)
-                
-            # only sleep when nothing was received or generated
-            if cnt == 0:
-                time.sleep(0.01)
+        # execute states of each endpoint
+        for ep in self.register:
+            # do logic of each xbee
+            (frames, records) = ep.do_your_thing()
+            # enque frames to send via collector
+            while len(frames) > 0:
+                self.outgoing.put(frames[0])
+                frames.pop(0)
+            # enque records to be put to influxdb
+            while len(records) > 0:
+                self.db_records.put(records[0])
+                records.pop(0)
+
 
     def __str__(self):
         l = []
@@ -285,6 +278,7 @@ class XbeePopulationModel:
     '''Consume frames received by collector and decoded as dict'''
     def consume(self, frame):
         self.incoming.put(frame)
+        self.execute()
 
     '''@return frames to send via (write to) collector'''
     def frames_to_send(self):

@@ -148,7 +148,7 @@ class TcpListener:
             # release serial_hub queues
             self.serial_hub.release_r_w_queues(hub_r_q, hub_w_q)
             # release from config
-            self.xbee_pop.release_from_config(0x0013A20041F26150)
+            self.xbee_pop.release_from_config(held_mac)
             # close current client connection
             self.connection.close()
             self.connection = None

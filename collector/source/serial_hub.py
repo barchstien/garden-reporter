@@ -35,7 +35,9 @@ class SerialHub:
             self.serial_dev.write(b)
             # avoid writting to fast, else xbee draws power like crazy
             # ... and sensor readings, including battery level sinks down
-            time.sleep(0.05)
+            # TODO remove that coz it gonna create problems with many endpoints
+            # ... it won't be able to handle several in paralell
+            #time.sleep(0.05)
         
 
     def __init__(self, config):

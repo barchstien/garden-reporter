@@ -31,7 +31,6 @@ if __name__ == "__main__":
     
     encoder = XbeeFrameEncoder()
     
-    
     (hub_r_q, hub_w_q) = serial.request_r_w_queues()
     
     try:
@@ -80,7 +79,6 @@ if __name__ == "__main__":
 
     serial.stop()
     tcp_listener.stop()
-    population_model.stop()
     
     print("Aaarrggh..........")
 
