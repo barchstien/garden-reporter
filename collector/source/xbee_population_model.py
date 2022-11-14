@@ -1,6 +1,6 @@
 from xbee_frame_decoder import *
 import threading, queue, time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 '''
 An Xbee Awakening is when an xbee comes out of cycle sleep
@@ -23,8 +23,10 @@ class XbeeAwakening:
         self.start = datetime.now()
         # record that will be sent to influxdb
         self.record = {
-            'source_id': io_sample_frame['source_id'],
+            'source_id' : io_sample_frame['source_id'],
             'local_rssi': io_sample_frame['rssi'],
+            'error_cca' : None,
+            'error_ack' : None
         }
         # log messages sent and their answers
         self.log = ()
@@ -38,6 +40,8 @@ Implements the logic required to interface with a single xbee
 ... in order to pull data out of it (ADCs, rssi, error cnt, etc)
 '''
 class Xbee:
+    TIMEOUT_ERROR_POLL = timedelta(hours=24)
+    
     def __init__(self, mac):
         self.mac = mac
         # incoming decoded messages
@@ -49,6 +53,7 @@ class Xbee:
         # errors last values
         self.error_ack = -1
         self.error_cca = -1
+        self.error_last_time = datetime.min
         # config mode
         # when enable, that device is connected to XCTU
         # and collector does not read/write anything to that device
@@ -118,23 +123,23 @@ class Xbee:
                 # This is considered as a wakeup frame
                 # ADCs values are ignored coz sensors need startup delay
                 self.awakening = XbeeAwakening(in_f)
-                # send EC CCA_Failure request
-                # HACKED !!!
-                # directly send sample request, once only
-                # AT_IS_FORCE_SAMPLE
-                # AT_EC_CCA_FAILURE
-                for i in range(1):
+                if datetime.now() - self.error_last_time > Xbee.TIMEOUT_ERROR_POLL :
+                    # poll errors, ciz it's been a while
+                    # send EC CCA_Failure request
+                    to_send.append({
+                        'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
+                        'frame_id': self.get_next_frame_id(),
+                        'dest_id': in_f['source_id'],
+                        'AT': XbeeFrameDecoder.AT_EC_CCA_FAILURE
+                    })
+                else :
                     to_send.append({
                         'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
                         'frame_id': self.get_next_frame_id(),
                         'dest_id': in_f['source_id'],
                         'AT': XbeeFrameDecoder.AT_IS_FORCE_SAMPLE
                     })
-                # debug
-                # 10 msec settling remote sensors
-                #time.sleep(0.5)
             elif self.awakening == None:
-                # HACKED ! ignore frame, so hack above can send multi frames for tests
                 # no need to go any further if no awakening is going on
                 break
             elif in_f['frame_id'] != self.frame_id:
@@ -179,9 +184,10 @@ class Xbee:
                         'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
                         'frame_id': self.get_next_frame_id(),
                         'dest_id': in_f['source_id'],
-                        'AT': XbeeFrameDecoder.AT_DB_LAST_RSSI
+                        'AT': XbeeFrameDecoder.AT_IS_FORCE_SAMPLE
                     })
                 if in_f['AT'] == XbeeFrameDecoder.AT_DB_LAST_RSSI:
+                    ### NOT USED
                     self.awakening.record['remote_rssi'] = in_f['remote_rssi']
                     to_send.append({
                         'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
@@ -195,22 +201,16 @@ class Xbee:
                     self.awakening.record['temp'] = in_f['temp']
                     self.awakening.record['light'] = in_f['light']
                     to_rec.append(self.awakening.record)
-                    self.awakening.debug -= 1
-                    print('------ self.awakening.debug:', self.awakening.debug)
-                    if self.awakening.debug > 0:
-                        to_send.append({
-                            'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
-                            'frame_id': self.get_next_frame_id(),
-                            'dest_id': in_f['source_id'],
-                            'AT': XbeeFrameDecoder.AT_IS_FORCE_SAMPLE
-                        })
-                        #time.sleep(0.5)
-                    else:
-                        print('awakening end after sec:', 
-                            (datetime.now() - self.awakening.start).total_seconds())
-                        
-                        # no more to request, clean up awakening
-                        self.awakening = None
+                    to_send.append({
+                        'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
+                        'frame_id': self.get_next_frame_id(),
+                        'dest_id': in_f['source_id'],
+                        'AT': XbeeFrameDecoder.AT_IS_FORCE_SAMPLE
+                    })
+                    print('awakening end after sec:', 
+                        (datetime.now() - self.awakening.start).total_seconds())
+                    # no more to request, clean up awakening
+                    self.awakening = None
         return (to_send, to_rec)
     
     def __str__(self):

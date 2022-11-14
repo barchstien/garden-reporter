@@ -40,6 +40,10 @@ class InfluxDBWriter:
                 .field("temp", record['temp'])\
                 .field("light", record['light'])\
                 .field("rssi", record['local_rssi'])
+            if record['error_cca'] != None:
+                p.field("error_cca", record['error_cca'])
+            if record['error_ack'] != None:
+                p.field("error_ack", record['error_ack'])
             # disabled writting to avoid recording zero coz it's not pulled
             # TODO get error count once a day or so, else put null
             '''    .field("remote_rssi", record['remote_rssi'])\
