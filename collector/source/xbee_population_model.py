@@ -132,6 +132,7 @@ class Xbee:
                         'dest_id': in_f['source_id'],
                         'AT': XbeeFrameDecoder.AT_EC_CCA_FAILURE
                     })
+                    self.error_last_time = datetime.now()
                 else :
                     to_send.append({
                         'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
