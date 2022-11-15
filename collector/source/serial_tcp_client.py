@@ -73,6 +73,8 @@ if __name__ == "__main__":
     os.write(pty, mac.to_bytes(8, byteorder='big'))
     # wait for targeted endpoint to be up and held (no cycle sleep)
     print('Waiting for target to become available...')
+    t0 = time.time()
+    t_last = t0
     while True:
         fb = os.read(pty, 1)
         fb = int.from_bytes(fb, byteorder='big')
@@ -80,6 +82,10 @@ if __name__ == "__main__":
             break;
         elif fb == TcpListener.STATUS_WAIT:
             print('.', end='', flush=True)
+            t = time.time()
+            if t - t_last >= 10:
+                print('\nBeen waiting for {:.0f} sec'.format(t - t0), end='', flush=True)
+                t_last = t
             continue;
         elif fb == TcpListener.STATUS_ERROR:
             print('Received STATUS_ERROR from TcpListener, exit...')

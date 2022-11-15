@@ -9,6 +9,12 @@ Xbee modules shoud be configured to :
  - cycle sleep to probe every 15min and stay ON for 5sec max
  - send data to the collector
 
+# TODO
+ - generalise formula for light calibration
+   formalise calibration protocol (lamp watt + distance)
+ - test soil moisture with trimpot on wires OR on breadboard
+   ------> V-divider DOES NOT WORK !!
+
 # Probe
 ![probe overview](/resources/probe-board-overview.png)
 ## Features

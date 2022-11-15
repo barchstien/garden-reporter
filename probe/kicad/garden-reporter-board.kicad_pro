@@ -397,6 +397,7 @@
         "microvia_drill": 0.1,
         "name": "Power",
         "nets": [
+          "+1V2",
           "+3.3V",
           "+3.3VADC",
           "+BATT",
