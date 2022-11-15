@@ -123,5 +123,12 @@ docker cp garden-reporter-influxdb:/tmp/* ./backup_influxdb/
 docker run -d --restart always -p 3000:3000 -v grafana:/var/lib/grafana --name garden-reporter-grafana grafana/grafana
 ```
 
-
+# TCP Serial
+A TCP port is open to allow taking over the serial for a specific device MAC.
+It first wait for the target to wake up, and disable cycle sleep
+It then mounts the tcp connection as a pty, to open with xctu
+When the tcp connection is broken, the device is put back to cycle sleep mode, and the pty is unmounted
+```bash
+pipenv run python3 ./source/serial_tcp_client.py
+```
 

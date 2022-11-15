@@ -58,6 +58,11 @@
    SEN0308 DFRobot 15E
    3.3V 5mA
 
+In the context of hte schematics available in the datasheet folder
+The plunging part (that goes into soil) is plugged between 
+ * GND in one hand
+ * D1/R2 on the other hand
+
 ## Temp sensor
  * TMP36GT9Z [584-TMP36GT9Z] 1.81E
    Must add O.1uF cap, very close to device, ie on wire
