@@ -32,16 +32,6 @@ Xbee --> Serial/USB --> python3 --> influxdb
  x 1.8 (sec old awakening + 1 sec time before sleep)
  / 0.16 (sec awakening max 0.06 + 0.1 time before sleep)
  = 680 days
- 
- 
- if sleep 1 msec only, and only poll adc
-  * 11% cpu
-  * awakening 50 msec (min 32 msec)
-    actually, with sleep 100 usec, awakening is 32 msec, but CPU 50%
- 
-## TODO
- * poll error_ack and error_cca once a day or so
- * ? delete remote rssi ?
 
 # Deploy
 ```bash

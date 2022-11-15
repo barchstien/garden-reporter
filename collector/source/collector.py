@@ -55,7 +55,6 @@ if __name__ == "__main__":
             f_to_send = population_model.frames_to_send()
             for f in f_to_send:
                 f_coded = encoder.encode(f)
-                cnt += len(f_coded)
                 hub_w_q.put(f_coded)
                 pass
             
