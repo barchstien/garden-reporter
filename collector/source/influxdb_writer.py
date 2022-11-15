@@ -39,10 +39,16 @@ class InfluxDBWriter:
                 .field("moist", record['soil_moisture'])\
                 .field("temp", record['temp'])\
                 .field("light", record['light'])\
-                .field("rssi", record['local_rssi'])\
-                .field("remote_rssi", record['remote_rssi'])\
+                .field("rssi", record['local_rssi'])
+            if record['error_cca'] != None:
+                p.field("error_cca", record['error_cca'])
+            if record['error_ack'] != None:
+                p.field("error_ack", record['error_ack'])
+            # disabled writting to avoid recording zero coz it's not pulled
+            # TODO get error count once a day or so, else put null
+            '''    .field("remote_rssi", record['remote_rssi'])\
                 .field("error_cca", record['error_cca'])\
-                .field("error_ack", record['error_ack'])
+                .field("error_ack", record['error_ack'])'''
             self.write_api.write(bucket=self.bucket, record=p)
         except Exception as e:
             print('Cant reach influx-db')

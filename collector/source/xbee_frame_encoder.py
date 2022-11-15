@@ -19,7 +19,7 @@ class XbeeFrameEncoder:
         'dest_id' : 
         'options' : 
         'AT' : 
-        'AT_value' : only if setting an AT value, oly SM supported
+        'AT_value' : only if setting an AT value, only SM supported
     }
     @warning all AT command can be encoded for read
              but only SM Cycle Sleep set is supported

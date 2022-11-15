@@ -31,19 +31,15 @@ if __name__ == "__main__":
     
     encoder = XbeeFrameEncoder()
     
-    
     (hub_r_q, hub_w_q) = serial.request_r_w_queues()
     
     try:
         while True:
-            # cnt for bytes received, bytes to send, and records to write
-            cnt = 0
-            
+        
             #### RX
-            if not hub_r_q.empty():
-                b = hub_r_q.get()
+            try:
+                b = hub_r_q.get(timeout=1)
                 if len(b) > 0 :
-                    cnt += len(b)
                     # get frame from bytes
                     decoder.consume(b)
                     # deal with all received/decoded frames
@@ -51,13 +47,14 @@ if __name__ == "__main__":
                         f = decoder.frames.get()
                         #print('>>> f:', f)
                         population_model.consume(f)
+            except queue.Empty as e:
+                pass
             
             #### TX
             # Check population model for frames to send
             f_to_send = population_model.frames_to_send()
             for f in f_to_send:
                 f_coded = encoder.encode(f)
-                cnt += len(f_coded)
                 hub_w_q.put(f_coded)
                 pass
             
@@ -67,18 +64,13 @@ if __name__ == "__main__":
             for f in f_to_record:
                 data_calib.apply(f)
                 db_writer.write(f)
-                cnt += 1
                 pass
             
-            # if nothing received, sent or written, sleep
-            if cnt == 0:
-                time.sleep(0.1)
     except KeyboardInterrupt:
         print("Keyboard Interrupt ------> exiting all...")
 
     serial.stop()
     tcp_listener.stop()
-    population_model.stop()
     
     print("Aaarrggh..........")
 

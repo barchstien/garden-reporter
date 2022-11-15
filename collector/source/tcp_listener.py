@@ -101,7 +101,7 @@ class TcpListener:
                     while not self.xbee_held.config_holding.is_set():
                         time.sleep(1.0)
                         # send a byte every sec, to check that client is connected
-                        # if it fails, excpetion is raised
+                        # if it fails, exception is raised, and tcp socket is closed
                         self.connection.sendall((TcpListener.STATUS_WAIT).to_bytes(1, byteorder='big'))
                     # target is up, notify client
                     self.connection.sendall((TcpListener.STATUS_READY).to_bytes(1, byteorder='big'))
@@ -148,7 +148,7 @@ class TcpListener:
             # release serial_hub queues
             self.serial_hub.release_r_w_queues(hub_r_q, hub_w_q)
             # release from config
-            self.xbee_pop.release_from_config(0x0013A20041F26150)
+            self.xbee_pop.release_from_config(held_mac)
             # close current client connection
             self.connection.close()
             self.connection = None
