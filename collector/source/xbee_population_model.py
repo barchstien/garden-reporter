@@ -278,7 +278,8 @@ class XbeePopulationModel:
 
     '''Consume frames received by collector and decoded as dict'''
     def consume(self, frame):
-        self.incoming.put(frame)
+        if frame != None:
+            self.incoming.put(frame)
         self.execute()
 
     '''@return frames to send via (write to) collector'''

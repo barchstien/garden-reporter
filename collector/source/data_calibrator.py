@@ -28,6 +28,11 @@ class DataCalibrator:
             print('ERROR, dropping record:', record)
             return
         
+        # raw values
+        print("{} >{:04x} rssi:{:d} adcs: {: 5.1f} {: 5.1f} {: 5.1f} {: 5.1f}".format(
+            datetime.now(), record['source_id'], record['local_rssi'], 
+            record['battery_level'], record['soil_moisture'], record['temp'], record['light']))
+        
         # ADC to V (1023 = 1.2V)
         record['battery_level'] = (record['battery_level']*1.2/1023) * battery_v_divider
         
@@ -48,7 +53,9 @@ class DataCalibrator:
         # round and make an integer
         record['soil_moisture'] = int(record['soil_moisture'] + 0.5)
         
+        
         print("{} >{:04x} rssi:{:d} adcs: {: 5.1f} {: 5.1f} {: 5.1f} {: 5.1f}".format(
-            datetime.now(), record['source_id'], record['local_rssi'], record['battery_level'], record['soil_moisture'], record['temp'], record['light']))
+            datetime.now(), record['source_id'], record['local_rssi'], 
+            record['battery_level'], record['soil_moisture'], record['temp'], record['light']))
 
 

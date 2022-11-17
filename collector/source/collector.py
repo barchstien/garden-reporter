@@ -48,6 +48,9 @@ if __name__ == "__main__":
                         #print('>>> f:', f)
                         population_model.consume(f)
             except queue.Empty as e:
+                # nothing received, but run the pop model
+                # ... to release from config for exemple
+                population_model.consume(None)
                 pass
             
             #### TX
