@@ -18,6 +18,7 @@ class DataCalibrator:
         try:
             p = self.probe_from_id(record['source_id'])
             battery_v_divider = float(p['battery']['v-divider'])
+            temp_coef = float(p['temperature']['coef'])
             temp_offset = float(p['temperature']['offset'])
             moisture_dry = float(p['soil-moisture']['dry-value'])
             moisture_immerged = float(p['soil-moisture']['immerged-value'])
@@ -39,9 +40,13 @@ class DataCalibrator:
         # ADC to V (1023 = 1.2V)
         # 750mV at 25deg, 10mV per deg (from datasheet)
         # --> deg = V*100 - 50
-        # also mind calibration offset
-        #record['temp'] = (record['temp']*1.2/1023) * 100 - 50 + temp_offset
-        record['temp'] = record['temp']*0.1079 - 45.5
+        # --> deg = ADC * 1.2/1023 * 100 - 50
+        # --> deg = ADC * 0.1173 - 50
+        # EXCEPT it should be calibrated
+        # with ADC value vs trustful real value
+        # Linea regression gives a and b with
+        # --> deg = ADC * a + b
+        record['temp'] = record['temp'] * temp_coef + temp_offset
         
         # ADC value to %
         # min = immerged

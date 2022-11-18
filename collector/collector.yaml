@@ -19,9 +19,10 @@
       soil-moisture:
         v-divider: 3
         immerged-value: 288
-        dry-value: 387
+        dry-value: 396
       temperature:
-        offset: 0
+        coef: 0.1188
+        offset: -51.91
     - name: "Proto-v2"
       id: 0x101
       battery:
