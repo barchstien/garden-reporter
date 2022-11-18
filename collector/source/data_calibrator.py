@@ -40,7 +40,8 @@ class DataCalibrator:
         # 750mV at 25deg, 10mV per deg (from datasheet)
         # --> deg = V*100 - 50
         # also mind calibration offset
-        record['temp'] = (record['temp']*1.2/1023) * 100 - 50 + temp_offset
+        #record['temp'] = (record['temp']*1.2/1023) * 100 - 50 + temp_offset
+        record['temp'] = record['temp']*0.1079 - 45.5
         
         # ADC value to %
         # min = immerged

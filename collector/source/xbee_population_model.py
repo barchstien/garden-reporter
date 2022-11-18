@@ -144,7 +144,7 @@ class Xbee:
                 # no need to go any further if no awakening is going on
                 break
             elif in_f['frame_id'] != self.frame_id:
-                print('Error, frame_id({}) does not match frame_id({})'.format(
+                print('Error, received frame_id({}) does not match expected frame_id({})'.format(
                     in_f['frame_id'], self.frame_id
                 ))
                 break

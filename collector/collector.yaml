@@ -19,7 +19,7 @@
       soil-moisture:
         v-divider: 3
         immerged-value: 288
-        dry-value: 397
+        dry-value: 387
       temperature:
         offset: 0
     - name: "Proto-v2"
