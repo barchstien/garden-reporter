@@ -1,0 +1,1261 @@
+{
+  "meta": {
+    "version": "1",
+    "type": "dashboard",
+    "name": "Bastien-Template",
+    "description": "template created from dashboard: Bastien"
+  },
+  "content": {
+    "data": {
+      "type": "dashboard",
+      "attributes": {
+        "name": "Bastien",
+        "description": ""
+      },
+      "relationships": {
+        "label": {
+          "data": []
+        },
+        "cell": {
+          "data": [
+            {
+              "type": "cell",
+              "id": "0a50196c27edd000"
+            },
+            {
+              "type": "cell",
+              "id": "0a5157e22d963000"
+            },
+            {
+              "type": "cell",
+              "id": "0a5163f0ae163000"
+            },
+            {
+              "type": "cell",
+              "id": "0a516510a2563000"
+            },
+            {
+              "type": "cell",
+              "id": "0a516bb558d63000"
+            },
+            {
+              "type": "cell",
+              "id": "0a51743cf2563000"
+            },
+            {
+              "type": "cell",
+              "id": "0a517fd013d63000"
+            },
+            {
+              "type": "cell",
+              "id": "0a519c5b7e963000"
+            },
+            {
+              "type": "cell",
+              "id": "0a53dd9c0e29a000"
+            }
+          ]
+        },
+        "variable": {
+          "data": []
+        }
+      }
+    },
+    "included": [
+      {
+        "id": "0a50196c27edd000",
+        "type": "cell",
+        "attributes": {
+          "x": 6,
+          "y": 4,
+          "w": 3,
+          "h": 4
+        },
+        "relationships": {
+          "view": {
+            "data": {
+              "type": "view",
+              "id": "0a50196c27edd000"
+            }
+          }
+        }
+      },
+      {
+        "id": "0a5157e22d963000",
+        "type": "cell",
+        "attributes": {
+          "x": 0,
+          "y": 4,
+          "w": 6,
+          "h": 4
+        },
+        "relationships": {
+          "view": {
+            "data": {
+              "type": "view",
+              "id": "0a5157e22d963000"
+            }
+          }
+        }
+      },
+      {
+        "id": "0a5163f0ae163000",
+        "type": "cell",
+        "attributes": {
+          "x": 0,
+          "y": 0,
+          "w": 3,
+          "h": 4
+        },
+        "relationships": {
+          "view": {
+            "data": {
+              "type": "view",
+              "id": "0a5163f0ae163000"
+            }
+          }
+        }
+      },
+      {
+        "id": "0a516510a2563000",
+        "type": "cell",
+        "attributes": {
+          "x": 3,
+          "y": 0,
+          "w": 3,
+          "h": 4
+        },
+        "relationships": {
+          "view": {
+            "data": {
+              "type": "view",
+              "id": "0a516510a2563000"
+            }
+          }
+        }
+      },
+      {
+        "id": "0a516bb558d63000",
+        "type": "cell",
+        "attributes": {
+          "x": 6,
+          "y": 0,
+          "w": 3,
+          "h": 4
+        },
+        "relationships": {
+          "view": {
+            "data": {
+              "type": "view",
+              "id": "0a516bb558d63000"
+            }
+          }
+        }
+      },
+      {
+        "id": "0a51743cf2563000",
+        "type": "cell",
+        "attributes": {
+          "x": 0,
+          "y": 11,
+          "w": 9,
+          "h": 3
+        },
+        "relationships": {
+          "view": {
+            "data": {
+              "type": "view",
+              "id": "0a51743cf2563000"
+            }
+          }
+        }
+      },
+      {
+        "id": "0a517fd013d63000",
+        "type": "cell",
+        "attributes": {
+          "x": 0,
+          "y": 8,
+          "w": 9,
+          "h": 3
+        },
+        "relationships": {
+          "view": {
+            "data": {
+              "type": "view",
+              "id": "0a517fd013d63000"
+            }
+          }
+        }
+      },
+      {
+        "id": "0a519c5b7e963000",
+        "type": "cell",
+        "attributes": {
+          "x": 0,
+          "y": 14,
+          "w": 9,
+          "h": 3
+        },
+        "relationships": {
+          "view": {
+            "data": {
+              "type": "view",
+              "id": "0a519c5b7e963000"
+            }
+          }
+        }
+      },
+      {
+        "id": "0a53dd9c0e29a000",
+        "type": "cell",
+        "attributes": {
+          "x": 9,
+          "y": 0,
+          "w": 2,
+          "h": 2
+        },
+        "relationships": {
+          "view": {
+            "data": {
+              "type": "view",
+              "id": "0a53dd9c0e29a000"
+            }
+          }
+        }
+      },
+      {
+        "type": "view",
+        "id": "0a50196c27edd000",
+        "attributes": {
+          "name": "Battery",
+          "properties": {
+            "shape": "chronograf-v2",
+            "type": "gauge",
+            "queries": [
+              {
+                "text": "from(bucket: \"gr-bucket\")\n  |> range(start: -1h)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"proto4\")\n  |> filter(fn: (r) => r[\"_field\"] == \"batt\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+                "editMode": "advanced",
+                "name": "",
+                "builderConfig": {
+                  "buckets": [],
+                  "tags": [
+                    {
+                      "key": "_measurement",
+                      "values": [],
+                      "aggregateFunctionType": "filter"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "name": "mean"
+                    }
+                  ],
+                  "aggregateWindow": {
+                    "period": "auto",
+                    "fillValues": false
+                  }
+                }
+              }
+            ],
+            "prefix": "",
+            "tickPrefix": "",
+            "suffix": " V",
+            "tickSuffix": "",
+            "colors": [
+              {
+                "id": "0",
+                "type": "min",
+                "hex": "#DC4E58",
+                "name": "fire",
+                "value": 3.6
+              },
+              {
+                "id": "0cc704b2-3c87-4f27-89c9-37724b6d9d3e",
+                "type": "threshold",
+                "hex": "#FFD255",
+                "name": "thunder",
+                "value": 3.8
+              },
+              {
+                "id": "3606a5d9-7246-4ec1-955f-7f5d6401f3a8",
+                "type": "threshold",
+                "hex": "#7CE490",
+                "name": "honeydew",
+                "value": 4.2
+              },
+              {
+                "id": "1",
+                "type": "max",
+                "hex": "#7CE490",
+                "name": "honeydew",
+                "value": 5.68
+              }
+            ],
+            "decimalPlaces": {
+              "isEnforced": true,
+              "digits": 2
+            },
+            "note": "",
+            "showNoteWhenEmpty": false
+          }
+        }
+      },
+      {
+        "type": "view",
+        "id": "0a5157e22d963000",
+        "attributes": {
+          "name": "Temperature 7 days",
+          "properties": {
+            "shape": "chronograf-v2",
+            "queries": [
+              {
+                "text": "from(bucket: \"gr-bucket\")\n  |> range(start: -7d)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"proto4\")\n  |> filter(fn: (r) => r[\"_field\"] == \"temp\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+                "editMode": "advanced",
+                "name": "",
+                "builderConfig": {
+                  "buckets": [],
+                  "tags": [
+                    {
+                      "key": "_measurement",
+                      "values": [],
+                      "aggregateFunctionType": "filter"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "name": "mean"
+                    }
+                  ],
+                  "aggregateWindow": {
+                    "period": "auto",
+                    "fillValues": false
+                  }
+                }
+              }
+            ],
+            "axes": {
+              "x": {
+                "bounds": [
+                  "",
+                  ""
+                ],
+                "label": "",
+                "prefix": "",
+                "suffix": "",
+                "base": "10",
+                "scale": "linear"
+              },
+              "y": {
+                "bounds": [
+                  "-10",
+                  "40"
+                ],
+                "label": "",
+                "prefix": "",
+                "suffix": " °C",
+                "base": "10",
+                "scale": "linear"
+              }
+            },
+            "type": "xy",
+            "staticLegend": {
+              "colorizeRows": true,
+              "heightRatio": 0.17953667953667954,
+              "opacity": 0.5,
+              "orientationThreshold": 100000000,
+              "widthRatio": 1
+            },
+            "geom": "line",
+            "colors": [
+              {
+                "id": "0a2fd188-8590-417e-a302-820e1d591901",
+                "type": "scale",
+                "hex": "#31C0F6",
+                "name": "Nineteen Eighty Four",
+                "value": 0
+              },
+              {
+                "id": "645bc9f4-92d2-4bf0-bca6-39d83b834916",
+                "type": "scale",
+                "hex": "#A500A5",
+                "name": "Nineteen Eighty Four",
+                "value": 0
+              },
+              {
+                "id": "7b0b331b-5d4b-49a6-8edf-824791b7dd91",
+                "type": "scale",
+                "hex": "#FF7E27",
+                "name": "Nineteen Eighty Four",
+                "value": 0
+              }
+            ],
+            "note": "",
+            "showNoteWhenEmpty": false,
+            "xColumn": "_time",
+            "generateXAxisTicks": [
+              "xTotalTicks",
+              "xTickStep"
+            ],
+            "xTotalTicks": 7,
+            "xTickStart": 0,
+            "xTickStep": 86400000,
+            "yColumn": "_value",
+            "generateYAxisTicks": [],
+            "yTotalTicks": 0,
+            "yTickStart": 0,
+            "yTickStep": 0,
+            "shadeBelow": false,
+            "position": "overlaid",
+            "timeFormat": "",
+            "hoverDimension": "auto",
+            "legendColorizeRows": true,
+            "legendHide": false,
+            "legendOpacity": 0.5,
+            "legendOrientationThreshold": 100000000
+          }
+        }
+      },
+      {
+        "type": "view",
+        "id": "0a5163f0ae163000",
+        "attributes": {
+          "name": "Temperature (48h)",
+          "properties": {
+            "shape": "chronograf-v2",
+            "queries": [
+              {
+                "text": "from(bucket: \"gr-bucket\")\n  |> range(start: duration(v: \"-48h\"))\n  |> filter(fn: (r) => r[\"_measurement\"] == \"proto4\")\n  |> filter(fn: (r) => r[\"_field\"] == \"temp\")\n  |> yield(name: \"mean\")",
+                "editMode": "advanced",
+                "name": "",
+                "builderConfig": {
+                  "buckets": [],
+                  "tags": [
+                    {
+                      "key": "_measurement",
+                      "values": [],
+                      "aggregateFunctionType": "filter"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "name": "mean"
+                    }
+                  ],
+                  "aggregateWindow": {
+                    "period": "auto",
+                    "fillValues": false
+                  }
+                }
+              }
+            ],
+            "axes": {
+              "x": {
+                "bounds": [
+                  "",
+                  ""
+                ],
+                "label": "",
+                "prefix": "",
+                "suffix": "",
+                "base": "10",
+                "scale": "linear"
+              },
+              "y": {
+                "bounds": [
+                  "-10",
+                  "40"
+                ],
+                "label": "",
+                "prefix": "",
+                "suffix": " °C",
+                "base": "10",
+                "scale": "linear"
+              }
+            },
+            "type": "line-plus-single-stat",
+            "staticLegend": {
+              "colorizeRows": true,
+              "opacity": 0.65,
+              "orientationThreshold": 100000000,
+              "widthRatio": 1
+            },
+            "colors": [
+              {
+                "id": "bb22fdf1-edac-42b5-9b38-42a491571326",
+                "type": "scale",
+                "hex": "#BE2EE4",
+                "name": "Solid Purple",
+                "value": 0
+              },
+              {
+                "id": "45096dd1-cec4-4aa1-9232-944656fad02a",
+                "type": "scale",
+                "hex": "#BE2EE4",
+                "name": "Solid Purple",
+                "value": 0
+              },
+              {
+                "id": "8afdacdb-3bae-407b-81be-d21c2e2dc74b",
+                "type": "scale",
+                "hex": "#BE2EE4",
+                "name": "Solid Purple",
+                "value": 0
+              },
+              {
+                "id": "base",
+                "type": "text",
+                "hex": "#513CC6",
+                "name": "planet",
+                "value": 0
+              },
+              {
+                "id": "0113f7d1-cf8f-47d8-b93a-6d5a165fcc0a",
+                "type": "text",
+                "hex": "#00C9FF",
+                "name": "laser",
+                "value": 0
+              },
+              {
+                "id": "4e65debc-39a6-4386-8fa9-1ec6a4a633d5",
+                "type": "text",
+                "hex": "#32B08C",
+                "name": "viridian",
+                "value": 16
+              },
+              {
+                "id": "458f5cef-ba78-481f-aa89-fb9ea21f77a1",
+                "type": "text",
+                "hex": "#FFB94A",
+                "name": "pineapple",
+                "value": 30
+              }
+            ],
+            "prefix": "",
+            "suffix": " °C",
+            "decimalPlaces": {
+              "isEnforced": true,
+              "digits": 1
+            },
+            "note": "",
+            "showNoteWhenEmpty": false,
+            "xColumn": "_time",
+            "generateXAxisTicks": [],
+            "xTotalTicks": 0,
+            "xTickStart": 0,
+            "xTickStep": 0,
+            "yColumn": "_value",
+            "generateYAxisTicks": [],
+            "yTotalTicks": 0,
+            "yTickStart": 0,
+            "yTickStep": 0,
+            "shadeBelow": false,
+            "position": "overlaid",
+            "timeFormat": "HH:mm",
+            "hoverDimension": "auto",
+            "legendColorizeRows": true,
+            "legendHide": false,
+            "legendOpacity": 0.65,
+            "legendOrientationThreshold": 100000000
+          }
+        }
+      },
+      {
+        "type": "view",
+        "id": "0a516510a2563000",
+        "attributes": {
+          "name": "Soil Moisture (48h)",
+          "properties": {
+            "shape": "chronograf-v2",
+            "queries": [
+              {
+                "text": "from(bucket: \"gr-bucket\")\n  |> range(start: -48h)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"proto4\")\n  |> filter(fn: (r) => r[\"_field\"] == \"moist\")\n  |> yield(name: \"mean\")",
+                "editMode": "advanced",
+                "name": "",
+                "builderConfig": {
+                  "buckets": [],
+                  "tags": [
+                    {
+                      "key": "_measurement",
+                      "values": [],
+                      "aggregateFunctionType": "filter"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "name": "mean"
+                    }
+                  ],
+                  "aggregateWindow": {
+                    "period": "auto",
+                    "fillValues": false
+                  }
+                }
+              }
+            ],
+            "axes": {
+              "x": {
+                "bounds": [
+                  "",
+                  ""
+                ],
+                "label": "",
+                "prefix": "",
+                "suffix": "",
+                "base": "10",
+                "scale": "linear"
+              },
+              "y": {
+                "bounds": [
+                  "0",
+                  "100"
+                ],
+                "label": "",
+                "prefix": "",
+                "suffix": " %",
+                "base": "10",
+                "scale": "linear"
+              }
+            },
+            "type": "line-plus-single-stat",
+            "staticLegend": {
+              "colorizeRows": true,
+              "opacity": 1,
+              "orientationThreshold": 100000000,
+              "widthRatio": 1
+            },
+            "colors": [
+              {
+                "id": "base",
+                "type": "text",
+                "hex": "#DC4E58",
+                "name": "fire",
+                "value": 0
+              },
+              {
+                "id": "db44eb35-1b06-4bae-b4ef-7f70c9beeb5a",
+                "type": "text",
+                "hex": "#F48D38",
+                "name": "tiger",
+                "value": 10
+              },
+              {
+                "id": "81eeca9f-fadb-4b56-a2c7-e66f0c19e82d",
+                "type": "text",
+                "hex": "#32B08C",
+                "name": "viridian",
+                "value": 30
+              },
+              {
+                "id": "61ac02ee-2231-443a-a778-dcba97c94a8d",
+                "type": "text",
+                "hex": "#22ADF6",
+                "name": "pool",
+                "value": 70
+              },
+              {
+                "id": "4f0dd0b4-cee1-4933-a28c-6c81adacfcb5",
+                "type": "text",
+                "hex": "#513CC6",
+                "name": "planet",
+                "value": 90
+              },
+              {
+                "id": "bb22fdf1-edac-42b5-9b38-42a491571326",
+                "type": "scale",
+                "hex": "#BE2EE4",
+                "name": "Solid Purple",
+                "value": 0
+              },
+              {
+                "id": "45096dd1-cec4-4aa1-9232-944656fad02a",
+                "type": "scale",
+                "hex": "#BE2EE4",
+                "name": "Solid Purple",
+                "value": 0
+              },
+              {
+                "id": "8afdacdb-3bae-407b-81be-d21c2e2dc74b",
+                "type": "scale",
+                "hex": "#BE2EE4",
+                "name": "Solid Purple",
+                "value": 0
+              }
+            ],
+            "prefix": "",
+            "suffix": " %",
+            "decimalPlaces": {
+              "isEnforced": true,
+              "digits": 0
+            },
+            "note": "",
+            "showNoteWhenEmpty": false,
+            "xColumn": "_time",
+            "generateXAxisTicks": [],
+            "xTotalTicks": 0,
+            "xTickStart": 0,
+            "xTickStep": 0,
+            "yColumn": "_value",
+            "generateYAxisTicks": [],
+            "yTotalTicks": 0,
+            "yTickStart": 0,
+            "yTickStep": 0,
+            "shadeBelow": false,
+            "position": "overlaid",
+            "timeFormat": "HH:mm",
+            "hoverDimension": "auto",
+            "legendColorizeRows": true,
+            "legendHide": false,
+            "legendOpacity": 1,
+            "legendOrientationThreshold": 100000000
+          }
+        }
+      },
+      {
+        "type": "view",
+        "id": "0a516bb558d63000",
+        "attributes": {
+          "name": "Light (48h)",
+          "properties": {
+            "shape": "chronograf-v2",
+            "queries": [
+              {
+                "text": "from(bucket: \"gr-bucket\")\n  |> range(start: -48h)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"proto4\")\n  |> filter(fn: (r) => r[\"_field\"] == \"light\")\n  |> yield(name: \"mean\")",
+                "editMode": "advanced",
+                "name": "",
+                "builderConfig": {
+                  "buckets": [],
+                  "tags": [
+                    {
+                      "key": "_measurement",
+                      "values": [],
+                      "aggregateFunctionType": "filter"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "name": "mean"
+                    }
+                  ],
+                  "aggregateWindow": {
+                    "period": "auto",
+                    "fillValues": false
+                  }
+                }
+              }
+            ],
+            "axes": {
+              "x": {
+                "bounds": [
+                  "",
+                  ""
+                ],
+                "label": "",
+                "prefix": "",
+                "suffix": "",
+                "base": "10",
+                "scale": "linear"
+              },
+              "y": {
+                "bounds": [
+                  "0",
+                  "100"
+                ],
+                "label": "",
+                "prefix": "",
+                "suffix": " %",
+                "base": "10",
+                "scale": "linear"
+              }
+            },
+            "type": "line-plus-single-stat",
+            "staticLegend": {
+              "colorizeRows": true,
+              "opacity": 1,
+              "orientationThreshold": 100000000,
+              "widthRatio": 1
+            },
+            "colors": [
+              {
+                "id": "bb22fdf1-edac-42b5-9b38-42a491571326",
+                "type": "scale",
+                "hex": "#BE2EE4",
+                "name": "Solid Purple",
+                "value": 0
+              },
+              {
+                "id": "45096dd1-cec4-4aa1-9232-944656fad02a",
+                "type": "scale",
+                "hex": "#BE2EE4",
+                "name": "Solid Purple",
+                "value": 0
+              },
+              {
+                "id": "8afdacdb-3bae-407b-81be-d21c2e2dc74b",
+                "type": "scale",
+                "hex": "#BE2EE4",
+                "name": "Solid Purple",
+                "value": 0
+              },
+              {
+                "id": "base",
+                "type": "text",
+                "hex": "#545667",
+                "name": "graphite",
+                "value": 0
+              },
+              {
+                "id": "db44eb35-1b06-4bae-b4ef-7f70c9beeb5a",
+                "type": "text",
+                "hex": "#F95F53",
+                "name": "curacao",
+                "value": 10
+              },
+              {
+                "id": "81eeca9f-fadb-4b56-a2c7-e66f0c19e82d",
+                "type": "text",
+                "hex": "#F48D38",
+                "name": "tiger",
+                "value": 30
+              },
+              {
+                "id": "61ac02ee-2231-443a-a778-dcba97c94a8d",
+                "type": "text",
+                "hex": "#FFD255",
+                "name": "thunder",
+                "value": 60
+              },
+              {
+                "id": "4f0dd0b4-cee1-4933-a28c-6c81adacfcb5",
+                "type": "text",
+                "hex": "#ffffff",
+                "name": "white",
+                "value": 90
+              }
+            ],
+            "prefix": "",
+            "suffix": " %",
+            "decimalPlaces": {
+              "isEnforced": true,
+              "digits": 0
+            },
+            "note": "",
+            "showNoteWhenEmpty": false,
+            "xColumn": "_time",
+            "generateXAxisTicks": [],
+            "xTotalTicks": 0,
+            "xTickStart": 0,
+            "xTickStep": 0,
+            "yColumn": "_value",
+            "generateYAxisTicks": [],
+            "yTotalTicks": 0,
+            "yTickStart": 0,
+            "yTickStep": 0,
+            "shadeBelow": false,
+            "position": "overlaid",
+            "timeFormat": "HH:mm",
+            "hoverDimension": "auto",
+            "legendColorizeRows": true,
+            "legendHide": false,
+            "legendOpacity": 1,
+            "legendOrientationThreshold": 100000000
+          }
+        }
+      },
+      {
+        "type": "view",
+        "id": "0a51743cf2563000",
+        "attributes": {
+          "name": "RSSI vs Moist ++ (15 days)",
+          "properties": {
+            "shape": "chronograf-v2",
+            "queries": [
+              {
+                "text": "from(bucket: \"gr-bucket\")\n  |> range(start: -15d)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"proto4\")\n  |> filter(fn: (r) => r[\"_field\"] == \"moist\" or r[\"_field\"] == \"rssi\")\n  |> map(\n    fn: (r) => ({r with \n      _value: if r._field == \"moist\" then\n        int(v: (float(v: r._value) * 4.0/10.0 - 100.0))\n      else\n        int(v: r._value)\n    })\n  )\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+                "editMode": "advanced",
+                "name": "",
+                "builderConfig": {
+                  "buckets": [],
+                  "tags": [
+                    {
+                      "key": "_measurement",
+                      "values": [],
+                      "aggregateFunctionType": "filter"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "name": "mean"
+                    }
+                  ],
+                  "aggregateWindow": {
+                    "period": "auto",
+                    "fillValues": false
+                  }
+                }
+              }
+            ],
+            "axes": {
+              "x": {
+                "bounds": [
+                  "",
+                  ""
+                ],
+                "label": "",
+                "prefix": "",
+                "suffix": "",
+                "base": "10",
+                "scale": "linear"
+              },
+              "y": {
+                "bounds": [
+                  "-100",
+                  "-60"
+                ],
+                "label": "decibel  vs  [0 : 100] %",
+                "prefix": "",
+                "suffix": "",
+                "base": "10",
+                "scale": "linear"
+              }
+            },
+            "type": "xy",
+            "staticLegend": {
+              "colorizeRows": true,
+              "opacity": 0.65,
+              "orientationThreshold": 100000000,
+              "widthRatio": 1
+            },
+            "geom": "monotoneX",
+            "colors": [
+              {
+                "id": "14404962-ac98-46cf-8a04-9caefaa06837",
+                "type": "scale",
+                "hex": "#FD7A5D",
+                "name": "Delorean",
+                "value": 0
+              },
+              {
+                "id": "939c170e-69d7-4d4c-9446-13ded43943ca",
+                "type": "scale",
+                "hex": "#5F1CF2",
+                "name": "Delorean",
+                "value": 0
+              },
+              {
+                "id": "a1eee06f-0e56-4c64-8667-d172d50ba67d",
+                "type": "scale",
+                "hex": "#4CE09A",
+                "name": "Delorean",
+                "value": 0
+              }
+            ],
+            "note": "",
+            "showNoteWhenEmpty": false,
+            "xColumn": "_time",
+            "generateXAxisTicks": [],
+            "xTotalTicks": 0,
+            "xTickStart": 0,
+            "xTickStep": 0,
+            "yColumn": "_value",
+            "generateYAxisTicks": [],
+            "yTotalTicks": 0,
+            "yTickStart": 0,
+            "yTickStep": 0,
+            "shadeBelow": false,
+            "position": "overlaid",
+            "timeFormat": "YYYY-MM-DD HH:mm:ss",
+            "hoverDimension": "auto",
+            "legendColorizeRows": true,
+            "legendHide": false,
+            "legendOpacity": 0.65,
+            "legendOrientationThreshold": 100000000
+          }
+        }
+      },
+      {
+        "type": "view",
+        "id": "0a517fd013d63000",
+        "attributes": {
+          "name": "Temperature vs Light vs Moist (10 days)",
+          "properties": {
+            "shape": "chronograf-v2",
+            "queries": [
+              {
+                "text": "from(bucket: \"gr-bucket\")\n  |> range(start: -10d)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"proto4\")\n  |> filter(fn: (r) => r[\"_field\"] == \"temp\" or r[\"_field\"] == \"light\" or r[\"_field\"] == \"moist\")\n  |> map(\n    fn: (r) => ({r with \n      _value: if r._field == \"light\" or r._field == \"moist\" then\n        int(v: (float(v: r._value) / 2.0 - 10.0))\n      else\n        int(v: r._value)\n    })\n  )\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+                "editMode": "advanced",
+                "name": "",
+                "builderConfig": {
+                  "buckets": [],
+                  "tags": [
+                    {
+                      "key": "_measurement",
+                      "values": [],
+                      "aggregateFunctionType": "filter"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "name": "mean"
+                    }
+                  ],
+                  "aggregateWindow": {
+                    "period": "auto",
+                    "fillValues": false
+                  }
+                }
+              }
+            ],
+            "axes": {
+              "x": {
+                "bounds": [
+                  "",
+                  ""
+                ],
+                "label": "",
+                "prefix": "",
+                "suffix": "",
+                "base": "10",
+                "scale": "linear"
+              },
+              "y": {
+                "bounds": [
+                  "-10",
+                  "40"
+                ],
+                "label": "°C  vs  [0 - 100] %",
+                "prefix": "",
+                "suffix": "",
+                "base": "10",
+                "scale": "linear"
+              }
+            },
+            "type": "xy",
+            "staticLegend": {
+              "colorizeRows": true,
+              "opacity": 0.65,
+              "orientationThreshold": 100000000,
+              "widthRatio": 1
+            },
+            "geom": "monotoneX",
+            "colors": [
+              {
+                "id": "1e8b1918-b10e-4780-a944-15c8fc7953a7",
+                "type": "scale",
+                "hex": "#FDC44F",
+                "name": "Cthulhu",
+                "value": 0
+              },
+              {
+                "id": "ebafc6ef-b30d-4467-8a3e-a87efec345d1",
+                "type": "scale",
+                "hex": "#007C76",
+                "name": "Cthulhu",
+                "value": 0
+              },
+              {
+                "id": "e7383872-dae3-4261-b0cb-136da0a1e9cf",
+                "type": "scale",
+                "hex": "#8983FF",
+                "name": "Cthulhu",
+                "value": 0
+              }
+            ],
+            "note": "",
+            "showNoteWhenEmpty": false,
+            "xColumn": "_time",
+            "generateXAxisTicks": [
+              "xTickStep"
+            ],
+            "xTotalTicks": 0,
+            "xTickStart": 0,
+            "xTickStep": 172800000,
+            "yColumn": "_value",
+            "generateYAxisTicks": [],
+            "yTotalTicks": 0,
+            "yTickStart": 0,
+            "yTickStep": 0,
+            "shadeBelow": false,
+            "position": "overlaid",
+            "timeFormat": "YYYY-MM-DD HH:mm:ss",
+            "hoverDimension": "auto",
+            "legendColorizeRows": true,
+            "legendHide": false,
+            "legendOpacity": 0.65,
+            "legendOrientationThreshold": 100000000
+          }
+        }
+      },
+      {
+        "type": "view",
+        "id": "0a519c5b7e963000",
+        "attributes": {
+          "name": "Battery (600 days)",
+          "properties": {
+            "shape": "chronograf-v2",
+            "queries": [
+              {
+                "text": "from(bucket: \"gr-bucket\")\n  |> range(start: -600d)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"proto4\")\n  |> filter(fn: (r) => r[\"_field\"] == \"batt\")\n  |> filter(fn: (r) => r[\"probe_id\"] == \"5526146547605840\")\n  |> aggregateWindow(every: 2h, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+                "editMode": "advanced",
+                "name": "",
+                "builderConfig": {
+                  "buckets": [],
+                  "tags": [
+                    {
+                      "key": "_measurement",
+                      "values": [],
+                      "aggregateFunctionType": "filter"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "name": "mean"
+                    }
+                  ],
+                  "aggregateWindow": {
+                    "period": "auto",
+                    "fillValues": false
+                  }
+                }
+              }
+            ],
+            "axes": {
+              "x": {
+                "bounds": [
+                  "",
+                  ""
+                ],
+                "label": "",
+                "prefix": "",
+                "suffix": "",
+                "base": "10",
+                "scale": "linear"
+              },
+              "y": {
+                "bounds": [
+                  "3.6",
+                  "5.8"
+                ],
+                "label": "",
+                "prefix": "",
+                "suffix": " V",
+                "base": "10",
+                "scale": "linear"
+              }
+            },
+            "type": "xy",
+            "staticLegend": {
+              "colorizeRows": true,
+              "opacity": 1,
+              "orientationThreshold": 100000000,
+              "widthRatio": 1
+            },
+            "geom": "line",
+            "colors": [
+              {
+                "id": "f3d1d02b-61ba-4c17-b164-eb5fcb860ab7",
+                "type": "scale",
+                "hex": "#31C0F6",
+                "name": "Nineteen Eighty Four",
+                "value": 0
+              },
+              {
+                "id": "ce0b9479-015d-4312-ad66-5c3cb367f21d",
+                "type": "scale",
+                "hex": "#A500A5",
+                "name": "Nineteen Eighty Four",
+                "value": 0
+              },
+              {
+                "id": "6b91846c-80dd-4298-b42a-885a59bd6fd0",
+                "type": "scale",
+                "hex": "#FF7E27",
+                "name": "Nineteen Eighty Four",
+                "value": 0
+              }
+            ],
+            "note": "",
+            "showNoteWhenEmpty": false,
+            "xColumn": "_time",
+            "generateXAxisTicks": [
+              "xTickStep"
+            ],
+            "xTotalTicks": 0,
+            "xTickStart": 0,
+            "xTickStep": 604800000,
+            "yColumn": "_value",
+            "generateYAxisTicks": [],
+            "yTotalTicks": 0,
+            "yTickStart": 0,
+            "yTickStep": 0,
+            "shadeBelow": false,
+            "position": "overlaid",
+            "timeFormat": "YYYY-MM-DD HH:mm:ss",
+            "hoverDimension": "auto",
+            "legendColorizeRows": true,
+            "legendHide": false,
+            "legendOpacity": 1,
+            "legendOrientationThreshold": 100000000
+          }
+        }
+      },
+      {
+        "type": "view",
+        "id": "0a53dd9c0e29a000",
+        "attributes": {
+          "name": "Last data received",
+          "properties": {
+            "shape": "chronograf-v2",
+            "type": "single-stat",
+            "queries": [
+              {
+                "text": "import \"date\"\n\nfrom(bucket: \"gr-bucket\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"proto4\")\n  |> filter(fn: (r) => r[\"_field\"] == \"batt\" or r[\"_field\"] == \"light\" or r[\"_field\"] == \"moist\" or r[\"_field\"] == \"temp\")\n  |> last()\n  |> map(fn: (r) => ({r with _value: uint(v: date.truncate(t: now(), unit: 1m)) - uint(v: date.truncate(t: r._time, unit: 1m))}))\n  |> map(fn: (r) => ({r with _value: string(v: duration(v: r._value))}))\n",
+                "editMode": "advanced",
+                "name": "",
+                "builderConfig": {
+                  "buckets": [],
+                  "tags": [
+                    {
+                      "key": "_measurement",
+                      "values": [],
+                      "aggregateFunctionType": "filter"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "name": "mean"
+                    }
+                  ],
+                  "aggregateWindow": {
+                    "period": "auto",
+                    "fillValues": false
+                  }
+                }
+              }
+            ],
+            "prefix": "",
+            "tickPrefix": "",
+            "suffix": "",
+            "tickSuffix": "",
+            "colors": [
+              {
+                "id": "base",
+                "type": "text",
+                "hex": "#00C9FF",
+                "name": "laser",
+                "value": 0
+              }
+            ],
+            "decimalPlaces": {
+              "isEnforced": true,
+              "digits": 2
+            },
+            "note": "",
+            "showNoteWhenEmpty": false
+          }
+        }
+      }
+    ]
+  },
+  "labels": []
+}
