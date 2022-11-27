@@ -16,8 +16,9 @@
       id: 0x0013A20041F26150
       battery:
         v-divider: 6.3
+      light:
+        coef: 1.0
       soil-moisture:
-        v-divider: 3
         immerged-value: 288
         dry-value: 386
       temperature:
