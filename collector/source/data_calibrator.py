@@ -18,6 +18,7 @@ class DataCalibrator:
         try:
             p = self.probe_from_id(record['source_id'])
             battery_v_divider = float(p['battery']['v-divider'])
+            light_coef = float(p['light']['coef'])
             temp_coef = float(p['temperature']['coef'])
             temp_offset = float(p['temperature']['offset'])
             moisture_dry = float(p['soil-moisture']['dry-value'])
@@ -34,9 +35,19 @@ class DataCalibrator:
             datetime.now(), record['source_id'], record['local_rssi'], 
             record['battery_level'], record['soil_moisture'], record['temp'], record['light']))
         
+        # Battery
         # ADC to V (1023 = 1.2V)
-        record['battery_level'] = (record['battery_level']*1.2/1023) * battery_v_divider
+        record['battery_level'] = (record['battery_level']*1.2/1023.0) * battery_v_divider
         
+        # Light
+        # 1st proto is the ref
+        # Others receive a coefficient to match the ref
+        # ... and make % out of it
+        record['light'] = (record['light'] * light_coef) * 100.0 / 1023.0
+        # round and make an integer
+        record['light'] = int(record['light'] + 0.5)
+        
+        # Temperature
         # ADC to V (1023 = 1.2V)
         # 750mV at 25deg, 10mV per deg (from datasheet)
         # --> deg = V*100 - 50
@@ -48,6 +59,7 @@ class DataCalibrator:
         # --> deg = ADC * a + b
         record['temp'] = record['temp'] * temp_coef + temp_offset
         
+        # Soil Moisture
         # ADC value to %
         # min = immerged
         # max = dry
