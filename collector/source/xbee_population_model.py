@@ -124,7 +124,7 @@ class Xbee:
                 # ADCs values are ignored coz sensors need startup delay
                 self.awakening = XbeeAwakening(in_f)
                 if datetime.now() - self.error_last_time > Xbee.TIMEOUT_ERROR_POLL :
-                    # poll errors, ciz it's been a while
+                    # poll errors, coz it's been a while
                     # send EC CCA_Failure request
                     to_send.append({
                         'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
@@ -151,6 +151,7 @@ class Xbee:
             elif in_f['type'] == XbeeFrameDecoder.API_REMOTE_AT_RESPONSE:
                 if in_f['AT'] == XbeeFrameDecoder.AT_EC_CCA_FAILURE:
                     error_cca = in_f['error_cca']
+                    print("raw error CCA received:", in_f['error_cca'])
                     if self.error_cca != -1:
                         # get diff from last value received
                         error_cca = in_f['error_cca'] - self.error_cca

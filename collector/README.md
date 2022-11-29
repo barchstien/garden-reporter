@@ -33,6 +33,33 @@ Xbee --> Serial/USB --> python3 --> influxdb
  / 0.16 (sec awakening max 0.06 + 0.1 time before sleep)
  = 680 days
 
+# TODO
+ * querry local xbee ?
+  - volt, status, err, etc
+    Local AT Command Request - 0x08 page 133
+ * check C8 value, page 83
+ * check A1 value, should NOT use association NOR scan channels
+   page 92
+ * check A2 value, coord side, do ot allow association
+ * check power config, PL:4 PM:1
+ * Check CCA theshold, CA, default 0x2C, range 0x28 0x50
+   Europ they say 0x34, page 99
+   if energy above that, no tx
+   ? Put it higher value, with * -1 it means lower
+ * Sleep Option, SO
+   Use 0b01
+   1 for enable sample on wakeup
+   0 for no poll for data on waking
+ * IC should be 0
+   check other flags to disable on digital IO
+ * IR set to 0
+ 
+ * D6 collector, enable RTS ?
+ * IT set to 4 ?
+ * CH now 19, use 1A ?
+   Should be same, coz both have no conflicts and show same noise floor in SA mode
+ 
+
 # Deploy
 ```bash
 docker build . -t garden-collector
@@ -132,16 +159,30 @@ socat pty,link=/tmp/garden0,raw,echo=0 tcp:192.168.1.66:8087
 
 ## influxdb
 ```bash
-docker run -d --restart always -p 8086:8086 -v influxdb:/var/lib/influxdb --name garden-reporter-influxdb influxdb
+# install
+# env-file contains basic setups
+docker run -d --restart always -p 8086:8086 \
+    --env-file env_file_install \
+    -v garden-reporter-influxdb:/var/lib/influxdb2 \
+    --name garden-reporter-influxdb influxdb
+
+# docker stop/rm/start garden-reporter
+# ... have persistent data with named volume
+
 # config with
-docker exec -it influxdb influx
+docker exec -it garden-reporter-influxdb influx
 
 # backup
-bastien@gnome-server:~/dev/garden-reporter/collector$ 
-docker exec -it garden-reporter-influxdb bash -c "influx backup -b $BUCKET -t $INFLUX_TOKEN /tmp/$(date +%y_%m_%d-%H_%M_%S)"
-docker cp garden-reporter-influxdb:/tmp/ ./backup_influxdb/
-# then mv folder
-# then cleanup /tmp/
+# from bastien@gnome-server:~/dev/garden-reporter/collector$ 
+bckdate=$(date +%y_%m_%d-%H_%M_%S)
+docker exec -it garden-reporter-influxdb bash -c "influx backup -b $BUCKET -t $INFLUX_TOKEN /tmp/$bckdate"
+docker cp garden-reporter-influxdb:/tmp/$bckdate ./backup_influxdb/$bckdate
+
+# restore
+docker cp ./backup_influxdb/$bckdate garden-reporter-influxdb:/tmp/backup
+# --full also restores dash boards, tokens, etc
+docker exec -it garden-reporter-influxdb bash -c "influx restore /tmp/backup --full"
+
 ```
 
 ## grafana
