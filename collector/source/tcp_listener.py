@@ -86,7 +86,7 @@ class TcpListener:
                 if len(mac_bytes) == 0:
                     raise
                 print('--- first 8 bytes:', mac_bytes.hex())
-                # waits until target in held in config
+                # waits until target is held in config
                 held_mac = int.from_bytes(mac_bytes, 'big')
                 if held_mac == 0:
                     self.connection.sendall((TcpListener.STATUS_READY).to_bytes(1, byteorder='big'))
@@ -94,7 +94,7 @@ class TcpListener:
                 else:
                     self.xbee_held = self.xbee_pop.hold_in_config(held_mac)
                     if self.xbee_held == None:
-                        # no such mac, return non zero value
+                        # no such mac, return error to client
                         self.connection.sendall((TcpListener.STATUS_ERROR).to_bytes(1, byteorder='big'))
                         raise
                     # wait for target to be held
@@ -110,7 +110,8 @@ class TcpListener:
                 print('TCP Listener failed to get MAC, closing...\nwhat(): ', e)
                 self.connection.close()
                 self.connection = None
-                self.xbee_pop.release_from_config(self.xbee_held.mac)
+                if self.xbee_held != None:
+                    self.xbee_pop.release_from_config(self.xbee_held.mac)
                 continue
             
             # debug hard coded MAC

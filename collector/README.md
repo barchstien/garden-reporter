@@ -162,7 +162,7 @@ socat pty,link=/tmp/garden0,raw,echo=0 tcp:192.168.1.66:8087
 # install
 # env-file contains basic setups
 docker run -d --restart always -p 8086:8086 \
-    --env-file env_file_install \
+    --env-file env_file_influxdb \
     -v garden-reporter-influxdb:/var/lib/influxdb2 \
     --name garden-reporter-influxdb influxdb
 
