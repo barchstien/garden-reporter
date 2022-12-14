@@ -255,7 +255,9 @@ class XbeePopulationModel:
                     delivered = True
                     break
             if not delivered:
-                print('Warning, frame not delivered coz unknown destination mac:', f['source_id'])
+                print('Warning, frame not delivered coz unknown destination mac:', \
+                    hex(f['source_id']), "\n", f)
+                
 
         # execute states of each endpoint
         for ep in self.register:
