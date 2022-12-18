@@ -48,5 +48,5 @@ class InfluxDBWriter:
                 p.field("v_supply", record['v_supply'])
             self.write_api.write(bucket=self.bucket, record=p)
         except Exception as e:
-            print('Cant reach influx-db')
+            print('Cant reach influx-db for record:', record)
             print(e)

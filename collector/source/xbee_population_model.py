@@ -26,7 +26,8 @@ class XbeeAwakening:
             'source_id' : io_sample_frame['source_id'],
             'local_rssi': io_sample_frame['rssi'],
             'error_cca' : None,
-            'error_ack' : None
+            'error_ack' : None,
+            'v_supply'  : None
         }
         # log messages sent and their answers
         self.log = ()
