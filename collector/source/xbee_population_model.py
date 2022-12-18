@@ -131,13 +131,12 @@ class Xbee:
                 #time.sleep(0.02)
                 
                 if datetime.now() - self.error_last_time > Xbee.TIMEOUT_ERROR_POLL :
-                    # poll errors, coz it's been a while
-                    # send EC CCA_Failure request
+                    # poll errors and xbee voltage, coz it's been a while
                     to_send.append({
                         'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
                         'frame_id': self.get_next_frame_id(),
                         'dest_id': in_f['source_id'],
-                        'AT': XbeeFrameDecoder.AT_EC_CCA_FAILURE
+                        'AT': XbeeFrameDecoder.AT_V_SUPPLY_MONITOR
                     })
                     self.error_last_time = datetime.now()
                 else :
@@ -157,7 +156,16 @@ class Xbee:
                 ))
                 break
             elif in_f['type'] == XbeeFrameDecoder.API_REMOTE_AT_RESPONSE:
-                if in_f['AT'] == XbeeFrameDecoder.AT_EC_CCA_FAILURE:
+                if in_f['AT'] == XbeeFrameDecoder.AT_V_SUPPLY_MONITOR:
+                    ## xbee monitor its own supply
+                    self.awakening.record['v_supply'] = in_f['v_supply']
+                    to_send.append({
+                        'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
+                        'frame_id': self.get_next_frame_id(),
+                        'dest_id': in_f['source_id'],
+                        'AT': XbeeFrameDecoder.AT_EC_CCA_FAILURE
+                    })
+                elif in_f['AT'] == XbeeFrameDecoder.AT_EC_CCA_FAILURE:
                     error_cca = in_f['error_cca']
                     print("raw error CCA received:", in_f['error_cca'])
                     if self.error_cca != -1:
@@ -177,7 +185,7 @@ class Xbee:
                         'dest_id': in_f['source_id'],
                         'AT': XbeeFrameDecoder.AT_EA_ACK_FAILURE
                     })
-                if in_f['AT'] == XbeeFrameDecoder.AT_EA_ACK_FAILURE:
+                elif in_f['AT'] == XbeeFrameDecoder.AT_EA_ACK_FAILURE:
                     error_ack = in_f['error_ack']
                     if self.error_ack != -1:
                         # get diff from last value received
@@ -196,7 +204,7 @@ class Xbee:
                         'dest_id': in_f['source_id'],
                         'AT': XbeeFrameDecoder.AT_IS_FORCE_SAMPLE
                     })
-                if in_f['AT'] == XbeeFrameDecoder.AT_DB_LAST_RSSI:
+                elif in_f['AT'] == XbeeFrameDecoder.AT_DB_LAST_RSSI:
                     ### NOT USED
                     self.awakening.record['remote_rssi'] = in_f['remote_rssi']
                     to_send.append({
@@ -205,7 +213,7 @@ class Xbee:
                         'dest_id': in_f['source_id'],
                         'AT': XbeeFrameDecoder.AT_IS_FORCE_SAMPLE
                     })
-                if in_f['AT'] == XbeeFrameDecoder.AT_IS_FORCE_SAMPLE:
+                elif in_f['AT'] == XbeeFrameDecoder.AT_IS_FORCE_SAMPLE:
                     self.awakening.record['battery_level'] = in_f['battery_level']
                     self.awakening.record['soil_moisture'] = in_f['soil_moisture']
                     self.awakening.record['temp'] = in_f['temp']

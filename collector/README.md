@@ -25,6 +25,10 @@ Xbee --> Serial/USB --> python3 --> influxdb
  * created a profile v3, with mostly default value
  |--> if still loose connection after 2 days, 
       tie J2 Din to Batt-
+ * Added a Capacitor across batt +/-
+   ... but should be ceriamic instead of electrolitique
+   ... and there should be more of it
+ * What about trying with boost mode disabled ?
  
 
 # Deploy

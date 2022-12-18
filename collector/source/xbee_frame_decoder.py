@@ -16,6 +16,7 @@ class XbeeFrameDecoder:
     AT_DB_LAST_RSSI = "DB"
     AT_FR_SW_RESET = "FR"
     AT_NI_IDENTIFIER = "NI"
+    AT_V_SUPPLY_MONITOR = "%V"
     
     AT_SM_CYCLE_SLEEP = "SM"
     
@@ -114,12 +115,14 @@ class XbeeFrameDecoder:
                 frame['soil_moisture'] = int.from_bytes(f[23:25], "big")
                 frame['temp'] = float(int.from_bytes(f[25:27], "big"))
                 frame['light'] = int.from_bytes(f[27:29], "big")
-            if frame['AT'] == self.AT_DB_LAST_RSSI:
+            elif frame['AT'] == self.AT_DB_LAST_RSSI:
                 frame['remote_rssi'] = -1 * f[18]
-            if frame['AT'] == self.AT_EA_ACK_FAILURE:
+            elif frame['AT'] == self.AT_EA_ACK_FAILURE:
                 frame['error_ack'] = int.from_bytes(f[18:20], "big")
-            if frame['AT'] == self.AT_EC_CCA_FAILURE:
+            elif frame['AT'] == self.AT_EC_CCA_FAILURE:
                 frame['error_cca'] = int.from_bytes(f[18:20], "big")
+            elif frame['AT'] == self.AT_V_SUPPLY_MONITOR:
+                frame['v_supply'] = int.from_bytes(f[18:20], "big")
             
             self.frames.put(frame)
         

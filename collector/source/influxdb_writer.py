@@ -44,11 +44,8 @@ class InfluxDBWriter:
                 p.field("error_cca", record['error_cca'])
             if record['error_ack'] != None:
                 p.field("error_ack", record['error_ack'])
-            # disabled writting to avoid recording zero coz it's not pulled
-            # TODO get error count once a day or so, else put null
-            '''    .field("remote_rssi", record['remote_rssi'])\
-                .field("error_cca", record['error_cca'])\
-                .field("error_ack", record['error_ack'])'''
+            if record['v_supply'] != None:
+                p.field("v_supply", record['v_supply'])
             self.write_api.write(bucket=self.bucket, record=p)
         except Exception as e:
             print('Cant reach influx-db')
