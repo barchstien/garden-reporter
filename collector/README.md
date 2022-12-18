@@ -22,42 +22,9 @@ Xbee --> Serial/USB --> python3 --> influxdb
 ```
 
 # Notes
- * only poll ADC
-  - awakening is 0.2, and moisture read looks ok
- * set time before sleep to 0.1
- ==> All that should give a factor of:
- 25 days (measured)
- / 0.62 (measured 62% of battery used)
- x 15/10 (10 to 15 min cycle)
- x 1.8 (sec old awakening + 1 sec time before sleep)
- / 0.16 (sec awakening max 0.06 + 0.1 time before sleep)
- = 680 days
-
-# TODO
- * querry local xbee ?
-  - volt, status, err, etc
-    Local AT Command Request - 0x08 page 133
- * check C8 value, page 83
- * check A1 value, should NOT use association NOR scan channels
-   page 92
- * check A2 value, coord side, do ot allow association
- * check power config, PL:4 PM:1
- * Check CCA theshold, CA, default 0x2C, range 0x28 0x50
-   Europ they say 0x34, page 99
-   if energy above that, no tx
-   ? Put it higher value, with * -1 it means lower
- * Sleep Option, SO
-   Use 0b01
-   1 for enable sample on wakeup
-   0 for no poll for data on waking
- * IC should be 0
-   check other flags to disable on digital IO
- * IR set to 0
- 
- * D6 collector, enable RTS ?
- * IT set to 4 ?
- * CH now 19, use 1A ?
-   Should be same, coz both have no conflicts and show same noise floor in SA mode
+ * created a profile v3, with mostly default value
+ |--> if still loose connection after 2 days, 
+      tie J2 Din to Batt-
  
 
 # Deploy
