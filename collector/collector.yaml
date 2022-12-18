@@ -13,8 +13,8 @@
 
   probes:
     - name: "Proto"
-      #id: 0x0013A20041F26150
-      id: 0x00deadbeef00
+      id: 0x0013A20041F26150
+      #id: 0x00deadbeef00
       battery:
         v-divider: 6.3
       light:
