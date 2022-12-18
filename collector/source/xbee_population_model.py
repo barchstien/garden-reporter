@@ -123,6 +123,13 @@ class Xbee:
                 # This is considered as a wakeup frame
                 # ADCs values are ignored coz sensors need startup delay
                 self.awakening = XbeeAwakening(in_f)
+                
+                # DEBUG
+                # TODO use timeout instead of wait if this proves useful
+                # delay request by 20 msec
+                # ... to give sensors time to load up
+                #time.sleep(0.02)
+                
                 if datetime.now() - self.error_last_time > Xbee.TIMEOUT_ERROR_POLL :
                     # poll errors, coz it's been a while
                     # send EC CCA_Failure request
@@ -142,6 +149,7 @@ class Xbee:
                     })
             elif self.awakening == None:
                 # no need to go any further if no awakening is going on
+                print('no awakening unexpected incoming frame:', in_f)
                 break
             elif in_f['frame_id'] != self.frame_id:
                 print('Error, received frame_id({}) does not match expected frame_id({})'.format(
@@ -203,12 +211,12 @@ class Xbee:
                     self.awakening.record['temp'] = in_f['temp']
                     self.awakening.record['light'] = in_f['light']
                     to_rec.append(self.awakening.record)
-                    to_send.append({
+                    '''to_send.append({
                         'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
                         'frame_id': self.get_next_frame_id(),
                         'dest_id': in_f['source_id'],
                         'AT': XbeeFrameDecoder.AT_IS_FORCE_SAMPLE
-                    })
+                    })'''
                     print('awakening end after sec:', 
                         (datetime.now() - self.awakening.start).total_seconds())
                     # no more to request, clean up awakening
