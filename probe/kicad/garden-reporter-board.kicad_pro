@@ -401,8 +401,7 @@
           "+3.3V",
           "+3.3VADC",
           "+BATT",
-          "-BATT",
-          "GND1"
+          "-BATT"
         ],
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",
