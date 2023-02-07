@@ -41,7 +41,7 @@ Implements the logic required to interface with a single xbee
 ... in order to pull data out of it (ADCs, rssi, error cnt, etc)
 '''
 class Xbee:
-    TIMEOUT_ERROR_POLL = timedelta(hours=24)
+    TIMEOUT_DIAGNOSTIC_POLL = timedelta(hours=24)
     
     def __init__(self, mac):
         self.mac = mac
@@ -92,6 +92,7 @@ class Xbee:
                 'AT': XbeeFrameDecoder.AT_SM_CYCLE_SLEEP,
                 'AT_value' : XbeeFrameDecoder.AT_SM_VALUE_CYCLE_SLEEP
             })
+            print('frame that re-enables cycle sleep:', to_send[-1])
             self.config_holding.clear()
         
         # process incoming packets
@@ -131,7 +132,7 @@ class Xbee:
                 # ... to give sensors time to load up
                 #time.sleep(0.02)
                 
-                if datetime.now() - self.error_last_time > Xbee.TIMEOUT_ERROR_POLL :
+                if datetime.now() - self.error_last_time > Xbee.TIMEOUT_DIAGNOSTIC_POLL :
                     # poll errors and xbee voltage, coz it's been a while
                     to_send.append({
                         'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
