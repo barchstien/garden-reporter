@@ -23,12 +23,27 @@ Xbee --> Serial/USB --> python3 --> influxdb
 
 # Notes
  * created a profile v3, with mostly default value
- |--> if still loose connection after 2 days, 
-      tie J2 Din to Batt-
+   |--> if still loose connection after 2 days, 
+        tie J2 Din to Batt-
+   |--> Nope ! This fails the circuit
  * Added a Capacitor across batt +/-
-   ... but should be ceriamic instead of electrolitique
+   ... but should be ceramic instead of electrolitique
    ... and there should be more of it
  * What about trying with boost mode disabled ?
+   |---> done it didn't help
+ * Still failling after 2 days or so
+   |--> suspecting now the mosfet turning on
+        try to add a resistor to the gate
+   |--> seen that Vg shold be > to Vin
+        ... not the case here --> use c) ?
+
+## TODO
+ * consider mosfet switch arrangements
+   a) N-mosfet is high side, logic is inverted
+   b) P-mosfet is low side, gives bias to GND1 (vs GND/BATT-)
+   c) what about using P-mos driven by pull up R and N-mos pull down ?
+   d) what about using P+N-mos (NOT gate) as driver for P-mos ?
+ |----------> Used c) for v2, works like a charm
  
 
 # Deploy
