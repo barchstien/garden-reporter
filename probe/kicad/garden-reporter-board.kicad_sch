@@ -1587,11 +1587,6 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 30b493c4-72e5-490f-8060-67e12afe2986)
   )
-  (text "Seen 3.8V on xbee light input\n---> do high side switch !!"
-    (at 209.55 135.89 0)
-    (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid 34b7f4e5-ab97-4f3c-8a32-470b78183687)
-  )
   (text "Always on, only powers xbee\n  * 4uA quiescent current\n  * when 50mA used, 20uA gnd current"
     (at 33.02 119.38 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
@@ -1625,7 +1620,7 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid da69d1e7-7c24-4896-873d-ed1ca2a291bd)
   )
-  (text "TEPT5700 with MCP1700-1202 (1.2V reg)\nRead Voltage, with U=RI I=U/R\nUse datasheet to translate I to DegC\n--> Keep R lowest possible ?\n    so that can measure higher I values\n    ... ie higher lux values ?\n--> Max Ice = 20mA so aim for 18mA\n    1.2V / 0.018A = 66.6667 Ohm\n    Use 68 Ohm"
+  (text "TEPT5700 with MCP1700-1202 (1.2V reg)\nRead Voltage, with U=RI I=U/R\nDatasheet translates I to Lux\n--> 10e5 Lux = 0.18mA\n--> Max Ice = 20mA so aim for 18mA\n    1.2V / 0.018A = 66.6667 Ohm\n    = 10e5 lux\n--> Use 68 Ohm\n    max 98039 Lux"
     (at 242.57 152.4 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid e4a76a53-c7d6-484a-a0c4-7ba1d6a9cabd)
