@@ -61,6 +61,18 @@ docker run -d --restart always --name garden-collector --group-add dialout -p 80
 
 # Modules
 
+## Calibration
+Most calbration now use formula from datasheet
+ * moist : get dry/immerge value, gives linear ratio as %
+ * temperature : from datasheet deg = V*100 - 50
+ * light : 18mA <=> 100 000 Lux
+   R = 68 Ohm
+   max : 1.2 / 68 = 17.6mA = 98039 Lux
+   Lux = I * 100 000 / 0.018
+   I = U / R
+   ---> Lux = U / 68 * 100 000 / 0.018
+ * battery voltage divider = 6
+
 ## xbee
 Configure xbees with XCTU
 Install and launch XCTU config SW

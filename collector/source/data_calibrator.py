@@ -18,7 +18,6 @@ class DataCalibrator:
         try:
             p = self.probe_from_id(record['source_id'])
             battery_v_divider = float(p['battery']['v-divider'])
-            light_coef = float(p['light']['coef'])
             temp_coef = float(p['temperature']['coef'])
             temp_offset = float(p['temperature']['offset'])
             moisture_dry = float(p['soil-moisture']['dry-value'])
@@ -40,10 +39,15 @@ class DataCalibrator:
         record['battery_level'] = (record['battery_level']*1.2/1023.0) * battery_v_divider
         
         # Light
-        # 1st proto is the ref
-        # Others receive a coefficient to match the ref
-        # ... and make % out of it
-        record['light'] = (record['light'] * light_coef) * 100.0 / 1023.0
+        # light : 18mA <=> 100 000 Lux
+        # R = 68 Ohm
+        # max : 1.2 / 68 = 17.6mA = 98 039 Lux
+        # Lux = I * 100 000 / 0.018
+        # I = U / R
+        # ---> Lux = U / 68 * 100 000 / 0.018
+        # U = ADC * 1.2 / 1023
+        # ---> Lux = ADC * 1.2 / 1023 / 68 * 100 000 / 0.018
+        record['light'] = record['light'] * 1.2 / 1023.0 / 68.0 * 100000.0 / 0.018
         # round and make an integer
         record['light'] = int(record['light'] + 0.5)
         
