@@ -28,15 +28,15 @@
     - name: "Proto #2"
       id: 0x0013A20041CF2184
       battery:
-        v-divider: 6.3
+        v-divider: 6.0
       light:
         coef: 1.0
       soil-moisture:
-        immerged-value: 288
-        dry-value: 386
+        immerged-value: 239
+        dry-value: 308
       temperature:
-        coef: 0.1188
-        offset: -51.91
+        coef: 0.1173
+        offset: -50.0
     
     - name: "Proto-v2"
       id: 0x101
