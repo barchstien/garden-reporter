@@ -18,7 +18,6 @@ class DataCalibrator:
         try:
             p = self.probe_from_id(record['source_id'])
             battery_v_divider = float(p['battery']['v-divider'])
-            light_coef = float(p['light']['coef'])
             temp_coef = float(p['temperature']['coef'])
             temp_offset = float(p['temperature']['offset'])
             moisture_dry = float(p['soil-moisture']['dry-value'])
