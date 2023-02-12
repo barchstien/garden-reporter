@@ -33,4 +33,14 @@
       temperature:
         coef: 0.1173
         offset: -50.0
+    - name: "Proto #3"
+      id: 0x0013A20041ECE6E8
+      battery:
+        v-divider: 6.0
+      soil-moisture:
+        immerged-value: 602
+        dry-value: 897
+      temperature:
+        coef: 0.1173
+        offset: -50.0
 

@@ -59,9 +59,7 @@ docker run -d --restart always --name garden-collector --group-add dialout --net
 docker run -d --restart always --name garden-collector --group-add dialout -p 8087:8087 --env-file env_file --device=/dev/ttyUSB0 garden-collector
 ```
 
-# Modules
-
-## Calibration
+# Calibration
 Most calbration now use formula from datasheet
  * moist : get dry/immerge value, gives linear ratio as %
  * temperature : from datasheet deg = V*100 - 50
@@ -72,6 +70,8 @@ Most calbration now use formula from datasheet
    I = U / R
    ---> Lux = U / 68 * 100 000 / 0.018
  * battery voltage divider = 6
+
+# Modules
 
 ## xbee
 Configure xbees with XCTU
