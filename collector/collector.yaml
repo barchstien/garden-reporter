@@ -33,6 +33,8 @@
       temperature:
         coef: 0.1173
         offset: -50.0
+      light:
+        r: 68
     - name: "Proto #3"
       id: 0x0013A20041ECE6E8
       battery:
@@ -43,4 +45,6 @@
       temperature:
         coef: 0.1173
         offset: -50.0
+      light:
+        r: 68
 

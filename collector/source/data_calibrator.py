@@ -22,6 +22,7 @@ class DataCalibrator:
             temp_offset = float(p['temperature']['offset'])
             moisture_dry = float(p['soil-moisture']['dry-value'])
             moisture_immerged = float(p['soil-moisture']['immerged-value'])
+            light_R = float(p['light']['r'])
         except Exception as e:
             print('Error while applying calibration of record:', record, '\nExcpetion :', e)
             return
@@ -38,17 +39,18 @@ class DataCalibrator:
         # ADC to V (1023 = 1.2V)
         record['battery_level'] = (record['battery_level']*1.2/1023.0) * battery_v_divider
         
+        # TODO use 5K resistor for indoor (max 1333 Lux)
         # Light
         # light : 18mA <=> 100 000 Lux
-        # R = 68 Ohm
-        # max : 1.2 / 68 = 17.6mA = 98 039 Lux
+        # R = 68 Ohm (or whatever config yaml says)
+        # max : 1.2 / R = 17.6mA = 98 039 Lux
         # Lux = I * 100 000 / 0.018
         # I = U / R
-        # ---> Lux = U / 68 * 100 000 / 0.018
+        # ---> Lux = U / R * 100 000 / 0.018
         # U = ADC * 1.2 / 1023
-        # ---> Lux = ADC * 1.2 / 1023 / 68 * 100 000 / 0.018
-        record['light'] = record['light'] * 1.2 / 1023.0 / 68.0 * 100000.0 / 0.018
-        # round and make an integer
+        # ---> Lux = ADC * 1.2 / 1023 / R * 100 000 / 0.018
+        record['light'] = record['light'] * 1.2 / 1023.0 / light_R * 100000.0 / 0.018
+        # round and trunkate to integer
         record['light'] = int(record['light'] + 0.5)
         
         # Temperature
@@ -57,9 +59,9 @@ class DataCalibrator:
         # --> deg = V*100 - 50
         # --> deg = ADC * 1.2/1023 * 100 - 50
         # --> deg = ADC * 0.1173 - 50
-        # EXCEPT it should be calibrated
-        # with ADC value vs trustful real value
-        # Linea regression gives a and b with
+        # This is datasheet calibration factors
+        # To calibrate it, record raw ADC values vs trustful referebce
+        # Linear regression on spreedsheat gives a and b with
         # --> deg = ADC * a + b
         record['temp'] = record['temp'] * temp_coef + temp_offset
         
