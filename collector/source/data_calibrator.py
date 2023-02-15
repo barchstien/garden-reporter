@@ -16,23 +16,27 @@ class DataCalibrator:
 
     def apply(self, record):
         try:
+            # get config entry corresponding to serial
             p = self.probe_from_id(record['source_id'])
+            # get calibration factors
             battery_v_divider = float(p['battery']['v-divider'])
             temp_coef = float(p['temperature']['coef'])
             temp_offset = float(p['temperature']['offset'])
             moisture_dry = float(p['soil-moisture']['dry-value'])
             moisture_immerged = float(p['soil-moisture']['immerged-value'])
             light_R = float(p['light']['r'])
+            # get location
+            record['location'] = p['location']
         except Exception as e:
-            print('Error while applying calibration of record:', record, '\nExcpetion :', e)
+            print('Error while applying calibration of record:', record, '\nException :', e)
             return
         if p == None:
             print('ERROR, dropping record:', record)
             return
         
         # raw values
-        print("{} >{:04x} rssi:{:d} adcs: {: 5.1f} {: 5.1f} {: 5.1f} {: 5.1f}".format(
-            datetime.now(), record['source_id'], record['local_rssi'], 
+        print("{} >{:04x} rssi:{:d} loc:{} adcs: {: 5.1f} {: 5.1f} {: 5.1f} {: 5.1f}".format(
+            datetime.now(), record['source_id'], record['local_rssi'], record['location'], 
             record['battery_level'], record['soil_moisture'], record['temp'], record['light']))
         
         # Battery
@@ -78,8 +82,8 @@ class DataCalibrator:
         record['soil_moisture'] = int(record['soil_moisture'] + 0.5)
         
         
-        print("{} >{:04x} rssi:{:d} adcs: {: 5.1f} {: 5.1f} {: 5.1f} {: 5.1f}".format(
-            datetime.now(), record['source_id'], record['local_rssi'], 
+        print("{} >{:04x} rssi:{:d} loc:{} adcs: {: 5.1f} {: 5.1f} {: 5.1f} {: 5.1f}".format(
+            datetime.now(), record['source_id'], record['local_rssi'], record['location'],
             record['battery_level'], record['soil_moisture'], record['temp'], record['light']))
 
 

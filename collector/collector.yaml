@@ -9,22 +9,12 @@
 
   influxdb:
     hostname: "http://localhost:8086"
-    measurement: "proto4"
+    measurement: "jardin-pa-bakken"
 
   probes:
-    - name: "Proto"
-      id: 0x0013A20041F26150
-      #id: 0x00deadbeef00
-      battery:
-        v-divider: 6.3
-      soil-moisture:
-        immerged-value: 288
-        dry-value: 386
-      temperature:
-        coef: 0.1188
-        offset: -51.91
-    - name: "Proto #2"
+    - name: "Unit #2 TODO write that on probe"
       id: 0x0013A20041CF2184
+      location: "potager sud"
       battery:
         v-divider: 6.0
       soil-moisture:
@@ -35,8 +25,9 @@
         offset: -50.0
       light:
         r: 68
-    - name: "Proto #3"
+    - name: "Unit #3"
       id: 0x0013A20041ECE6E8
+      location: "noisetier"
       battery:
         v-divider: 6.0
       soil-moisture:
