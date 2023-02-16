@@ -108,85 +108,6 @@
           }
         ]
       }
-    },
-    "H8uTh2JVk": {
-      "name": "Battery",
-      "uid": "H8uTh2JVk",
-      "kind": 1,
-      "model": {
-        "type": "bargauge",
-        "title": "Battery",
-        "transformations": [
-          {
-            "id": "labelsToFields",
-            "options": {
-              "keepLabels": [
-                "location"
-              ],
-              "valueLabel": "location"
-            }
-          }
-        ],
-        "datasource": {
-          "type": "influxdb",
-          "uid": "_AJng9AVz"
-        },
-        "pluginVersion": "9.3.6",
-        "description": "",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [],
-            "max": 5.6,
-            "min": 4.1,
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "red",
-                  "value": null
-                },
-                {
-                  "color": "yellow",
-                  "value": 4.4
-                },
-                {
-                  "color": "green",
-                  "value": 4.7
-                }
-              ]
-            },
-            "unit": "volt"
-          },
-          "overrides": []
-        },
-        "options": {
-          "displayMode": "lcd",
-          "minVizHeight": 10,
-          "minVizWidth": 0,
-          "orientation": "vertical",
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ],
-            "fields": "",
-            "values": false
-          },
-          "showUnfilled": true
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "influxdb",
-              "uid": "_AJng9AVz"
-            },
-            "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"batt\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )",
-            "refId": "A"
-          }
-        ]
-      }
     }
   },
   "__requires": [
@@ -243,7 +164,6 @@
         "type": "influxdb",
         "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -276,191 +196,130 @@
               "mode": "none"
             },
             "thresholdsStyle": {
-              "mode": "off"
+              "mode": "dashed+area"
             }
           },
+          "decimals": 0,
           "mappings": [],
-          "max": 6,
-          "min": 2,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "red",
                 "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 4.4
               },
               {
                 "color": "transparent",
-                "value": 4.7
-              }
-            ]
-          },
-          "unit": "volt"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 0,
-        "y": 0
-      },
-      "id": 2,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "9.3.6",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
-          },
-          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\"\n    and (r._field == \"batt\" or r._field == \"v_supply\")\n  )\n  |> aggregateWindow(every: 1d, fn: mean)\n  |> filter(fn: (r) => r.location == \"${location}\")\n  |> toFloat()\n  |> map(fn: (r) => ({\n    r with _value: \n    if r._field == \"v_supply\" \n    then r._value / 1000.0\n    else r._value\n  }))",
-          "refId": "A"
-        }
-      ],
-      "title": "Battery vs Xbee Supply",
-      "transformations": [],
-      "type": "timeseries"
-    },
-    {
-      "gridPos": {
-        "h": 3,
-        "w": 5,
-        "x": 13,
-        "y": 0
-      },
-      "id": 12,
-      "libraryPanel": {
-        "uid": "rDfulKJVk",
-        "name": "Last update"
-      }
-    },
-    {
-      "gridPos": {
-        "h": 6,
-        "w": 2,
-        "x": 18,
-        "y": 0
-      },
-      "id": 14,
-      "libraryPanel": {
-        "uid": "H8uTh2JVk",
-        "name": "Battery"
-      }
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
                 "value": -95
               }
             ]
           },
           "unit": "dBm"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rssi 5526146545295748"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "potager sud"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rssi 5526146547246824"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "noisetier"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rssi 5526146547605840"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "prototype v1 potager"
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
-        "h": 6,
-        "w": 12,
+        "h": 8,
+        "w": 17,
         "x": 0,
-        "y": 6
+        "y": 0
       },
-      "id": 6,
+      "id": 2,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
+          "calcs": [
+            "mean",
+            "min",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "9.3.6",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
           },
-          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"rssi\"\n  )\n  |> filter(fn: (r) => r.location == \"${location}\")\n  |> aggregateWindow(every: 6h, fn: mean)",
+          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"rssi\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )\n  |> aggregateWindow(every: v.windowPeriod, fn: mean)",
           "refId": "A"
         }
       ],
       "title": "RSSI",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "location"
+            ],
+            "valueLabel": "location"
+          }
+        }
+      ],
       "type": "timeseries"
+    },
+    {
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 19,
+        "y": 0
+      },
+      "id": 10,
+      "libraryPanel": {
+        "uid": "rDfulKJVk",
+        "name": "Last update"
+      }
     },
     {
       "datasource": {
         "type": "influxdb",
         "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -471,6 +330,7 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
+            "axisSoftMax": 4,
             "barAlignment": 0,
             "drawStyle": "line",
             "fillOpacity": 0,
@@ -496,6 +356,7 @@
               "mode": "off"
             }
           },
+          "decimals": 0,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -503,44 +364,97 @@
               {
                 "color": "green",
                 "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
               }
             ]
           },
           "unit": "none"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "error_ack 5526146545295748"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "potager sud"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "error_ack 5526146547246824"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "noisetier"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "error_ack 5526146547605840"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "prototype v1 potager"
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
-        "h": 4,
-        "w": 12,
+        "h": 6,
+        "w": 15,
         "x": 0,
-        "y": 12
+        "y": 8
       },
-      "id": 7,
+      "id": 3,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
+          "calcs": [
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "9.3.6",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
           },
-          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"error_ack\"\n  )\n  |> filter(fn: (r) => r.location == \"${location}\")",
+          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"error_ack\"\n  )|> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )\n  |> aggregateWindow(every: v.windowPeriod, fn: sum)",
           "refId": "A"
         }
       ],
-      "title": "Errors ACK",
+      "title": "Error ACK",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "location"
+            ],
+            "valueLabel": "location"
+          }
+        }
+      ],
       "type": "timeseries"
     },
     {
@@ -548,7 +462,6 @@
         "type": "influxdb",
         "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -559,6 +472,7 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
+            "axisSoftMax": 4,
             "barAlignment": 0,
             "drawStyle": "line",
             "fillOpacity": 0,
@@ -584,6 +498,7 @@
               "mode": "off"
             }
           },
+          "decimals": 0,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -591,48 +506,100 @@
               {
                 "color": "green",
                 "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
               }
             ]
           },
           "unit": "none"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "error_cca 5526146545295748"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "potager sud"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "error_cca 5526146547246824"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "noisetier"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "error_cca 5526146547605840"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "prototype v1 potager"
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
-        "h": 4,
-        "w": 12,
+        "h": 6,
+        "w": 15,
         "x": 0,
-        "y": 16
+        "y": 14
       },
-      "id": 8,
+      "id": 4,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
+          "calcs": [
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "9.3.6",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
           },
-          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"error_cca\"\n  )\n  |> filter(fn: (r) => r.location == \"${location}\")",
+          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"error_cca\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )\n  |> aggregateWindow(every: v.windowPeriod, fn: sum)",
           "refId": "A"
         }
       ],
-      "title": "Errors CCA",
+      "title": "Error CCA",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "location"
+            ],
+            "valueLabel": "location"
+          }
+        }
+      ],
       "type": "timeseries"
     }
   ],
-  "refresh": false,
   "schemaVersion": 37,
   "style": "dark",
   "tags": [],
@@ -647,11 +614,11 @@
         "definition": "import \"influxdata/influxdb/schema\"\n\nschema.measurementTagValues(\n    bucket: \"gr-bucket\",\n    tag: \"location\",\n    measurement: \"jardin-pa-bakken\",\n    start: v.timeRangeStart,\n    stop: v.timeRangeStop\n)",
         "hide": 0,
         "includeAll": false,
-        "multi": false,
+        "multi": true,
         "name": "location",
         "options": [],
         "query": "import \"influxdata/influxdb/schema\"\n\nschema.measurementTagValues(\n    bucket: \"gr-bucket\",\n    tag: \"location\",\n    measurement: \"jardin-pa-bakken\",\n    start: v.timeRangeStart,\n    stop: v.timeRangeStop\n)",
-        "refresh": 1,
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
@@ -663,12 +630,10 @@
     "from": "now-3M",
     "to": "now"
   },
-  "timepicker": {
-    "hidden": false
-  },
+  "timepicker": {},
   "timezone": "",
-  "title": "Diagnostique par sonde",
-  "uid": "lPD453A4k",
-  "version": 25,
+  "title": "RSSI & Errors",
+  "uid": "65HM04JVz",
+  "version": 16,
   "weekStart": ""
 }

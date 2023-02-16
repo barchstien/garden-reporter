@@ -357,7 +357,7 @@
             "type": "influxdb",
             "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
           },
-          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\"\n    and r._field == \"batt\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )\n  |> aggregateWindow(every: 12h, fn: mean)",
+          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\"\n    and r._field == \"batt\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )\n  |> aggregateWindow(every: v.windowPeriod, fn: mean)",
           "refId": "A"
         }
       ],
@@ -436,6 +436,6 @@
   "timezone": "",
   "title": "Batteries",
   "uid": "-unJzh14k",
-  "version": 7,
+  "version": 8,
   "weekStart": ""
 }
