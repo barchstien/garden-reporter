@@ -55,32 +55,7 @@
             },
             "unit": "m"
           },
-          "overrides": [
-            {
-              "matcher": {
-                "id": "byName",
-                "options": "batt 5526146547246824"
-              },
-              "properties": [
-                {
-                  "id": "displayName",
-                  "value": "noisetier"
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byName",
-                "options": "batt 5526146545295748"
-              },
-              "properties": [
-                {
-                  "id": "displayName",
-                  "value": "potager sud"
-                }
-              ]
-            }
-          ]
+          "overrides": []
         },
         "options": {
           "displayMode": "lcd",
@@ -199,12 +174,15 @@
               "viz": false
             },
             "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
             "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -231,44 +209,7 @@
           },
           "unit": "dBm"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "rssi 5526146545295748"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "potager sud"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "rssi 5526146547246824"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "noisetier"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "rssi 5526146547605840"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "prototype v1 potager"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -503,44 +444,7 @@
           },
           "unit": "ms"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "error_cca 5526146545295748"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "potager sud"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "error_cca 5526146547246824"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "noisetier"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "error_cca 5526146547605840"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "prototype v1 potager"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 9,
@@ -626,6 +530,6 @@
   "timezone": "",
   "title": "Comparaison RSSI & Errors & Time Deltas",
   "uid": "65HM04JVz",
-  "version": 32,
+  "version": 34,
   "weekStart": ""
 }

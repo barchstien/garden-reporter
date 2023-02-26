@@ -55,32 +55,7 @@
             },
             "unit": "m"
           },
-          "overrides": [
-            {
-              "matcher": {
-                "id": "byName",
-                "options": "batt 5526146547246824"
-              },
-              "properties": [
-                {
-                  "id": "displayName",
-                  "value": "noisetier"
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byName",
-                "options": "batt 5526146545295748"
-              },
-              "properties": [
-                {
-                  "id": "displayName",
-                  "value": "potager sud"
-                }
-              ]
-            }
-          ]
+          "overrides": []
         },
         "options": {
           "displayMode": "lcd",
