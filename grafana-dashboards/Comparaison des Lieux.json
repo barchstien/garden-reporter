@@ -55,32 +55,7 @@
             },
             "unit": "m"
           },
-          "overrides": [
-            {
-              "matcher": {
-                "id": "byName",
-                "options": "batt 5526146547246824"
-              },
-              "properties": [
-                {
-                  "id": "displayName",
-                  "value": "noisetier"
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byName",
-                "options": "batt 5526146545295748"
-              },
-              "properties": [
-                {
-                  "id": "displayName",
-                  "value": "potager sud"
-                }
-              ]
-            }
-          ]
+          "overrides": []
         },
         "options": {
           "displayMode": "lcd",
@@ -525,32 +500,7 @@
           },
           "unit": "humidity"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "moist 5526146545295748"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "potager sud"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "moist 5526146547246824"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "noisetier"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 7,
@@ -728,32 +678,7 @@
           },
           "unit": "lux"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "light 5526146545295748"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "potager sud"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "light 5526146547246824"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "noisetier"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 7,
@@ -837,6 +762,6 @@
   "timezone": "",
   "title": "Comparaison des Lieux",
   "uid": "9rL4ROxVz",
-  "version": 14,
+  "version": 15,
   "weekStart": ""
 }
