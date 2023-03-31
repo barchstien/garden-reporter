@@ -12,7 +12,7 @@
     measurement: "jardin-pa-bakken"
 
   probes:
-    - name: "Unit #2 TODO write that on probe"
+    - name: "Unit #1 TODO write that on probe"
       id: 0x0013A20041CF2184
       location: "potager sud"
       battery:
@@ -24,8 +24,12 @@
         coef: 0.1173
         offset: -50.0
       light:
-        r: 68
-    - name: "Unit #3"
+        # 95.8 = 1.2 / 1023.0 / light_R (68) * 100000.0 / 0.018
+        # gives max 98039
+        # scale to probe #2 220 ~= 95.8 * 2.3 
+        coef: 220.0
+        offset: 0
+    - name: "Unit #2"
       id: 0x0013A20041ECE6E8
       location: "noisetier"
       battery:
@@ -37,5 +41,6 @@
         coef: 0.1173
         offset: -50.0
       light:
-        r: 68
+        coef: 59.5
+        offset: 310.9
 
