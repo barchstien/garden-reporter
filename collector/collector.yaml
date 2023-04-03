@@ -18,7 +18,7 @@
       battery:
         v-divider: 6.0
       soil-moisture:
-        immerged-value: 239
+        immerged-value: 237
         dry-value: 308
       temperature:
         coef: 0.1173
