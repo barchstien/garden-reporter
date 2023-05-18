@@ -24,7 +24,8 @@ class DataCalibrator:
             temp_offset = float(p['temperature']['offset'])
             moisture_dry = float(p['soil-moisture']['dry-value'])
             moisture_immerged = float(p['soil-moisture']['immerged-value'])
-            light_R = float(p['light']['r'])
+            light_coef = float(p['light']['coef'])
+            light_offset = float(p['light']['offset'])
             # get location
             record['location'] = p['location']
         except Exception as e:
@@ -53,7 +54,9 @@ class DataCalibrator:
         # ---> Lux = U / R * 100 000 / 0.018
         # U = ADC * 1.2 / 1023
         # ---> Lux = ADC * 1.2 / 1023 / R * 100 000 / 0.018
-        record['light'] = record['light'] * 1.2 / 1023.0 / light_R * 100000.0 / 0.018
+        # Ignore above ...
+        # Apply coef and offset at found with ref and linear regression
+        record['light'] = record['light'] * light_coef + light_offset
         # round and trunkate to integer
         record['light'] = int(record['light'] + 0.5)
         
