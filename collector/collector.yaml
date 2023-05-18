@@ -18,7 +18,7 @@
       battery:
         v-divider: 6.0
       soil-moisture:
-        immerged-value: 237
+        immerged-value: 235
         dry-value: 308
       temperature:
         coef: 0.1173
@@ -35,12 +35,41 @@
       battery:
         v-divider: 6.0
       soil-moisture:
-        immerged-value: 584
+        # calibration gave 584
+        # but calib of #3 went from 625 to 600 after 1 night
+        # This could explain that noisetier has unexpected high humidity ?
+        # Trying to lower proportionally : 600 * 584 / 625 ~= 560
+        # --> must be due to outside temp, see below
+        immerged-value: 560
         dry-value: 903
       temperature:
         coef: 0.1173
         offset: -50.0
       light:
-        coef: 59.5
-        offset: 310.9
+        coef: 60.7
+        offset: 0
+    - name: "Unit #3"
+      id: 0x0013A20041CF2186
+      location: "potager nord"
+      battery:
+        v-divider: 6.0
+      soil-moisture:
+        # first got 625 after few sample, but...
+        # after a night in glass pf water : 600
+        # --> must be due to outside temp, see below
+        # 2023/05/18 seen unexpectidly high value, then 109% with 572
+        # --> use 572 coz it correspond to manual watering on probe
+        immerged-value: 572
+        # first calib got 897, but then leaving it outside got 914
+        # Using 914, on the base that long term calib is better
+        # actually, looks like 35deg gives 914, 25deg 897, and 20deg 896
+        # --> taking value at 25deg
+        dry-value: 897
+      temperature:
+        coef: 0.1173
+        offset: -50.0
+      light:
+        coef: 60.6
+        offset: 0
+
 
