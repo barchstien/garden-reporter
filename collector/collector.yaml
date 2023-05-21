@@ -40,8 +40,15 @@
         # This could explain that noisetier has unexpected high humidity ?
         # Trying to lower proportionally : 600 * 584 / 625 ~= 560
         # --> must be due to outside temp, see below
+        # About temp, it probably has a much greater impact when out in the air
+        # meaning if calibrating in plain sun
+        # --> calibrate in shadow, avoid hot days
+        # also found blisters on moisture probe, patched edges with nail polish
+        # dry: 887
         immerged-value: 560
-        dry-value: 903
+        # 903
+        # re-calibrate 21/05/2023 : 897
+        dry-value: 897
       temperature:
         coef: 0.1173
         offset: -50.0
@@ -63,8 +70,10 @@
         # first calib got 897, but then leaving it outside got 914
         # Using 914, on the base that long term calib is better
         # actually, looks like 35deg gives 914, 25deg 897, and 20deg 896
-        # --> taking value at 25deg
-        dry-value: 897
+        # --> taking value at 25deg : 897
+        # 5 weeks after deployment, seen blisters on moisture probe
+        # ... took it out to re-calibrate dry value : 827
+        dry-value: 827
       temperature:
         coef: 0.1173
         offset: -50.0
