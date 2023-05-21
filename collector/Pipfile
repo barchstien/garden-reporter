@@ -6,7 +6,6 @@ name = "pypi"
 [packages]
 influxdb-client = "*"
 pyserial = "*"
-"ruamel.yaml" = "*"
 pyyaml = "*"
 
 [dev-packages]
