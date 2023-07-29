@@ -17,6 +17,8 @@ The data flow follows
 Xbee --> Serial/USB --> python3 --> influxdb
 ```
 
+**TODO** a nice diagram of collector guts
+
 ## Features
  - Waits for probes (Xbee) to wake up, and trigger sampling
  - Apply calibration
