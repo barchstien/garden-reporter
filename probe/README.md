@@ -9,7 +9,6 @@
      - bottom is filled with gravel for stability and in case of leak
    - sensors are attached to case
    - wires from sensors to probe board are water resistent
-     - make an angle to avoid water drip
      - use plumbing goo/joint/paste
    - sensors are environment protected :
      - luminosity is already in epoxy case, wire nail polished

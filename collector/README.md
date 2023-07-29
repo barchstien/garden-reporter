@@ -10,47 +10,19 @@ The data that are recorded are :
  * temperature
  * light
 
-The collector allows to connect to a TCP port
-Using negotiation, a specific endpoint may be kept awake
-Then the TCP just forwards serial
-Client can connect, negotiate, and use socat to forward to local pty
-The local pty can be used by XCTU
+The collector allows to connect to a TCP port, that can be mounted to a local virtual serial port, allowing to use XCTU (Xbee official utilities) via the network. More in [TCP Serial chapter](#tcp-serial)
 
 The data flow follows
 ```
 Xbee --> Serial/USB --> python3 --> influxdb
 ```
 
-# Notes
- * created a profile v3, with mostly default value
-   |--> if still loose connection after 2 days, 
-        tie J2 Din to Batt-
-   |--> Nope ! This fails the circuit
- * Added a Capacitor across batt +/-
-   ... but should be ceramic instead of electrolitique
-   ... and there should be more of it
- * What about trying with boost mode disabled ?
-   |---> done it didn't help
- * Still failling after 2 days or so
-   |--> suspecting now the mosfet turning on
-        try to add a resistor to the gate
-   |--> seen that Vg shold be > to Vin
-        ... not the case here --> use c) ?
-
-## TODO
- * consider mosfet switch arrangements
-   a) N-mosfet is high side, logic is inverted
-   b) P-mosfet is low side, gives bias to GND1 (vs GND/BATT-)
-   c) what about using P-mos driven by pull up R and N-mos pull down ?
-   d) what about using P+N-mos (NOT gate) as driver for P-mos ?
- |----------> Used c) for v2, works like a charm
- 
-
 # Deploy
 ```bash
 docker build . -t garden-collector
 
-## TODO make a garden-network with influxdb
+# TODO make a garden-network with influxdb
+# ... for now use host network
 
 # if influxdb is on host
 docker run -d --restart always --name garden-collector --group-add dialout --network host --env-file env_file --device=/dev/ttyUSB0 garden-collector
@@ -60,15 +32,10 @@ docker run -d --restart always --name garden-collector --group-add dialout -p 80
 ```
 
 # Calibration
-Most calbration now use formula from datasheet
+It may use a formula from datasheet or a manual calibration
  * moist : get dry/immerge value, gives linear ratio as %
  * temperature : from datasheet deg = V*100 - 50
- * light : 18mA <=> 100 000 Lux
-   R = 68 Ohm
-   max : 1.2 / 68 = 17.6mA = 98039 Lux
-   Lux = I * 100 000 / 0.018
-   I = U / R
-   ---> Lux = U / 68 * 100 000 / 0.018
+ * Compare with a calibrated lux meter
  * battery voltage divider = 6
 
 # Modules
