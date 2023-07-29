@@ -1,6 +1,21 @@
 # Overview
 ![probe overview](/resources/probe-board-overview.png)
 
+## Features
+ - Probe for :
+   - soil humidity
+   - air temperature
+   - luminosity
+   - battery level
+ - 6 month+ battery (1 year). See **probe-board-power-use.ods**
+ - Report to collector
+   - via xbee 2.4GHz 802.15.4
+   - every 15min using cycle sleep
+
+Kicad files are in **probe/kicad** folder  
+Components datasheet are in **probe/datasheet** folder  
+
+## Board 3d view
 ![probe pcb 3d](/resources/probe-board-3d.png)
 
 # Mechanic and water consideration
@@ -9,7 +24,6 @@
      - bottom is filled with gravel for stability and in case of leak
    - sensors are attached to case
    - wires from sensors to probe board are water resistent
-     - make an angle to avoid water drip
      - use plumbing goo/joint/paste
    - sensors are environment protected :
      - luminosity is already in epoxy case, wire nail polished
@@ -29,12 +43,9 @@
     - dfrobot DFR0050 [426-DFR0050] 18.95E
 
 ## Switch
- * TN0702N3-G, can switch 20V, on at 1V, 0.1uA stdby
-   1.53E [689-TN0702N3-G]
-   TODO add Resistor between gate and Gnd, to help discharge ?
-   |---> Or not ? coz xbeen will drive it low
-   |---> keep un-populated pad for resistor
- * Use flywheel diode to protect mosfet from switched inductive load
+ * TN0702N3-G, can switch 20V, on at 1V, 0.1uA stdby  
+   1.53E [689-TN0702N3-G]  
+ * Use flywheel diode to protect mosfet from switched inductive load  
    SB130 [637-SB130]
  
 ## Battery 
@@ -42,44 +53,43 @@
    - Accus hybrides Aeonium - 2100mAh 8E for 4, 85% after 1 year
    - Energizer accu recharge extreme 2000mAh 8.6E for 4
  * 4x battery holder 58x31x28 12BH343D-GR [12BH343D-GR]
-   OR 534-2476 with snap-on ?
+   OR 534-2476 with snap-on ?  
  Nimh nominal/min/max voltage 1.2/0.9/1.5  
  with 4 cells 4.8/3.6/6V 
 
 ## 3.3V voltage regulator
- * MCP1700-3302E/TO 0.5E [579-MCP1700-3302E/TO]
-   Vin 2.3 to 6V, Vdrop typical 178mV, max 350mV
-   250 mA max output
-   Use 1uF co at output (and 1 at input ?)
+ * MCP1700-3302E/TO 0.5E [579-MCP1700-3302E/TO]  
+   Vin 2.3 to 6V, Vdrop typical 178mV, max 350mV  
+   250 mA max output  
+   Use 1uF co at output (and 1 at input ?)  
  
 ## Soil moisture sensor
- * Capacitor sensor
-   SEN0193 DFRobot 7.9E [426-SEN0193]
-   SEN0308 DFRobot 15E
-   3.3V 5mA
-
-In the context of hte schematics available in the datasheet folder
-The plunging part (that goes into soil) is plugged between 
- * GND in one hand
- * D1/R2 on the other hand
+ * Capacitor sensor  
+   SEN0193 DFRobot 7.9E [426-SEN0193]  
+   SEN0308 DFRobot 15E  
+   3.3V 5mA  
+   **Warning** some cheapper alternative exists but aren't documented, nor reliable  
+   Protect with nail polish
 
 ## Temp sensor
- * TMP36GT9Z [584-TMP36GT9Z] 1.81E
+ * TMP36GT9Z [584-TMP36GT9Z] 1.81E  
    Must add O.1uF cap, very close to device, ie on wire
 
 ## Photo transistor
- * TEPT5700 [782-TEPT5700]
-   Use with 10K resistor, measure U, then I = U/R
-   From I, get Lux
+ * TEPT5700 [782-TEPT5700]  
+   Use with 5K resistor, measure U, then I = U/R  
+   From I, get Lux, using calibration with a ref lux meter  
+ The value of R will set the sensibility and saturation level  
+ Use with a diffuser, to mitigate the effect of the angle towards the light source
 
 ## Battery level sensor
- * Add battery level check with voltage divider 
-   with 2x 10K resitor 1%
+ * Add battery level check with voltage divider  
+   with 2x 10K resitor 1%  
    with zener diode 1N4620 3.3V, [610-1N4620BK]
 
 ## Connector
  * sensor to board, 3ways
-  - 70543-0002 [538-70543-0002] pcb straigth header
+  - 70543-0002 [538-70543-0002] pcb straigth header  
     70543-0107 for even more gold plating !
   - 79758-0011 [538-79758-0011] crimped wire, 30cm, 22awg
   - 50-57-9403 [538-50-57-9403  ] cable mount
