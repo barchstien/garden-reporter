@@ -1,6 +1,21 @@
 # Overview
 ![probe overview](/resources/probe-board-overview.png)
 
+## Features
+ - Probe for :
+   - soil humidity
+   - air temperature
+   - luminosity
+   - battery level
+ - 6 month+ battery (1 year). See **probe-board-power-use.ods**
+ - Report to collector
+   - via xbee 2.4GHz 802.15.4
+   - every 15min using cycle sleep
+
+Kicad files are in **probe/kicad** folder  
+Components datasheet are in **probe/datasheet** folder  
+
+## Board 3d view
 ![probe pcb 3d](/resources/probe-board-3d.png)
 
 # Mechanic and water consideration

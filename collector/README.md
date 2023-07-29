@@ -17,6 +17,44 @@ The data flow follows
 Xbee --> Serial/USB --> python3 --> influxdb
 ```
 
+## Features
+ - Waits for probes (Xbee) to wake up, and trigger sampling
+ - Apply calibration
+ - Store collected data to influx db
+ - Keep a list of probes and their profiles
+
+## Probe profile
+Probes have unit specific characteristics which need to be stored at the collector level :
+ - Soil moisture dry/water values. Those values change from probe to probe, even more with (home made) epoxy coating
+ - xbee identifier
+ - placement
+ - ganeric comments (dates for commissioning of probe and batteries)
+
+## Design
+ - xbee usb module
+ - low power fanless PC (ASUS Mini PC PN41)
+ - influxdb storage
+ - grafana visulisation
+ - python 3 (pipenv)
+ - full yaml config
+
+## Calibration
+It may use a formula from datasheet or a manual calibration
+ * moist : get dry/immerge value, gives linear ratio as %
+ * temperature : from datasheet deg = V*100 - 50
+ * Compare with a calibrated lux meter
+ * battery voltage divider = 6
+
+
+# TCP Serial
+A TCP port is open to allow taking over the serial for a specific device MAC.
+It first wait for the target to wake up, and disable cycle sleep
+It then mounts the tcp connection as a pty, to open with xctu
+When the tcp connection is broken, the device is put back to cycle sleep mode, and the pty is unmounted
+```bash
+pipenv run python3 ./source/serial_tcp_client.py
+```
+
 # Deploy
 ```bash
 docker build . -t garden-collector
@@ -30,13 +68,6 @@ docker run -d --restart always --name garden-collector --group-add dialout --net
 # else
 docker run -d --restart always --name garden-collector --group-add dialout -p 8087:8087 --env-file env_file --device=/dev/ttyUSB0 garden-collector
 ```
-
-# Calibration
-It may use a formula from datasheet or a manual calibration
- * moist : get dry/immerge value, gives linear ratio as %
- * temperature : from datasheet deg = V*100 - 50
- * Compare with a calibrated lux meter
- * battery voltage divider = 6
 
 # Modules
 
@@ -153,14 +184,5 @@ docker exec -it garden-reporter-influxdb bash -c "influx restore /tmp/backup --f
 ## grafana
 ```bash
 docker run -d --restart always -p 3000:3000 -v grafana:/var/lib/grafana --name garden-reporter-grafana grafana/grafana
-```
-
-# TCP Serial
-A TCP port is open to allow taking over the serial for a specific device MAC.
-It first wait for the target to wake up, and disable cycle sleep
-It then mounts the tcp connection as a pty, to open with xctu
-When the tcp connection is broken, the device is put back to cycle sleep mode, and the pty is unmounted
-```bash
-pipenv run python3 ./source/serial_tcp_client.py
 ```
 
