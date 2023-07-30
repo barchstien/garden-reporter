@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>water-control</title>
+    <style>
+        /* Center the h1 element */
+        h1 {
+            text-align: center;
+        }
+
+        /* Set the content column width to 500px */
+        .content-column {
+            width: 500px;
+            margin: 0 auto; /* Center the column horizontally */
+        }
+
+        /* CSS for arranging labels and inputs in a table-like layout */
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        /* Right-align the labels */
+        .input-row .label-column {
+            text-align: right;
+            flex-basis: 150px; /* Set a fixed width for the left column */
+        }
+
+        /* Left-align the input fields */
+        .input-row .input-column {
+            flex: 1; /* Allow the input field to take remaining space */
+        }
+
+        /* Apply the "Roboto" font to the whole page */
+        body {
+            font-family: "Roboto", sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <h1>water-control</h1>
+    <!-- Removed the first line of text -->
+    
+    <!-- Content column -->
+    <div class="content-column">
+        <!-- Period in days -->
+        <div class="input-row">
+            <div class="label-column">
+                <label for="period">Period in days:</label>
+            </div>
+            <div class="input-column">
+                <input type="range" id="period" name="period" min="1" max="7">
+            </div>
+        </div>
+
+        <!-- Start time -->
+        <div class="input-row">
+            <div class="label-column">
+                <label for="start-time">Start time:</label>
+            </div>
+            <div class="input-column">
+                <!-- Set the time input to 24-hour format -->
+                <input type="time" id="start-time" name="start-time" inputmode="time" timeFormat="HH:mm">
+            </div>
+        </div>
+
+        <!-- Duration in minutes -->
+        <div class="input-row">
+            <div class="label-column">
+                <label for="duration">Duration in minutes:</label>
+            </div>
+            <div class="input-column">
+                <input type="number" id="duration" name="duration" min="1">
+            </div>
+        </div>
+    </div>
+</body>
+</html>
