@@ -52,8 +52,8 @@
             line-height: 1.0;
             font-family: monospace;
             white-space: pre;
-            font-size: 10px;
-            color: DimGrey
+            font-size: 11px;
+            color: rgba(0,0,0, 0.4) /*DimGrey*/
         }
         
 
@@ -114,7 +114,7 @@
                 </div>
                 <div class="input-column">
                     <!-- Use input type "number" with size attribute -->
-                    <input type="number" id="period" name="period" min="0" max="7" step="1" size="2">
+                    <input type="number" id="period" name="period" min="0" max="7" step="1" size="2" value="2">
                 </div>
             </div>
 
@@ -125,7 +125,7 @@
                 </div>
                 <div class="input-column">
                     <!-- Set the time input to 24-hour format -->
-                    <input type="time" id="start-time" name="start-time" inputmode="time" step="3600">
+                    <input type="time" id="start-time" name="start-time" inputmode="time" step="3600" value="20:00">
                 </div>
             </div>
 
@@ -135,7 +135,7 @@
                     <label for="duration">Duration in minutes:</label>
                 </div>
                 <div class="input-column">
-                    <input type="number" id="duration" name="duration" min="0" max="99" size="3">
+                    <input type="number" id="duration" name="duration" min="0" max="99" size="3" value="30">
                 </div>
             </div>
 
@@ -153,21 +153,17 @@
     </div>
     <div  class="ascii-art-footer">
         <div  class="ascii-art-footer-inner">
-    <!--pre-->
-        <!-- code-->
                     `::`
                      /    `;:`
                     `      /
-    _            .;:;
-  _(_)_          ::;       wWWWw  ,,,     _
- (_)@(_)  ,,,  _ ';:;;'    (___) {{{}}  _(_)_
-  /(_)   {{|}} >'. ||  _    ~Y~   ~Y~  (_)@(_)
-  |  {{}  ~Y~  `> \||.'< (@)\|{°}} \|/   /(_)
-(\|/)~Y~  \|/    `>|/ <` \Y/\|~Y~ \|/ (\|/)
- \|//\|/  \|//    `||/`  \|/\|\|/\\|//\\|//
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        <!--/code-->
-    <!--/pre-->
+    _            .;:;     `        ,,, 
+  _(_)_          ::;       wWWWw  {{{}}
+ (_)@(_)  ,,,  _ ';:;;'    (___)   ~Y~ 
+  /(_)   {{|}} >'. ||  _    ~Y~     |
+  |  {{}  ~Y~  `> \||.'< (@)\|/|}  \|/ 
+(\|/)~Y~  \|/    `>|/ <` \Y/\|~Y~  \|/ 
+ \|//\|/  \|//    `||/`  \|/\|\|/ \\|//
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         </div>
     </div>
 </body>
