@@ -1,11 +1,19 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
+import re
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        self.wfile.write(b'<html><body><h1>Hello, this is a simple HTTP server!</h1></body></html>')
+
+        # Read content from index.html file and send it as the response
+        with open('source/index.html', 'rb') as file:
+            content = file.read()
+            content = re.sub(b'{{period_value}}', b'2', content)
+            content = re.sub(b'{{start_time_value}}', b'20:03', content)
+            content = re.sub(b'{{duration_value}}', b'45', content)
+            self.wfile.write(content)
 
 def run_server(port=8000):
     server_address = ('', port)
