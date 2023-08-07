@@ -36,7 +36,11 @@ None of the above variables or json entries are guaranteed to be present
 '''
 class WaterWebRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path.startswith('/'):
+        print('>>', self.path)
+        print('>>>>', urllib.parse.urlparse(self.path))
+        url_parsed = urllib.parse.urlparse(self.path)
+        
+        if url_parsed.path == '/':
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
@@ -57,29 +61,30 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
                 content = re.sub(b'{{uptime_day_value}}', b'3 days', content)
                 self.wfile.write(content)
         
-        elif self.path.startswith('/report'):
+        elif url_parsed.path == '/report':
+            print('-- report !')
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            data = {'question': 'What is your favorite color?', 'options': ['Red', 'Blue', 'Green']}
-            json_data = json.dumps(data)
-            self.wfile.write(json_data.encode())
-        
-        elif self.path.startswith('/push'):
-            self.send_response(200)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-            query_components = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+            query_components = urllib.parse.parse_qs(url_parsed.query)
+            print(query_components)
             period_day_value = query_components.get('period_day_value', [''])[0]
             start_time_hour_minute_value = query_components.get('start_time_hour_minute_value', [''])[0]
-            duration__minute_value = query_components.get('duration__minute_value', [''])[0]
+            duration_minute_value = query_components.get('duration_minute_value', [''])[0]
             water_liter_value = query_components.get('water_liter_value', [''])[0]
 
-            response_message = f'Period: {period_day_value}<br>'
-            response_message += f'Start Time: {start_time_hour_minute_value}<br>'
-            response_message += f'Duration: {duration__minute_value}<br>'
-            response_message += f'Water Liter: {water_liter_value}<br>'
-            self.wfile.write(response_message.encode())
+            # TODO save those var to display in web ui
+
+            # TODO send new config, if any...
+            # debug : echo back the request
+            data = {\
+                'period_day_value': period_day_value,
+                'start_time_hour_minute_value': start_time_hour_minute_value,
+                'duration_minute_value': duration_minute_value
+            }
+            print(data)
+            json_data = json.dumps(data)
+            self.wfile.write(json_data.encode())
 
         else:
             self.send_error(404, "File Not Found at path:", self.path)
