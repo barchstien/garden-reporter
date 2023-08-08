@@ -3,7 +3,8 @@
 // from https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
 // interrupt pins : 2, 3, 9, 10, 11, 13, A1, A5, A7
 
-#define SOLENOID_VALVE  A4
+#define VALVE_ENABLE    A4
+#define VALVE_OPEN      A3
 #define FLOW_TRIG       9
 #define LED             3
 #define BIT0            4
