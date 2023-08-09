@@ -2,3 +2,5 @@
 **/*-bak
 **/fp-info-cache
 **/env_file*
+**/__pycache__
+**/arduino_secrets.h

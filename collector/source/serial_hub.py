@@ -6,8 +6,8 @@ Creates a Y with the foot towards serial device
 Data received from Xbee is duplictaed to each branch of the Y head
 Data sent from any branch of Y head is sent to Xbee
 
-Collector receives the serial data for ADC samples
-Tcp listener for serial port for config with XCTU
+Collector receive/send data for ADC samples
+Tcp listener for serial port forward to remote virtual serial (XCTU)
 '''
 class SerialHub:
 
@@ -33,12 +33,6 @@ class SerialHub:
                 break
             # blocks until all is written
             self.serial_dev.write(b)
-            # avoid writting to fast, else xbee draws power like crazy
-            # ... and sensor readings, including battery level sinks down
-            # But ! Should not put any sleep or else
-            # ... it won't be able to handle several in paralell
-            # That is xbee population model to not querry too fast
-        
 
     def __init__(self, config):
         # list of read q for multiple clients

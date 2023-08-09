@@ -16,13 +16,14 @@ if __name__ == "__main__":
     config = yaml.load(f, Loader=yaml.FullLoader)
     f.close()
 
-    # owns serial to collector
+    # owns serial to xbee collector device
     serial = SerialHub(config)
     # extracte frames and decode it to dict
     decoder = XbeeFrameDecoder()
-    # population model, keep tracks of enpoint
+    # population model, keep tracks of xbee enpoint
+    # do the logic to querry and config them
     population_model = XbeePopulationModel(config)
-    # allow TCP connection to serial (for XCTU)
+    # Listen TCP connection to share serial (for XCTU)
     tcp_listener = TcpListener(config, serial, population_model)
     # apply calib and makes meaningful values from ADC readings
     data_calib = DataCalibrator(config)
@@ -31,12 +32,15 @@ if __name__ == "__main__":
     
     encoder = XbeeFrameEncoder()
     
+    # Serial hub read and write queues
+    # that the main loop read/write from/to
     (hub_r_q, hub_w_q) = serial.request_r_w_queues()
     
     try:
         while True:
         
             #### RX
+            # Decode bytes, consume frames
             try:
                 b = hub_r_q.get(timeout=1)
                 if len(b) > 0 :
@@ -68,6 +72,8 @@ if __name__ == "__main__":
                 data_calib.apply(f)
                 db_writer.write(f)
                 pass
+
+            # TODO check web server for water flow
             
     except KeyboardInterrupt:
         print("Keyboard Interrupt ------> exiting all...")

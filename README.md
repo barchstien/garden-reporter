@@ -24,6 +24,15 @@ More doc about probe in [probe/](/probe)
 # Collector
 More doc about collector in [collector/](/collector)
 
+# Water-control
+More doc about water-control in [water-control/](/water-control)
+
+# grafana-dashboards
+Collection of grafan dashboards, exported as JSON, [here](/grafana-dashboards)
+
+# resources
+Images and diagrams
+
 # IRL
 The system has been running as a prototype since autumn 2022. Thought, after 2 months, the deployed probes started to randomly block, ie not wake up anymore, until it was rebooted. It got fixed only after changing the sleep switch (mosfet) from low side to high side. Cutting the low side was leading some voltage values to go beyond Xbee specs.
 
