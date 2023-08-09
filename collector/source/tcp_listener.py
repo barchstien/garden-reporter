@@ -71,15 +71,15 @@ class TcpListener:
                 break
             print("Accepted connection from:", client_address)
             
-            # Wait for 8 byte that could be
+            # Wait for 8 bytes that could be
             #  - MAC of endpoint to hold in config
-            #  - TODO 0 no endpoint is held in config
-            #    usefull to config collector
-            #    usefull when an xbee is already stuck in "no sleep"
+            #  - 0 no endpoint is held in config
+            #    usefull to config collector without having to wait
+            #    which is usefull when an xbee is already stuck in "no sleep"
             #  - TODO 0xffffffffffffffff to hold all registered endpoints
             # 3 sec is long enough for client to request a MAC to hold
             self.connection.settimeout(3.0)
-            # receives 8 first bytes which contains MAC to hold in config
+            # receives 8 first bytes as command
             try:
                 print('--- TCP Listener waiting for first 8 bytes')
                 mac_bytes = self.connection.recv(8)
@@ -114,11 +114,7 @@ class TcpListener:
                     self.xbee_pop.release_from_config(self.xbee_held.mac)
                 continue
             
-            # debug hard coded MAC
-            #self.xbee_pop.hold_in_config(0x0013A20041F26150)
-            
-            ### early MAC exchange achieved
-            ### now in normal serial - tcp mode
+            ### now going to normal serial <--> tcp mode
             # get serial read and write queues
             (hub_r_q, hub_w_q) = self.serial_hub.request_r_w_queues()
             # set as non-blocking, to read whatever is available using select()

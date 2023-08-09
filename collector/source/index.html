@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>water-control</title>
+    <style>
+        /* Center the h1 element */
+        h1 {
+            text-align: center;
+            font-family: "Arial", sans-serif;
+            color: #009688;
+            margin-bottom: 20px;
+        }
+
+        /* Set the content column width to 500px */
+        .content-column {
+            width: 510px;
+            margin: 0 auto; /* Center the column horizontally */
+        }
+
+        /* CSS for arranging labels and inputs in a table-like layout */
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        /* Right-align the labels */
+        .input-row .label-column {
+            text-align: right;
+            flex-basis: 250px; /* Set a fixed width for the left column */
+            color: #333;
+        }
+
+        /* Left-align the input fields */
+        .input-row .input-column {
+            flex: 1; /* Allow the input field to take remaining space */
+            flex-basis: 250px;
+        }
+
+        .ascii-art-footer {
+            width: 100%;
+            text-align: center;
+        }
+        
+        .ascii-art-footer-inner {
+            display: inline-block;
+            padding: 3px;
+            margin: 0 auto; /* Center the column horizontally */
+            text-align: left;
+            line-height: 1.0;
+            font-family: monospace;
+            white-space: pre;
+            font-size: 13px;
+            color: rgba(0,0,0, 0.4) /*DimGrey*/
+        }
+        
+
+        /* Apply the "Roboto" font to the whole page */
+        body {
+            font-family: "Roboto", sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* Style the input fields */
+        input[type="number"],
+        input[type="time"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        /* Style the buttons */
+        button {
+            padding: 10px 20px;
+            background-color: #009688;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #00796b;
+        }
+
+        /* Style the form */
+        form {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <h1>water-web-control</h1>
+    <!-- Removed the first line of text -->
+    
+    <!-- Content column -->
+    <div class="content-column">
+        <!-- Wrap all the input elements in a form -->
+        <form>
+            <div  class="ascii-art-footer">
+                <div  class="ascii-art-footer-inner">
+   , ,    ^_^    ,_,    ^ ^
+  (@,@)  (-,-)  (o,o)  (*,*)
+  (`"')  (`"')  {`"'}  [`"']
+---"-"----"-"----"-"----"-"---
+
+</div>
+                </div>
+            <!-- Period in days -->
+            <div class="input-row">
+                <div class="label-column">
+                    <label for="period" title="Number of days between each watering.">Period in days:</label>
+                </div>
+                <div class="input-column">
+                    <!-- Use input type "number" with size attribute -->
+                    <input type="number" id="period" name="period" min="0" max="7" step="1" size="2" value="{{period_day_value}}">
+                </div>
+            </div>
+
+            <!-- Start time -->
+            <div class="input-row">
+                <div class="label-column">
+                    <label for="start-time" title="What time the watering start.">Start time:</label>
+                </div>
+                <div class="input-column">
+                    <!-- Set the time input to 24-hour format -->
+                    <input type="time" id="start-time" name="start-time" inputmode="time" step="3600" value="{{start_time_hour_minute_value}}">
+                </div>
+            </div>
+
+            <!-- Duration in minutes -->
+            <div class="input-row">
+                <div class="label-column">
+                    <label for="duration" title="How many minutes is it watering.">Duration in minutes:</label>
+                </div>
+                <div class="input-column">
+                    <input type="number" id="duration" name="duration" min="0" max="105" size="3" step="15" value="{{duration_minute_value}}">
+                </div>
+            </div>
+
+            <!-- Enable -->
+            <div class="input-row">
+                <div class="label-column">
+                    <label for="enable"  title="If un-checked, no watering is scheduled.">Enable:</label>
+                </div>
+                <div class="input-column">
+                    <input type="checkbox" id="enable" name="enable" {{enable_value}}>
+                </div>
+            </div>
+
+            <!-- Reset and Submit buttons -->
+            <div class="input-row">
+                <div class="label-column">
+                    <button type="reset">Reset</button>
+                </div>
+                <div class="input-column">
+                    <button type="submit">Submit</button>
+                </div>
+            </div>
+            <div  class="ascii-art-footer">
+                <div  class="ascii-art-footer-inner">
+  \/        __        \/        __    
+ \()/    \ /  \ /    \()/    \ /  \ / 
+--()--  \_\\  //_/  --()--  \_\\  //_/
+ //\\    .'/()\'.    //\\    .'/()\'. 
+  \/      \\  //      \/      \\  //  
+
+
+</div>
+            </div>
+
+            <!-- Status -->
+            <div class="input-row">
+                <div class="label-column">
+                    Last scheduled watering:
+                </div>
+                <div class="input-column">
+                    {{last_scheduled_watering}}
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="label-column">
+                    Next scheduled watering:
+                </div>
+                <div class="input-column">
+                    {{next_scheduled_watering}}
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="label-column">
+                    Battery % (Volt):
+                </div>
+                <div class="input-column">
+                    {{battery_status_string}}
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="label-column">
+                    Watering now:
+                </div>
+                <div class="input-column">
+                    {{watering_now_string}}
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="label-column">
+                    Uptime:
+                </div>
+                <div class="input-column">
+                    {{uptime_day_value}}
+                </div>
+            </div>
+            
+
+            <!-- TODO also add message in text ? 
+                 To fit things like (running on battery, with batt level ?) -->
+
+            <div  class="ascii-art-footer">
+                <div  class="ascii-art-footer-inner">
+                    `::`
+                     /    `;:`
+                    `      /
+    _            .;:;     `        ,,, 
+  _(_)_          ::;       wWWWw  {{{}}
+ (_)@(_)  ,,,  _ ';:;;'    (___)   ~Y~ 
+  /(_)   {{|}} >'. ||  _    ~Y~     |
+  |  {{}  ~Y~  `> \||.'< (@)\|/|}  \|/ 
+(\|/)~Y~  \|/    `>|/ <` \Y/\|~Y~  \|/ 
+ \|//\|/  \|//    `||/`  \|/\|\|/ \\|//
+</div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
