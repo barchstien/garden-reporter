@@ -2,8 +2,7 @@
 
 #include <WiFiNINA.h>
 
-// debug
-#include "TimeLib.h"
+#include "time_lib.h"
 
 // Expects arduino_secrets.h to be like :
 // #define SECRET_SSID "your-ssid"
@@ -91,34 +90,17 @@ struct wifi_t
     if (t == 0)
     {
       Serial.println("Failed to get NTP time");
-      // TODO make a fuc for that !!
-      time_t t2 = now();
-      tmElements_t dt;
-      breakTime(t2, dt);
-      Serial.println(dt.to_string(dt));
+      time_element_t dt = now_element();
+      Serial.println(dt.to_string());
     }
     else
     {
       Serial.println("Got NTP time");
-      setTime(t);
+      set_time(t);
       // print
-      time_t t2 = now();
-      tmElements_t dt;
-      breakTime(t2, dt);
-      Serial.println(dt.to_string(dt));
+      time_element_t dt = now_element();
+      Serial.println(dt.to_string());
     }
-  }
-
-  void debug()
-  {
-    int t = WiFi.getTime();
-    Serial.println("-- Wifi debug");
-    Serial.print("getTime(): ");
-    Serial.println(t);
-    tmElements_t dt;
-    time_t tt = t;
-    breakTime(tt, dt);
-    Serial.println(dt.to_string(dt));
   }
 
   void print_status()

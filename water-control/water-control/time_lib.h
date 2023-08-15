@@ -1,5 +1,5 @@
 /**
- * Big time based on TimeLib.h : https://github.com/PaulStoffregen/Time
+ * Big time based on TimeLib.h .cpp : https://github.com/PaulStoffregen/Time
  * Changes :
  *  - Fix compiler warnings (many hack didn't make sense, lots of un-used func)
  *  - Remove sync ptr and interval. It took space and I am not interrested in auto sync.
@@ -18,22 +18,12 @@
 
 #pragma once
 
-typedef enum
+typedef enum struct time_status_t
 {
   timeNotSet, timeNeedsSync, timeSet
-} timeStatus_t;
+};
 
-typedef enum
-{
-  dowInvalid, dowSunday, dowMonday, dowTuesday, dowWednesday, dowThursday, dowFriday, dowSaturday
-} timeDayOfWeek_t;
-
-typedef enum
-{
-  tmSecond, tmMinute, tmHour, tmWday, tmDay,tmMonth, tmYear, tmNbrFields
-} tmByteFields;	   
-
-struct tmElements_t
+struct time_element_t
 {
   uint8_t Second;
   uint8_t Minute;
@@ -43,7 +33,7 @@ struct tmElements_t
   uint8_t Month;
   uint8_t Year;   // offset from 1970;
 
-  arduino::String to_string(tmElements_t dt);
+  arduino::String to_string();
 };
 
 // convenience macros to convert to and from tm years 
@@ -62,13 +52,17 @@ struct tmElements_t
 
 /**
  * @return the current time as seconds since Jan 1 1970 
- * @note TODO ? Why use time_t, instead of unit64_t ?
  */
 time_t now();
 
-void setTime(time_t t);
+/**
+ * @return the current time as structured elements
+ */
+time_element_t now_element();
 
-void setTime(int hr,int min,int sec,int day, int month, int yr);
+void set_time(time_t t);
+
+void set_time(int hr,int min,int sec,int day, int month, int yr);
 
 void adjustTime(long adjustment);
 
@@ -76,11 +70,11 @@ void adjustTime(long adjustment);
  * @param t time in sec since 01/01/1970
  * @param tm t broke into year/month/etc components
  */
-void breakTime(const time_t time, tmElements_t &tm);
+time_element_t break_to_element(const time_t sec_since_1970);
 
 /**
  * @param tm time structured into year/month/etc components
  * @return t time in sec since 01/01/1970
  */
-time_t makeTime(const tmElements_t &tm);
+time_t sec_since_1970_from(const time_element_t &t);
 

@@ -1,6 +1,6 @@
 #include <Arduino.h> 
 
-#include "TimeLib.h"
+#include "time_lib.h"
 
 #include <sstream>
 
@@ -14,36 +14,36 @@
 // API starts months from 1, this array starts from 0
 static const uint8_t monthDays[] = {31,28,31,30,31,30,31,31,30,31,30,31};
 
-arduino::String tmElements_t::to_string(tmElements_t dt)
+arduino::String time_element_t::to_string()
 {
   arduino::String s;
   // YYYY/MM/DD HH:MM:SS --> 20 (including ending \0)
   s.reserve(20);
-  s += (dt.Year + 1970);
+  s += (Year + 1970);
   s += "/";
-  if (dt.Month < 10)
+  if (Month < 10)
     s += "0";
-  s += dt.Month;
+  s += Month;
   s += "/";
-  if (dt.Day < 10)
+  if (Day < 10)
     s += "0";
-  s += dt.Day;
+  s += Day;
   s += " ";
-  if (dt.Hour < 10)
+  if (Hour < 10)
     s += "0";
-  s += dt.Hour;
+  s += Hour;
   s += ":";
-  if (dt.Minute < 10)
+  if (Minute < 10)
     s += "0";
-  s += dt.Minute;
+  s += Minute;
   s += ":";
-  if (dt.Second < 10)
+  if (Second < 10)
     s += "0";
-  s += dt.Second;
+  s += Second;
   return s;
 }
 
-void breakTime(const time_t timeInput, tmElements_t &tm)
+time_element_t break_to_element(const time_t time_input)
 {
   // break the given time_t into time components
   // this is a more compact version of the C library localtime function
@@ -53,8 +53,9 @@ void breakTime(const time_t timeInput, tmElements_t &tm)
   uint8_t month, monthLength;
   uint32_t time;
   unsigned long days;
+  time_element_t tm;
 
-  time = (uint32_t)timeInput;
+  time = (uint32_t)time_input;
   tm.Second = time % 60;
   time /= 60; // now it is minutes
   tm.Minute = time % 60;
@@ -99,9 +100,11 @@ void breakTime(const time_t timeInput, tmElements_t &tm)
   tm.Month = month + 1;
   // day of month
   tm.Day = time + 1;
+
+  return tm;
 }
 
-time_t makeTime(const tmElements_t &tm)
+time_t sec_since_1970_from(const time_element_t &t)
 {   
   // assemble time elements into time_t 
   // note year argument is offset from 1970 (see macros in time.h to convert to other formats)
@@ -111,8 +114,8 @@ time_t makeTime(const tmElements_t &tm)
   uint32_t seconds;
 
   // seconds from 1970 till 1 jan 00:00:00 of the given year
-  seconds= tm.Year*(SECS_PER_DAY * 365);
-  for (i = 0; i < tm.Year; i++)
+  seconds= t.Year*(SECS_PER_DAY * 365);
+  for (i = 0; i < t.Year; i++)
   {
     if (LEAP_YEAR(i))
     {
@@ -121,9 +124,9 @@ time_t makeTime(const tmElements_t &tm)
   }
   
   // add days for this year, months start from 1
-  for (i = 1; i < tm.Month; i++)
+  for (i = 1; i < t.Month; i++)
   {
-    if ( (i == 2) && LEAP_YEAR(tm.Year))
+    if ( (i == 2) && LEAP_YEAR(t.Year))
     {
       seconds += SECS_PER_DAY * 29;
     }
@@ -133,10 +136,10 @@ time_t makeTime(const tmElements_t &tm)
       seconds += SECS_PER_DAY * monthDays[i-1];
     }
   }
-  seconds+= (tm.Day-1) * SECS_PER_DAY;
-  seconds+= tm.Hour * SECS_PER_HOUR;
-  seconds+= tm.Minute * SECS_PER_MIN;
-  seconds+= tm.Second;
+  seconds+= (t.Day-1) * SECS_PER_DAY;
+  seconds+= t.Hour * SECS_PER_HOUR;
+  seconds+= t.Minute * SECS_PER_MIN;
+  seconds+= t.Second;
   return (time_t)seconds; 
 }
 
@@ -149,7 +152,7 @@ static uint32_t sysTime = 0;
  */
 static uint32_t prevMillis = 0;
 
-static timeStatus_t Status = timeNotSet;
+static time_status_t Status = time_status_t::timeNotSet;
 
 time_t now()
 {
@@ -164,14 +167,20 @@ time_t now()
   return (time_t)sysTime;
 }
 
-void setTime(time_t t)
+time_element_t now_element()
+{
+  time_t t = now();
+  return break_to_element(t);
+}
+
+void set_time(time_t t)
 {
   sysTime = (uint32_t)t;
-  Status = timeSet;
+  Status = time_status_t::timeSet;
   prevMillis = millis();
 } 
 
-void setTime(int hr,int min,int sec,int dy, int mnth, int yr)
+void set_time(int hr,int min,int sec,int dy, int mnth, int yr)
 {
  // Year can be given as full four digit year or two digts (2010 or 10 for 2010);  
  // It is converted to years since 1970
@@ -179,14 +188,14 @@ void setTime(int hr,int min,int sec,int dy, int mnth, int yr)
       yr = yr - 1970;
   else
       yr += 30;
-  tmElements_t tm;
+  time_element_t tm;
   tm.Year = yr;
   tm.Month = mnth;
   tm.Day = dy;
   tm.Hour = hr;
   tm.Minute = min;
   tm.Second = sec;
-  setTime(makeTime(tm));
+  set_time(sec_since_1970_from(tm));
 }
 
 void adjustTime(long adjustment)
@@ -195,7 +204,7 @@ void adjustTime(long adjustment)
 }
 
 // indicates if time has been set and recently synchronized
-timeStatus_t timeStatus()
+time_status_t timeStatus()
 {
   now(); // required to actually update the status
   return Status;
