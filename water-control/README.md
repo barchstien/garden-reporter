@@ -27,9 +27,21 @@ Control a solenoid valve, measure the outgoing water flow, report and take order
 ## Schematics
 TODO
 
+## Power use
+| Function  | Consumption mA  |
+|--:|---|
+|delay                    |25         |
+|wifi connect             |45 to 85   |
+|wifi low power mode      |45 to 55   |
+|wifi end                 |25         |
+|LowPower idle/sleep/deep |19
+|coil driver no load      |2.5
+|5V reg no load           |3.5
+|flow meter alone         |2
+
 # SW
 using Arduino IDE, source is in [water-control](./water-control)  
-Requires Arduino Libraires (t on install with IDE) :  
+Requires Arduino Libraires (to on install with IDE) :  
  * ArduinoHttpClient (easy http GET)
  * ArduinoJson (Json http response)
  * Arduino_Low_Power (to confirm, to keep power usage to min)
@@ -40,3 +52,7 @@ Requires Arduino Libraires (t on install with IDE) :
 
 # Notes
 file:///home/bastien/while-true/common/garden-reporter/water-control/index.html?period=1&start-time=12%3A30&duration=66
+
+# Bibliography
+ * [Arduino-Nano-33-IoT-Ultimate-Guide](https://github.com/ostaquet/Arduino-Nano-33-IoT-Ultimate-Guide)
+ * [Official](https://docs.arduino.cc/hardware/nano-33-iot)

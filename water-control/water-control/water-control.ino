@@ -7,17 +7,13 @@
 #include "wifi.h"
 
 volatile uint32_t flow_cnt = 0;
-volatile bool start_water = false;
 
 void flow_trig_isr()
 {
   flow_cnt ++;
 }
 
-void start_water_isr()
-{
-  start_water = true;
-}
+unsigned long b = 10UL;
 
 button_t button;
 http_client_t http_client;
@@ -35,8 +31,12 @@ void setup()
   button.init();
   led.init();
   valve.init();
-  //wifi.init();
+  wifi.init();
+  // TODO ? wait for NTP ?
+  //delay(10000);
 
+// TODO delete !!!
+#if 0
   // trigs
   attachInterrupt(
     digitalPinToInterrupt(FLOW_TRIG), flow_trig_isr, RISING
@@ -50,6 +50,7 @@ void setup()
   LowPower.attachInterruptWakeup(
     digitalPinToInterrupt(START_TRIG), start_water_isr, FALLING
   );
+#endif
 
   // blink
   led.off();
@@ -66,6 +67,45 @@ void setup()
 
 void loop()
 {
+#if 1
+  delay(10000);
+  Serial.println("End wifi, then re-connect");
+  wifi.end();
+  wifi.init();
+#endif
+
+#if 0
+  button.debug_read();
+  delay(1000);
+#endif
+
+#if 0
+  delay(5000);
+  Serial.println("-- delay for 10 sec");
+  delay(10000);
+  Serial.println("-- wifi init 10 sec");
+  wifi.init();
+  delay(10000);
+  Serial.println("-- wifi sleep 10 sec");
+  wifi.sleep();
+  delay(10000);
+  Serial.println("-- wifi end10 sec");
+  wifi.end();
+  delay(10000);
+#endif
+
+#if 0
+  delay(5000);
+  Serial.println("-- delay for 10 sec");
+  delay(10000);
+  Serial.println("-- ");
+  LowPower.idle(10000);
+  Serial.println("-- ");
+  LowPower.sleep(10000);
+  Serial.println("-- ");
+  LowPower.deepSleep(10000);
+#endif
+
 #if 0
   // debugu valve on/off
   digitalWrite(LED_BUILTIN, HIGH);
@@ -80,11 +120,11 @@ void loop()
   // debug wifi and http
   Serial.println("-- Loop");
   Serial.println("-- wifi waky");
-  wifi.wakeup();
+  wifi.connect();
   wifi.debug();
   Serial.println("-- http GET");
   http_client.report();
-  wifi.sleep();
+  wifi.end();
 
   delay(10000);
 #endif

@@ -39,20 +39,5 @@ struct http_client_t
     }
 
     client.stop();
-
-    //if (client.connect(HTTP_SERVER_IP, HTTP_SERVER_PORT))
-    //{
-    //  //
-    //  client.println("GET /report HTTP/1.1");
-    //  //client.println("Host: www.google.com");
-    //  client.println("Connection: close");
-    //  client.println();
-    //}
-    //else
-    //{
-    //  Serial.println("Failed to connect to server");
-    //}
   }
-
-  // TODO read
 };

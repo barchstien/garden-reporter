@@ -3,7 +3,7 @@
 #include <WiFiNINA.h>
 
 // debug
-#include <TimeLib.h>
+#include "TimeLib.h"
 
 // Expects arduino_secrets.h to be like :
 // #define SECRET_SSID "your-ssid"
@@ -13,29 +13,38 @@
 char ssid[] = SECRET_SSID;
 char pass[] = SECRET_PASS;
 
+#define GET_TIME_MAX_TRY   20
+#define GET_TIME_WAIT_MSEC 1000
+
 struct wifi_t
 {
-  wifi_t()
-    : is_connected(false)
-  {}
-
   void init()
   {
-    WiFi.setTimeout(30000);
-    // Try to connect on startup ?
-    connect();
+    //WiFi.setTimeout(10000);
+    // Connect on init, gives time to NTP lock
+    bool connected = connect();
     //// wait for NTP sync
+    if (connected)
+    {
+      ntp_time_sync();
+    }
+    else
+    {
+      // just display whatever time that has been synced before
+
+    }
+    
     //delay(10000);
     //sleep();
   }
 
-  void connect()
+  bool connect()
   {
     int status = WiFi.status();
     if (status == WL_CONNECTED)
     {
       // already connected
-      return;
+      return true;
     }
     
     Serial.print("-- Wifi connecting to ssid: ");
@@ -47,6 +56,7 @@ struct wifi_t
       Serial.println(WiFi.SSID());
       Serial.print("   rssi: ");
       Serial.println(WiFi.RSSI());
+      return true;
     }
     else if (status == WL_NO_MODULE)
       Serial.println("   Wifi module not found");
@@ -60,20 +70,43 @@ struct wifi_t
       Serial.println("   Connection lost");
     else
       Serial.println("Failed to connect !");
+    return false;
   }
 
-  void wakeup()
+  void end()
   {
-    WiFi.noLowPowerMode();
-    //connect();
+    WiFi.end();
   }
 
-  void sleep()
+  void ntp_time_sync()
   {
-    WiFi.lowPowerMode();
-    //WiFi.disconnect();
-    //WiFi.end();
-    //is_connected = false;
+    int t = WiFi.getTime();
+    int cnt = 0;
+    while(t == 0 && cnt < GET_TIME_MAX_TRY)
+    {
+      delay(GET_TIME_WAIT_MSEC);
+      t = WiFi.getTime();
+      cnt ++;
+    }
+    if (t == 0)
+    {
+      Serial.println("Failed to get NTP time");
+      // TODO make a fuc for that !!
+      time_t t2 = now();
+      tmElements_t dt;
+      breakTime(t2, dt);
+      Serial.println(dt.to_string(dt));
+    }
+    else
+    {
+      Serial.println("Got NTP time");
+      setTime(t);
+      // print
+      time_t t2 = now();
+      tmElements_t dt;
+      breakTime(t2, dt);
+      Serial.println(dt.to_string(dt));
+    }
   }
 
   void debug()
@@ -85,19 +118,7 @@ struct wifi_t
     tmElements_t dt;
     time_t tt = t;
     breakTime(tt, dt);
-    //dt.Year += 1970;
-    Serial.print(dt.Year + 1970);
-    Serial.print("/");
-    Serial.print(dt.Month);
-    Serial.print("/");
-    Serial.print(dt.Day);
-    Serial.print(" ");
-    Serial.print(dt.Hour);
-    Serial.print(":");
-    Serial.print(dt.Minute);
-    Serial.print(":");
-    Serial.print(dt.Second);
-    Serial.println();
+    Serial.println(dt.to_string(dt));
   }
 
   void print_status()
@@ -112,10 +133,6 @@ struct wifi_t
     {
       Serial.print("Disconnected, status: ");
       Serial.println(status);
-      //std::to_string(status)).c_str()
     }
   }
-
-  // keep ?
-  bool is_connected;
 };
