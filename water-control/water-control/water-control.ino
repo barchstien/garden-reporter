@@ -68,9 +68,10 @@ void setup()
 void loop()
 {
 #if 1
-  delay(10000);
-  Serial.println("End wifi, then re-connect");
+  Serial.println("End wifi, then re-connect in 10 sec");
   wifi.end();
+  delay(10000);
+  Serial.println("re-connecting...");
   wifi.init();
 #endif
 

@@ -27,14 +27,6 @@ struct wifi_t
     {
       ntp_time_sync();
     }
-    else
-    {
-      // just display whatever time that has been synced before
-
-    }
-    
-    //delay(10000);
-    //sleep();
   }
 
   bool connect()
@@ -89,7 +81,7 @@ struct wifi_t
     }
     if (t == 0)
     {
-      Serial.println("Failed to get NTP time");
+      Serial.println("Failed to get NTP time, using already set time");
       time_element_t dt = now_element();
       Serial.println(dt.to_string());
     }

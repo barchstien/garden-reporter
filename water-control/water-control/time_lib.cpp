@@ -2,8 +2,6 @@
 
 #include "time_lib.h"
 
-#include <sstream>
-
 /*============================================================================*/	
 /* functions to convert to and from system time */
 /* These are for interfacing with time services and are not normally needed in a sketch */
@@ -152,7 +150,7 @@ static uint32_t sysTime = 0;
  */
 static uint32_t prevMillis = 0;
 
-static time_status_t Status = time_status_t::timeNotSet;
+static time_status_t status = time_status_t::not_set;
 
 time_t now()
 {
@@ -169,34 +167,17 @@ time_t now()
 
 time_element_t now_element()
 {
-  time_t t = now();
-  return break_to_element(t);
+  return break_to_element(now());
 }
 
 void set_time(time_t t)
 {
-  sysTime = (uint32_t)t;
-  Status = time_status_t::timeSet;
+  // Always use summer time !
+  // No need to water in summer, and fuck winter time
+  sysTime = (uint32_t)t + (3600 * SUMMER_TIME_UTC_OFFSET);
+  status = time_status_t::ok;
   prevMillis = millis();
 } 
-
-void set_time(int hr,int min,int sec,int dy, int mnth, int yr)
-{
- // Year can be given as full four digit year or two digts (2010 or 10 for 2010);  
- // It is converted to years since 1970
-  if( yr > 99)
-      yr = yr - 1970;
-  else
-      yr += 30;
-  time_element_t tm;
-  tm.Year = yr;
-  tm.Month = mnth;
-  tm.Day = dy;
-  tm.Hour = hr;
-  tm.Minute = min;
-  tm.Second = sec;
-  set_time(sec_since_1970_from(tm));
-}
 
 void adjustTime(long adjustment)
 {
@@ -207,5 +188,5 @@ void adjustTime(long adjustment)
 time_status_t timeStatus()
 {
   now(); // required to actually update the status
-  return Status;
+  return status;
 }

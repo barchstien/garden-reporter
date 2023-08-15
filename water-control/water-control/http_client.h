@@ -11,10 +11,6 @@
 
 struct http_client_t
 {
-  void init()
-  {
-  }
-
   void report()
   {
     //

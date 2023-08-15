@@ -13,14 +13,17 @@
  *  - Remove many (MANY !) un-used functions. Clarity is paramount, noise is to avoid.
  *    There were even functions in header, that were implemented no-where...
  *
- * TODO : get time from another HTTP/NTP source. Other than WifiNina, which doesn't mind daylight saving
+ * TODO : get time from http server, that already solve local
  */
 
 #pragma once
 
+#define SUMMER_TIME_UTC_OFFSET 2
+#define WINTER_TIME_UTC_OFFSET 1
+
 typedef enum struct time_status_t
 {
-  timeNotSet, timeNeedsSync, timeSet
+  not_set, need_sync, ok
 };
 
 struct time_element_t
@@ -37,8 +40,8 @@ struct time_element_t
 };
 
 // convenience macros to convert to and from tm years 
-#define  tmYearToCalendar(Y) ((Y) + 1970)  // full four digit year 
-#define  CalendarYrToTm(Y)   ((Y) - 1970)
+#define tmYearToCalendar(Y) ((Y) + 1970)  // full four digit year 
+#define CalendarYrToTm(Y)   ((Y) - 1970)
 
 // Useful Constants
 #define SECS_PER_MIN  ((time_t)(60UL))
@@ -61,8 +64,6 @@ time_t now();
 time_element_t now_element();
 
 void set_time(time_t t);
-
-void set_time(int hr,int min,int sec,int day, int month, int yr);
 
 void adjustTime(long adjustment);
 
