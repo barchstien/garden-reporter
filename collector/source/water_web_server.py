@@ -73,6 +73,28 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             duration_minute_value = query_components.get('duration_minute_value', [''])[0]
             water_liter_value = query_components.get('water_liter_value', [''])[0]
 
+            print(time.time())
+            print(int(time.time()))
+            print('++++')
+            print(time.gmtime())
+            print(time.gmtime().tm_zone)
+            print(time.localtime())
+            print('=====')
+            print(time.mktime(time.localtime()))
+            print(time.mktime(time.localtime()) - time.mktime(time.gmtime()))
+            print('///////')
+            f = 1676591760.6215856
+            print(time.mktime(time.localtime(f)) - time.mktime(time.gmtime(f)))
+            print(time.gmtime(f))
+            print(time.localtime(f))
+            # TODO diff gives the +1 of UTC+1, localtile().tm_isdst if true => +1
+            f = time.time()
+            time_to_send = int(f)
+            time_to_send += int(time.mktime(time.localtime(f)) - time.mktime(time.gmtime(f)))
+            if time.localtime(f).tm_isdst:
+                time_to_send += 3600
+
+
             # TODO save those var to display in web ui
 
             # TODO send new config, if any...
@@ -80,7 +102,8 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             data = {\
                 'period_day_value': period_day_value,
                 'start_time_hour_minute_value': start_time_hour_minute_value,
-                'duration_minute_value': duration_minute_value
+                'duration_minute_value': duration_minute_value,
+                'sec_since_1970': time_to_send
             }
             print(data)
             json_data = json.dumps(data)

@@ -31,9 +31,9 @@ void setup()
   button.init();
   led.init();
   valve.init();
+  // init() waits for NTP sync, then disconnect
   wifi.init();
-  // TODO ? wait for NTP ?
-  //delay(10000);
+  wifi.end();
 
 // TODO delete !!!
 #if 0
@@ -67,7 +67,7 @@ void setup()
 
 void loop()
 {
-#if 1
+#if 0
   Serial.println("End wifi, then re-connect in 10 sec");
   wifi.end();
   delay(10000);
@@ -117,12 +117,11 @@ void loop()
   delay(20000);
 #endif
 
-#if 0
+#if 1
   // debug wifi and http
   Serial.println("-- Loop");
   Serial.println("-- wifi waky");
   wifi.connect();
-  wifi.debug();
   Serial.println("-- http GET");
   http_client.report();
   wifi.end();
