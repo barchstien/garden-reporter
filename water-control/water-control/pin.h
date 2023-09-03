@@ -6,7 +6,7 @@
 #define VALVE_ENABLE    A2
 #define VALVE_PHASE     A3
 #define FLOW_TRIG       9
-#define LED             3
+#define LED             3   // PWM
 #define BIT0            4
 #define BIT1            5
 #define BIT2            6

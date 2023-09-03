@@ -141,14 +141,14 @@ time_t sec_since_1970_from(const time_element_t &t)
   return (time_t)seconds; 
 }
 
-/** Master second counter since 01/01/1970 */
-static uint32_t sysTime = 0;
+/** Master sec counter since 01/01/1970 */
+static volatile uint32_t sysTime = 0;
 
 /** 
  * Last time in millisec counter since board boot, that sysTime has been updated.
  * It is used as time elapsed since time set or get (aka now())
  */
-static uint32_t prevMillis = 0;
+static volatile uint32_t prevMillis = 0;
 
 static time_status_t status = time_status_t::not_set;
 
