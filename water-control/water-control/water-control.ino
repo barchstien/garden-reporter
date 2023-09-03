@@ -63,10 +63,19 @@ void setup()
 
   Serial.println("--");
   Serial.println("-- setup END");
+
+  // debug
+  delay(30000);
+  valve.water_on();
+  delay(60000);
+  valve.water_off();
 }
 
 void loop()
 {
+
+  delay(1000);
+
 #if 0
   Serial.println("End wifi, then re-connect in 10 sec");
   wifi.end();
@@ -117,7 +126,7 @@ void loop()
   delay(20000);
 #endif
 
-#if 1
+#if 0
   // debug wifi and http
   Serial.println("-- Loop");
   Serial.println("-- wifi waky");

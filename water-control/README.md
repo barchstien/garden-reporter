@@ -49,6 +49,34 @@ Requires Arduino Libraires (to on install with IDE) :
  * Time (unix to date/time, local time sync)
  * WiFiNINA (wifi connection + web client)
 
+# Interface
+```
+
+|------1-2-3-4-5-6---7-8-9-10-11-12---|
+|                                     |
+|                                     |
+|                                     |
+|    Arduibox layout seen from top    |
+|                                     |
+|                                     |
+|                                     |
+|-----------------------------Gnd-9V--|
+```
+**Note:** [Pin #] as on drawing
+| Pin # | Function |
+|--:|---|
+|1| batt sense |
+|2| 3.3V |
+|3| flow trig |
+|4| gnd |
+|5| LED (pwm)|
+|6| start trig|
+|7| allow water |
+|8| bit 2 |
+|9| bit 1|
+|10| bit 0 |
+|11| valve 0V/9V |
+|12| valve 9V/0V |
 
 # Notes
 file:///home/bastien/while-true/common/garden-reporter/water-control/index.html?period=1&start-time=12%3A30&duration=66
