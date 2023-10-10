@@ -69,14 +69,37 @@ Requires Arduino Libraires (to on install with IDE) :
 |2| 3.3V |
 |3| flow trig |
 |4| gnd |
-|5| LED (pwm)|
-|6| start trig|
+|5| LED (pwm) |
+|6| start trig |
+|||
 |7| allow water |
 |8| bit 2 |
-|9| bit 1|
+|9| bit 1 |
 |10| bit 0 |
 |11| valve 0V/9V |
 |12| valve 9V/0V |
+
+
+## Button interface
+```
+|-1-2-3____4-5-6-7-|
+|                  |
+|                  |
+|                  |
+|                  |
+|------------------|
+```
+**Note:** [Pin #] as on drawing
+| Pin # | Function |
+|--:|---|
+|1| gnd |
+|2| led |
+|3| start trig |
+|||
+|4| allow water |
+|5| bit 2 |
+|6| bit 1 |
+|7| bit 0 |
 
 # Notes
 file:///home/bastien/while-true/common/garden-reporter/water-control/index.html?period=1&start-time=12%3A30&duration=66

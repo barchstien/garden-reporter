@@ -15,7 +15,7 @@ struct battery_t
 {
   uint32_t read_volt()
   {
-    return analogRead(BATT_READ * V_MAX / ADC_MAX * V_DIVIDER);
+    return analogRead(BATT_READ);// * V_MAX / ADC_MAX * V_DIVIDER;
   }
 
   /** @return true if enoug battery */

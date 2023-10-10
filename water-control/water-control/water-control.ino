@@ -1,5 +1,6 @@
 #include <ArduinoLowPower.h>
 
+#include "battery.h"
 #include "button.h"
 #include "led.h"
 #include "http_client.h"
@@ -7,14 +8,23 @@
 #include "wifi.h"
 
 volatile uint32_t flow_cnt = 0;
+volatile uint32_t flow_cnt_last = 0;
+
+volatile uint32_t start_water_cnt = 0;
 
 void flow_trig_isr()
 {
   flow_cnt ++;
 }
 
+void start_water_trig()
+{
+  start_water_cnt ++;
+}
+
 unsigned long b = 10UL;
 
+battery_t battery;
 button_t button;
 http_client_t http_client;
 led_t led;
@@ -32,15 +42,12 @@ void setup()
   led.init();
   valve.init();
   // init() waits for NTP sync, then disconnect
-  wifi.init();
-  wifi.end();
+  //wifi.init();
+  //wifi.end();
 
 // TODO delete !!!
 #if 0
   // trigs
-  attachInterrupt(
-    digitalPinToInterrupt(FLOW_TRIG), flow_trig_isr, RISING
-  );
   attachInterrupt(
     digitalPinToInterrupt(START_TRIG), start_water_isr, FALLING
   );
@@ -51,6 +58,13 @@ void setup()
     digitalPinToInterrupt(START_TRIG), start_water_isr, FALLING
   );
 #endif
+  // trigs
+  attachInterrupt(
+    digitalPinToInterrupt(START_TRIG), start_water_trig, RISING
+  );
+  attachInterrupt(
+    digitalPinToInterrupt(FLOW_TRIG), flow_trig_isr, RISING
+  );
 
   // blink
   led.off();
@@ -63,18 +77,21 @@ void setup()
 
   Serial.println("--");
   Serial.println("-- setup END");
-
+#if 0
   // debug
   delay(30000);
   valve.water_on();
   delay(60000);
   valve.water_off();
+#endif
 }
 
 void loop()
 {
-
-  delay(1000);
+#if 0
+  delay(10000);
+  http_client.report();
+#endif
 
 #if 0
   Serial.println("End wifi, then re-connect in 10 sec");
@@ -84,9 +101,14 @@ void loop()
   wifi.init();
 #endif
 
-#if 0
+#if 1
   button.debug_read();
-  delay(1000);
+  Serial.print("start_water_cnt: ");
+  Serial.println(start_water_cnt);
+  Serial.print("battery voltage: ");
+  Serial.println(battery.read_volt());
+  
+  delay(200);
 #endif
 
 #if 0
