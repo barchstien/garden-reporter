@@ -46,7 +46,7 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
             # Read content from index.html file and send it as the response
-            with open('source/index.html', 'rb') as file:
+            with open('source/static/index.html', 'rb') as file:
                 content = file.read()
                 content = re.sub(b'{{period_day_value}}', b'2', content)
                 content = re.sub(b'{{start_time_hour_minute_value}}', b'20:03', content)
@@ -60,6 +60,14 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
                 content = re.sub(b'{{watering_now_string}}', b'nope', content)
                 content = re.sub(b'{{uptime_day_value}}', b'3 days', content)
                 self.wfile.write(content)
+        
+        elif self.path == '/favicon.ico':
+            self.send_response(200)
+            self.send_header('Content-Type', 'image/x-icon')
+            self.end_headers()
+            with open('source/static/favicon.ico', 'rb') as file:
+                #self.send_header('Content-Length', 0)
+                self.wfile.write(file.read())
         
         elif url_parsed.path == '/report':
             print('-- report !')

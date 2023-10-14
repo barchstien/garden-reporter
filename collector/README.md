@@ -24,6 +24,7 @@ Xbee --> Serial/USB --> python3 --> influxdb
  - Apply calibration
  - Store collected data to influx db
  - Keep a list of probes and their profiles
+ - Water Web Server, for Human interaction, and water-control
 
 ## Probe profile
 Probes have unit specific characteristics which need to be stored at the collector level :
@@ -46,6 +47,12 @@ It may use a formula from datasheet or a manual calibration
  * temperature : from datasheet deg = V*100 - 50
  * Compare with a calibrated lux meter
  * battery voltage divider = 6
+
+## Water Web Server
+It has 2 use cases :
+ * For Human, to setup auto-watering, and get short status of water-control
+ * For water-control, to poll config and push status
+
 
 
 # TCP Serial
