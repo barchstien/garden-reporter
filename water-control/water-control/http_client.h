@@ -10,6 +10,7 @@
 #define HTTP_SERVER_IP "192.168.1.176"
 #define HTTP_SERVER_PORT 8000
 #define HTTP_REPORT "/report"
+#define HTTP_DEBUG "/debug"
 
 struct http_client_t
 {
@@ -27,7 +28,8 @@ struct http_client_t
     Serial.print("HTTP Response Code: ");
     Serial.println(statusCode);
 
-    if (statusCode == 200) {
+    if (statusCode == 200)
+    {
       Serial.println("Response Body:");
       Serial.println(responseBody);
 
@@ -55,6 +57,30 @@ struct http_client_t
     else
     {
       Serial.println("HTTP Request Failed");
+    }
+
+    client.stop();
+  }
+
+  // debug
+  void debug(String msg)
+  {
+    WiFiClient client;
+    HttpClient httpClient = HttpClient(client, HTTP_SERVER_IP, HTTP_SERVER_PORT);
+    String content_type = "application/x-www-form-urlencoded";
+    String put_data = "debug="+msg;
+    httpClient.put(HTTP_DEBUG, content_type, put_data);
+
+    // Read and parse the response
+    int statusCode = httpClient.responseStatusCode();
+    String responseBody = httpClient.responseBody();
+
+    Serial.print("HTTP Debug Response Code: ");
+    Serial.println(statusCode);
+
+    if (statusCode != 200)
+    {
+      Serial.println("HTTP Debug Request Failed");
     }
 
     client.stop();

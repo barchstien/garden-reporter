@@ -63,8 +63,14 @@ time_t now();
  */
 time_element_t now_element();
 
+/**
+ * @param t sec since 01/01/1970
+ */
 void set_time(time_t t);
 
+/**
+ * @param t sec
+ */
 void adjustTime(long adjustment);
 
 /**

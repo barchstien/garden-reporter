@@ -155,8 +155,8 @@ static time_status_t status = time_status_t::not_set;
 time_t now()
 {
   // calculate number of seconds passed since last call to now()
-  // millis() and prevMillis are both unsigned ints thus the subtraction will always be the absolute value of the difference
   unsigned long passed_sec = (millis() - prevMillis) / 1000UL;
+  // update local time ref if older than 1000 sec
   if (passed_sec >= 1000)
   {
     sysTime += passed_sec;

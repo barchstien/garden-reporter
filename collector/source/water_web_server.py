@@ -117,6 +117,13 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             json_data = json.dumps(data)
             self.wfile.write(json_data.encode())
 
+        elif url_parsed.path == '/debug':
+            print('-- debug !')
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            query_components = urllib.parse.parse_qs(url_parsed.query)
+            print(query_components)
         else:
             self.send_error(404, "File Not Found at path:", self.path)
 

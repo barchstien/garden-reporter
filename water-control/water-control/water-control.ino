@@ -11,8 +11,9 @@ volatile uint32_t flow_cnt = 0;
 volatile uint32_t flow_cnt_last = 0;
 
 volatile uint32_t start_water_cnt = 0;
+volatile uint32_t start_water_cnt_lp = 0;
 
-void flow_trig_isr()
+void flow_trig()
 {
   flow_cnt ++;
 }
@@ -20,6 +21,11 @@ void flow_trig_isr()
 void start_water_trig()
 {
   start_water_cnt ++;
+}
+// debug to xompare trig vs low power trig
+void start_water_trig_lp()
+{
+  start_water_cnt_lp ++;
 }
 
 unsigned long b = 10UL;
@@ -41,11 +47,12 @@ void setup()
   button.init();
   led.init();
   valve.init();
-  // init() waits for NTP sync, then disconnect
-  //wifi.init();
+
+  // debug, stay always connected
+  wifi.connect();
   //wifi.end();
 
-// TODO delete !!!
+
 #if 0
   // trigs
   attachInterrupt(
@@ -58,13 +65,24 @@ void setup()
     digitalPinToInterrupt(START_TRIG), start_water_isr, FALLING
   );
 #endif
+  // wakeup on user input
+  LowPower.attachInterruptWakeup(
+    digitalPinToInterrupt(START_TRIG), start_water_trig, RISING
+  );
+#if 0
   // trigs
+  // TODO make it better, coz it increments by many, not 1
+  // ... will it be the same for flow trig ??
   attachInterrupt(
     digitalPinToInterrupt(START_TRIG), start_water_trig, RISING
   );
   attachInterrupt(
-    digitalPinToInterrupt(FLOW_TRIG), flow_trig_isr, RISING
+    digitalPinToInterrupt(FLOW_TRIG), flow_trig, RISING
   );
+#endif
+  // LowPower.idle() sleeps until wakeup trig
+  // https://www.arduino.cc/reference/en/libraries/arduino-low-power/
+  // ? Can I sleep/idle(15min) AND use wake-up trig ?
 
   // blink
   led.off();
@@ -77,6 +95,7 @@ void setup()
 
   Serial.println("--");
   Serial.println("-- setup END");
+
 #if 0
   // debug
   delay(30000);
@@ -88,6 +107,22 @@ void setup()
 
 void loop()
 {
+  // main logic
+  // Wake up every 15min
+  // connect wifi
+  // do /report
+  //   - how to save new config ?
+  // check if it's time to water
+  // end wifi
+  // sleep
+
+  // interrupt should work, even when sleeping
+  // interrupt button should wake up the loop
+
+  // ? Stay awake if watering ?
+
+  // TODO start with loop that does debug to display button
+
 #if 0
   delay(10000);
   http_client.report();
@@ -101,7 +136,7 @@ void loop()
   wifi.init();
 #endif
 
-#if 1
+#if 0
   button.debug_read();
   Serial.print("start_water_cnt: ");
   Serial.println(start_water_cnt);

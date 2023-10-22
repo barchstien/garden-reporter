@@ -53,6 +53,24 @@ It has 2 use cases :
  * For Human, to setup auto-watering, and get short status of water-control
  * For water-control, to poll config and push status
 
+### water-control /report
+water-control makes a GET report to **/report**
+GET params are :
+ * last scheduled watering (?)
+ * next schedule watering
+ * battery voltage
+ * water liter value
+ * watering now
+ * uptime
+Returns **application/json** with params:
+ * 'period_day_value': the period at which watering occurs
+ * 'start_time_hour_minute_value': watering start time
+ * 'duration_minute_value': duration of the watering in minutes
+ * 'sec_since_1970': current time in sec since EPOCH
+
+### water-control /debug
+water-control makes a GET debug to **/debug**, with params :
+ * 'debug': text
 
 
 # TCP Serial

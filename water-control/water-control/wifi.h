@@ -17,18 +17,6 @@ char pass[] = SECRET_PASS;
 
 struct wifi_t
 {
-  void init()
-  {
-    //WiFi.setTimeout(10000);
-    // Connect on init, gives time to NTP lock
-    bool connected = connect();
-    //// wait for NTP sync
-    if (connected)
-    {
-      ntp_time_sync();
-    }
-  }
-
   bool connect()
   {
     int status = WiFi.status();
@@ -69,6 +57,11 @@ struct wifi_t
     WiFi.end();
   }
 
+  /**
+  * DO NOT USE !
+  * This give UTC time, with no way to get local or day light saving.
+  * Instead, get time from HTTP server, which already has local date logic.
+  */
   void ntp_time_sync()
   {
     int t = WiFi.getTime();
