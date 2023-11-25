@@ -80,6 +80,9 @@ It then mounts the tcp connection as a pty, to open with xctu
 When the tcp connection is broken, the device is put back to cycle sleep mode, and the pty is unmounted
 ```bash
 pipenv run python3 ./source/serial_tcp_client.py
+
+# run XCTU
+/opt/Digi/XCTU-NG/app
 ```
 
 # Deploy

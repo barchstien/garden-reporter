@@ -79,10 +79,13 @@ class DataCalibrator:
         # range = max - min
         # % = 100 - (record - min) / range * 100
         moisture_range = moisture_dry - moisture_immerged
-        record['soil_moisture'] = \
-            100.0 - (float(record['soil_moisture']) - moisture_immerged) / moisture_range * 100.0
-        # round and make an integer
-        record['soil_moisture'] = int(record['soil_moisture'] + 0.5)
+        if moisture_range != 0:
+            record['soil_moisture'] = \
+                100.0 - (float(record['soil_moisture']) - moisture_immerged) / moisture_range * 100.0
+            # round and make an integer
+            record['soil_moisture'] = int(record['soil_moisture'] + 0.5)
+        else:
+            record['soil_moisture'] = int(0)
         
         
         print("{} >{:04x} rssi:{:d} loc:{} adcs: {: 5.1f} {: 5.1f} {: 5.1f} {: 5.1f}".format(
