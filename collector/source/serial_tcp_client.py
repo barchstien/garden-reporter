@@ -93,7 +93,7 @@ if __name__ == "__main__":
     os.close(pty)
 
     # keep alive to keep alive subprocess
-    print("Serial ready")
+    print("Serial ready at", PTY_PATH)
     print("press Ctrl+c to exit and remove serial")
     while True:
         try:
