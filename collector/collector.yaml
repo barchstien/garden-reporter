@@ -95,7 +95,7 @@
         offset: -50.0
       # TODO
       light:
-        coef: 60.6
-        offset: 0
+        coef: 1.068
+        offset: -578.0
 
 
