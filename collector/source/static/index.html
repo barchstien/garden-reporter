@@ -106,7 +106,7 @@
     <!-- Content column -->
     <div class="content-column">
         <!-- Wrap all the input elements in a form -->
-        <form>
+        <form method="post">
             <div  class="ascii-art-footer">
                 <div  class="ascii-art-footer-inner">
    , ,    ^_^    ,_,    ^ ^
@@ -115,36 +115,36 @@
 ---"-"----"-"----"-"----"-"---
 
 </div>
-                </div>
-            <!-- Period in days -->
-            <div class="input-row">
-                <div class="label-column">
-                    <label for="period" title="Number of days between each watering.">Period in days:</label>
-                </div>
-                <div class="input-column">
-                    <!-- Use input type "number" with size attribute -->
-                    <input type="number" id="period" name="period" min="0" max="7" step="1" size="2" value="{{period_day_value}}">
-                </div>
             </div>
-
             <!-- Start time -->
             <div class="input-row">
                 <div class="label-column">
-                    <label for="start-time" title="What time the watering start.">Start time:</label>
+                    <label for="start_time" title="What time the watering start.">Start time:</label>
                 </div>
                 <div class="input-column">
                     <!-- Set the time input to 24-hour format -->
-                    <input type="time" id="start-time" name="start-time" inputmode="time" step="3600" value="{{start_time_hour_minute_value}}">
+                    <input type="time" id="start_time" name="start_time" inputmode="time" step="60" value="{{start_time}}">
+                </div>
+            </div>
+
+            <!-- Period in days -->
+            <div class="input-row">
+                <div class="label-column">
+                    <label for="period_day" title="Number of days between each watering.">Period in days:</label>
+                </div>
+                <div class="input-column">
+                    <!-- Use input type "number" with size attribute -->
+                    <input type="number" id="period_day" name="period_day" min="1" max="10" step="1" size="4" value="{{period_day}}">
                 </div>
             </div>
 
             <!-- Duration in minutes -->
             <div class="input-row">
                 <div class="label-column">
-                    <label for="duration" title="How many minutes is it watering.">Duration in minutes:</label>
+                    <label for="duration_minute" title="How many minutes is it watering.">Duration in minutes:</label>
                 </div>
                 <div class="input-column">
-                    <input type="number" id="duration" name="duration" min="0" max="105" size="3" step="15" value="{{duration_minute_value}}">
+                    <input type="number" id="duration_minute" name="duration_minute" min="1" max="60" size="4" step="1" value="{{duration_minute}}">
                 </div>
             </div>
 
@@ -154,7 +154,7 @@
                     <label for="enable"  title="If un-checked, no watering is scheduled.">Enable:</label>
                 </div>
                 <div class="input-column">
-                    <input type="checkbox" id="enable" name="enable" {{enable_value}}>
+                    <input type="checkbox" id="enable" name="enable" {{enable}}>
                 </div>
             </div>
 
