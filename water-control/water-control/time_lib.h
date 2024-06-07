@@ -13,6 +13,8 @@
  *  - Remove many (MANY !) un-used functions. Clarity is paramount !
  *
  * TODO : get time from http server, that already solve local
+ * 
+ * Note: Most functions are not used, only set_time() and now()
  */
 
 #pragma once

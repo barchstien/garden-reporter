@@ -2,7 +2,6 @@
 #pragma once
 
 #include <WiFiNINA.h>
-//#include <ArduinoHttpClient.h>
 #include <ArduinoJson.h>
 
 #include "time_lib.h"
@@ -15,15 +14,26 @@
 
 struct http_reporter_t
 {
-  void report()
+  WiFiClient client;
+
+  /** Response from server */
+  struct command_t
+  {
+    uint64_t sec_since_epoch{0};
+    bool enabled{false};
+    uint64_t start_time_sec_since_epoch{0};
+    unsigned int period_day{0};
+    unsigned int duration_minute{0};
+  };
+
+  command_t report()
   {
     Serial.print("-- http report to ");
     Serial.print(HTTP_SERVER_IP);
     Serial.print(":");
     Serial.println(HTTP_SERVER_PORT);
 
-    WiFiClient client;
-
+    command_t cmd;
 
     if (client.connect(HTTP_SERVER_IP, HTTP_SERVER_PORT))
     {
@@ -38,6 +48,7 @@ struct http_reporter_t
       client.println("Connection: close");
       client.println();
 
+      // give server time to respond
       delay(1000);
 
       // Read and parse the response
@@ -45,17 +56,14 @@ struct http_reporter_t
       while (client.available())
       {
         char c = client.read();
-        //Serial.print("==>");
-        //Serial.print(int(c));
-        //Serial.print(" - ");
-        //Serial.println(c);
-        //Serial.write(c);
         response += c;
       }
+      Serial.println("");
+      Serial.print("server response: ");
       Serial.println(response);
       String json_data = response.substring(response.indexOf('{'));
       // Parse JSON
-      DynamicJsonDocument jsonDoc(1024); // Adjust size as needed
+      DynamicJsonDocument jsonDoc(1024);
       DeserializationError jsonError = deserializeJson(jsonDoc, json_data.c_str());
 
       if (jsonError)
@@ -67,13 +75,11 @@ struct http_reporter_t
       {
         // Access JSON data
         JsonObject root = jsonDoc.as<JsonObject>();
-        Serial.println(root["sec_since_1970"].as<String>());
-        //String value = root["key_name"].as<String>(); // Replace key_name with the actual key in your JSON
-        //Serial.print("Value from JSON: ");
-        //Serial.println(value);
-        auto t = break_to_element(root["sec_since_1970"].as<int>());
-        Serial.print("GMT: ");
-        Serial.println(t.to_string());
+        cmd.sec_since_epoch = root["sec_since_1970"].as<uint64_t>();
+        cmd.enabled = root["enabled"].as<bool>();
+        cmd.start_time_sec_since_epoch = root["start_time"].as<uint64_t>();
+        cmd.period_day = root["period_day"].as<unsigned int>();
+        cmd.duration_minute = root["duration_minute"].as<unsigned int>();
       }
     }
     else
@@ -82,83 +88,8 @@ struct http_reporter_t
     }
     Serial.println("Client stop................");
     client.stop();
-
-
-    
-#if 0
-    Serial.print("HTTP Response Code: ");
-    Serial.println(statusCode);
-
-    if (statusCode == 200)
-    {
-      Serial.println("Response Body:");
-      Serial.println(responseBody);
-
-      // Parse JSON
-      DynamicJsonDocument jsonDoc(1024); // Adjust size as needed
-      DeserializationError jsonError = deserializeJson(jsonDoc, responseBody);
-
-      if (jsonError)
-      {
-        Serial.print("JSON Parsing Error: ");
-        Serial.println(jsonError.c_str());
-      }
-      else
-      {
-        // Access JSON data
-        JsonObject root = jsonDoc.as<JsonObject>();
-        Serial.println(root["sec_since_1970"].as<String>());
-        //String value = root["key_name"].as<String>(); // Replace key_name with the actual key in your JSON
-        //Serial.print("Value from JSON: ");
-        //Serial.println(value);
-        auto t = break_to_element(root["sec_since_1970"].as<int>());
-        Serial.println(t.to_string());
-      }
-    }
-    else
-    {
-      Serial.println("HTTP Request Failed");
-    }
-
-    client.stop();
- #endif
+    return cmd;
   }
 
-  // debug
-  void debug(String msg)
-  {
-#if 0
-    WiFiClient client;
-    HttpClient httpClient = HttpClient(client, HTTP_SERVER_IP, HTTP_SERVER_PORT);
-    String content_type = "application/x-www-form-urlencoded";
-    String put_data = "debug="+msg;
-    httpClient.put(HTTP_DEBUG, content_type, put_data);
-
-    // Read and parse the response
-    int statusCode = httpClient.responseStatusCode();
-    String responseBody = httpClient.responseBody();
-
-    Serial.print("HTTP Debug Response Code: ");
-    Serial.println(statusCode);
-
-    if (statusCode != 200)
-    {
-      Serial.println("HTTP Debug Request Failed");
-    }
-
-    client.stop();
-#endif
-    Serial.println("-- http debug");
-    WiFiClient client;
-    if (client.connect(HTTP_SERVER_IP, HTTP_SERVER_PORT))
-    {
-      Serial.println("Client connected");
-    }
-    else
-    {
-      Serial.println("Client NOT connected");
-    }
-    client.stop();
-  }
 };
 #endif

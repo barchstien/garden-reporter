@@ -13,6 +13,8 @@ volatile uint32_t flow_cnt_last = 0;
 volatile uint32_t start_water_cnt = 0;
 volatile uint32_t start_water_cnt_lp = 0;
 
+const unsigned int millisec_between_report = (1000 * 60 * 1); // TODO 15 min
+
 void flow_trig()
 {
   flow_cnt ++;
@@ -98,7 +100,9 @@ void setup()
   Serial.println("--");
   Serial.println("-- setup END");
 
+  // just to help debug
   delay(10000);
+
 #if 0
   // debug
   delay(30000);
@@ -128,8 +132,7 @@ void loop()
   Serial.println("------------CONNECT");
 
   wifi.connect();
-  //wifi.report();
-  reporter.report();
+  http_reporter_t::command_t cmd = reporter.report();
 
 #if 0
   Serial.println("BLOP before");
@@ -226,8 +229,7 @@ void loop()
   }
 
   Serial.println("-- Loop blop blip");
-  //LowPower.sleep(3000);
-  delay(100000);
+  delay(millisec_between_report);
 #endif
 
   wifi.end();
