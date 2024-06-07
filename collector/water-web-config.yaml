@@ -1,5 +1,5 @@
 water-control:
-  start_time: '16:04'
-  period_day: 1
-  duration_minute: 7
+  start_time: 2024-06-08T19:00
+  period_day: 5
+  duration_minute: 9
   enabled: true

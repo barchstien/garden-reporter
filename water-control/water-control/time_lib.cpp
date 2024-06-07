@@ -173,7 +173,7 @@ time_element_t now_element()
 void set_time(time_t t)
 {
   // Always use summer time !
-  // No need to water in summer, and fuck winter time
+  // No need to water in winter, and fuck winter time
   sysTime = (uint32_t)t + (3600 * SUMMER_TIME_UTC_OFFSET);
   status = time_status_t::ok;
   prevMillis = millis();
@@ -187,6 +187,6 @@ void adjustTime(long adjustment)
 // indicates if time has been set and recently synchronized
 time_status_t timeStatus()
 {
-  now(); // required to actually update the status
+  //now(); // required to actually update the status
   return status;
 }

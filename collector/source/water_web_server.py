@@ -1,6 +1,7 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import cgi
-import re, json, time, datetime
+import re, json, time
+from datetime import datetime
 import urllib.parse
 import yaml
 
@@ -14,12 +15,13 @@ Which variables :
    (could be reset any time to 0)
  * water schedule : 
    - period in days
-   - start time in sec since EPOCH
+   - next scheduled start time in sec since EPOCH
    - duration in minute
+   - enabled
  * status (Could be all 0 after reboot)
-  - current time in sec since epoch
-  - last water scheduled time in sec since epoch
-  - last water scheduled duration in minutes
+  - sec since last boot
+  - last water time in sec since epoch
+  - last water duration in minutes
   - next water scheduled time in sec since epoch
   - next water scheduled duration in minutes
 
@@ -28,11 +30,7 @@ The request is answered with a JSON object including :
    - start time in sec since EPOCH
    - period in days
    - duration in minute
-   (Normally is the same as the request, except if it had been changed by humans)
- * water schedule command :
-   - period in days
-   - start time in sec since EPOCH
-   - duration in minute
+   - enabled
 
 None of the above variables or json entries are guaranteed to be present
 '''
@@ -45,26 +43,21 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
         # human interface
         if url_parsed.path == '/':
             # get config from yaml
-            config = None
-            with open(self.yaml_config_path, 'r+') as file:
-                try:
-                    config = yaml.safe_load(file)
-                    print('orig:', config)
-                except yaml.YAMLError as e:
-                    print("Failed loading YAML water controller config", e)
-
+            config = self.load_config_file()
+            if config != None:
                 # get GET params, if any
                 #query_components = urllib.parse.parse_qs(url_parsed.query)
                 form = cgi.FieldStorage(
                     fp=self.rfile,
                     headers=self.headers,
-                    environ={'REQUEST_METHOD': 'POST',
-                            'CONTENT_TYPE': self.headers['Content-Type'],
-                            }
+                    environ={
+                        'REQUEST_METHOD': 'POST',
+                        'CONTENT_TYPE': self.headers['Content-Type'],
+                    }
                 )
-                # Get the form values
-                first_name = form.getvalue("first_name")
-                last_name = form.getvalue("last_name")
+                ## Get the form values
+                #first_name = form.getvalue("first_name")
+                #last_name = form.getvalue("last_name")
                 print(form.list)
                 #for key in form.keys():
                 #    config["water-control"][key] = form.getvalue(key)
@@ -73,11 +66,9 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
                 config["water-control"]['duration_minute'] = int(form.getvalue('duration_minute'))
                 config["water-control"]['enabled'] = form.getvalue('enable') == 'on'
                 print('-->', config)
-                file.seek(0)
-                yaml.dump(config, file, sort_keys=False)
-                file.truncate()
-
-            self.render_index(config["water-control"])
+                self.write_config_file(config)
+                
+                self.render_index(config["water-control"])
         
 
     def do_GET(self):
@@ -88,27 +79,9 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
         # human interface
         if url_parsed.path == '/':
             # get config from yaml
-            config = None
-            with open(self.yaml_config_path, 'rb') as file:
-                try:
-                    config = yaml.safe_load(file)["water-control"]
-                    print (config)
-                except yaml.YAMLError as e:
-                    print("Failed loading YAML water controller config", e)
-
-                # get GET params, if any
-                #query_components = urllib.parse.parse_qs(url_parsed.query)
-                #print('components:', query_components)
-                #if 'start_time' in query_components:
-                #    config['start_time'] = query_components['start_time'][0]
-                #if 'period_day' in query_components:
-                #    config['period_day'] = query_components['period_day'][0]
-                #if 'duration_minute' in query_components:
-                #    config['duration_minute'] = query_components['duration_minute'][0]
-                #if 'enabled' in query_components:
-                #    config['enabled'] = query_components['enabled'][0]
-            self.render_index(config)
-            
+            config = self.load_config_file()
+            if config != None:
+                self.render_index(config)
 
         # icon
         elif self.path == '/favicon.ico':
@@ -127,44 +100,28 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             query_components = urllib.parse.parse_qs(url_parsed.query)
             print(query_components)
-            period_day_value = query_components.get('period_day_value', [''])[0]
-            start_time_hour_minute_value = query_components.get('start_time_hour_minute_value', [''])[0]
-            duration_minute_value = query_components.get('duration_minute_value', [''])[0]
-            water_liter_value = query_components.get('water_liter_value', [''])[0]
+            period_day = query_components.get('period_day', [''])[0]
+            start_time_hour_minute = query_components.get('start_time_hour_minute', [''])[0]
+            duration_minute = query_components.get('duration_minute', [''])[0]
+            enabled = query_components.get('enabled', [''])[0]
+            water_liter = query_components.get('water_liter', [''])[0]
 
-            print(time.time())
-            print(int(time.time()))
-            print('++++')
-            print(time.gmtime())
-            print(time.gmtime().tm_zone)
-            print(time.localtime())
-            print('=====')
-            print(time.mktime(time.localtime()))
-            print(time.mktime(time.localtime()) - time.mktime(time.gmtime()))
-            print('///////')
-            f = 1676591760.6215856
-            print(time.mktime(time.localtime(f)) - time.mktime(time.gmtime(f)))
-            print(time.gmtime(f))
-            print(time.localtime(f))
-            # TODO diff gives the +1 of UTC+1, localtile().tm_isdst if true => +1
-            f = time.time()
-            time_to_send = int(f)
-            time_to_send += int(time.mktime(time.localtime(f)) - time.mktime(time.gmtime(f)))
-            if time.localtime(f).tm_isdst:
-                time_to_send += 3600
+            # TODO log report
+            # WARNING
+            # Looks like server epoch time is always GMT
+            # --> but no need for convertion coz it's never displayed to humans
 
-
-            # TODO save those var to display in web ui
-
-            # TODO send new config, if any...
-            # debug : echo back the request
+            config = self.load_config_file()
+            start_time = datetime.strptime(config["water-control"]['start_time'], '%Y-%m-%dT%H:%M')
+            print('-->', start_time)
             data = {\
-                'period_day_value': period_day_value,
-                'start_time_hour_minute_value': start_time_hour_minute_value,
-                'duration_minute_value': duration_minute_value,
-                'sec_since_1970': time_to_send
+                'start_time': int(time.mktime(start_time.timetuple())),
+                'period_day': config["water-control"]['period_day'],
+                'duration_minute': config["water-control"]['duration_minute'],
+                'enabled': config["water-control"]['enabled'],
+                'sec_since_1970': int(time.mktime(time.localtime()))
             }
-            print(data)
+            print("Sending: ", data)
             json_data = json.dumps(data)
             self.wfile.write(json_data.encode())
 
@@ -194,13 +151,27 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             content = re.sub(b'{{enable}}', checked, content)
             content = re.sub(b'{{last_scheduled_watering}}', b'unknown', content)
             # TODO ?
-            next_debug = datetime.datetime.fromtimestamp(time.time() + (3600*12)).strftime('%Y-%m-%d %H:%M').encode('utf-8')
+            next_debug = datetime.fromtimestamp(time.time() + (3600*12)).strftime('%Y-%m-%d %H:%M').encode('utf-8')
             content = re.sub(b'{{next_scheduled_watering}}', next_debug, content)
             content = re.sub(b'{{battery_status_string}}', b'100% (4.7V)', content)
             content = re.sub(b'{{watering_now_string}}', b'nope', content)
             content = re.sub(b'{{uptime_day_value}}', b'3 days', content)
             self.wfile.write(content)
-
+    
+    def load_config_file(self):
+        config = None
+        with open(self.yaml_config_path, 'r+') as file:
+            try:
+                config = yaml.safe_load(file)
+            except yaml.YAMLError as e:
+                print("Failed loading YAML water controller config", e)
+        return config
+    
+    def write_config_file(self, config):
+        with open(self.yaml_config_path, 'r+') as file:
+            file.seek(0)
+            yaml.dump(config, file, sort_keys=False)
+            file.truncate()
 
 class WaterWebServer:
     def __init__(self, yaml_config_path) -> None:

@@ -1,9 +1,9 @@
-#include <ArduinoLowPower.h>
+//#include <ArduinoLowPower.h>
 
 #include "battery.h"
 #include "button.h"
 #include "led.h"
-#include "http_client.h"
+#include "http_reporter.h"
 #include "valve.h"
 #include "wifi.h"
 
@@ -32,10 +32,10 @@ unsigned long b = 10UL;
 
 battery_t battery;
 button_t button;
-http_client_t http_client;
 led_t led;
 valve_t valve;
 wifi_t wifi;
+http_reporter_t reporter;
 
 void setup()
 {
@@ -46,12 +46,14 @@ void setup()
   
   button.init();
   led.init();
-  valve.init();
+  //valve.init();
 
   // debug, stay always connected
-  wifi.connect();
+  //while (false == wifi.connect())
+  //{}
   //wifi.end();
 
+  // Suspecting low power sleep to make USB serial unstable !!!
 
 #if 0
   // trigs
@@ -66,9 +68,9 @@ void setup()
   );
 #endif
   // wakeup on user input
-  LowPower.attachInterruptWakeup(
-    digitalPinToInterrupt(START_TRIG), start_water_trig, RISING
-  );
+  //LowPower.attachInterruptWakeup(
+  //  digitalPinToInterrupt(START_TRIG), start_water_trig, RISING
+  //);
 #if 0
   // trigs
   // TODO make it better, coz it increments by many, not 1
@@ -96,6 +98,7 @@ void setup()
   Serial.println("--");
   Serial.println("-- setup END");
 
+  delay(10000);
 #if 0
   // debug
   delay(30000);
@@ -122,10 +125,24 @@ void loop()
   // ? Stay awake if watering ?
 
   // TODO start with loop that does debug to display button
+  Serial.println("------------CONNECT");
+
+  wifi.connect();
+  //wifi.report();
+  reporter.report();
 
 #if 0
+  Serial.println("BLOP before");
+  Serial.println("BLOP");
+  //http_client.debug("BLOP");
+  //http_client.report();
+  wifi.http_debug();
+  delay(10000000);
+#endif
+
+#if 0
+  wifi.report();
   delay(10000);
-  http_client.report();
 #endif
 
 #if 0
@@ -195,7 +212,7 @@ void loop()
   delay(10000);
 #endif
 
-#if 0
+#if 1
   if (start_water)
   {
     start_water = false;
@@ -205,9 +222,13 @@ void loop()
   {
     // woke up with timer
     // TODO http to /report
-    wifi.wakeup();
+    // not exist --> wifi.wakeup();
   }
 
-  LowPower.sleep(10000);
+  Serial.println("-- Loop blop blip");
+  //LowPower.sleep(3000);
+  delay(100000);
 #endif
+
+  wifi.end();
 }

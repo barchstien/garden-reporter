@@ -1,8 +1,15 @@
 #pragma once
 
 #include <WiFiNINA.h>
+#include <ArduinoJson.h>
 
 #include "time_lib.h"
+
+#define HTTP_SERVER_IP "192.168.1.175"//66"
+//#define HTTP_SERVER_IP "192.168.1.176"
+#define HTTP_SERVER_PORT 8000
+#define HTTP_REPORT "/report"
+#define HTTP_DEBUG "/debug"
 
 // Expects arduino_secrets.h to be like :
 // #define SECRET_SSID "your-ssid"
@@ -15,26 +22,58 @@ char pass[] = SECRET_PASS;
 #define GET_TIME_MAX_TRY   20
 #define GET_TIME_WAIT_MSEC 1000
 
+// debug
+void printMacAddress(byte mac[])
+{
+  for (int i = 5; i >= 0; i--)
+  {
+    if (mac[i] < 16)
+    {
+      Serial.print("0");
+    }
+    Serial.print(mac[i], HEX);
+    if (i > 0)
+    {
+      Serial.print(":");
+    }
+  }
+  Serial.println();
+}
+
 struct wifi_t
 {
+
   bool connect()
   {
-    int status = WiFi.status();
-    if (status == WL_CONNECTED)
+    // debug list
+    if (WiFi.status() == WL_NO_MODULE)
     {
-      // already connected
-      return true;
+      Serial.println("Communication with WiFi module failed!");
+      delay(5000);
     }
-    
-    Serial.print("-- Wifi connecting to ssid: ");
-    Serial.println(ssid);
-    status = WiFi.begin(ssid, pass);
+    // print your MAC address:
+    byte mac[6];
+    WiFi.macAddress(mac);
+    Serial.print("MAC: ");
+    printMacAddress(mac);
+
+    //int status = WiFi.status();
+    //if (status == WL_CONNECTED)
+    //{
+    //  // already connected
+    //  return true;
+    //}
+    int status = WL_IDLE_STATUS;
+    while (status != WL_CONNECTED)
+    {
+      Serial.print("-- Wifi connecting to ssid: ");
+      Serial.println(ssid);
+      status = WiFi.begin(ssid, pass);
+      delay(10000);
+    }
+    print_status();
     if (status == WL_CONNECTED)
     {
-      Serial.print("   Connected to ");
-      Serial.println(WiFi.SSID());
-      Serial.print("   rssi: ");
-      Serial.println(WiFi.RSSI());
       return true;
     }
     else if (status == WL_NO_MODULE)
@@ -93,8 +132,12 @@ struct wifi_t
     int status = WiFi.status();
     if (status == WL_CONNECTED)
     {
-      Serial.print("Connected to ");
+      Serial.print("   Connected to ");
       Serial.println(WiFi.SSID());
+      Serial.print("   rssi: ");
+      Serial.print(WiFi.RSSI());
+      Serial.println(" dBm");
+      Serial.println(WiFi.localIP());
     }
     else
     {

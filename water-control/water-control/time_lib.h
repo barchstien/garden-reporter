@@ -10,8 +10,7 @@
  *  - Remove all hours(), minute(), etc. They give inconsistent results, as pointed out in TimeLib doc.
       But rather than defining the above removed function (hours(t), etc), one should use breaktime()
  *  - Remove 12 hours format, useless especially when not displaying time
- *  - Remove many (MANY !) un-used functions. Clarity is paramount, noise is to avoid.
- *    There were even functions in header, that were implemented no-where...
+ *  - Remove many (MANY !) un-used functions. Clarity is paramount !
  *
  * TODO : get time from http server, that already solve local
  */
