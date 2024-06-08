@@ -2,6 +2,7 @@
 
 #include "battery.h"
 #include "button.h"
+#include "epoch_time_t.h"
 #include "led.h"
 #include "http_reporter.h"
 #include "valve.h"
@@ -11,33 +12,38 @@ volatile uint32_t flow_cnt = 0;
 volatile uint32_t flow_cnt_last = 0;
 
 volatile uint32_t start_water_cnt = 0;
-volatile uint32_t start_water_cnt_lp = 0;
+volatile uint32_t start_water_cnt_last = 0;
 
-const unsigned int millisec_between_report = (1000 * 60 * 1); // TODO 15 min
+// Wifi report period
+const unsigned int sec_report_period = (10 * 1); // TODO 15 min
+// value returned by millis() when reported last
+volatile unsigned long last_report_millis = 0;
+
+// delay between loop
+const unsigned int millisec_loop_step = (1000);
 
 void flow_trig()
 {
   flow_cnt ++;
 }
 
-void start_water_trig()
-{
-  start_water_cnt ++;
-}
-// debug to xompare trig vs low power trig
-void start_water_trig_lp()
-{
-  start_water_cnt_lp ++;
-}
+//void start_water_trig()
+//{
+//  start_water_cnt ++;
+//}
 
 unsigned long b = 10UL;
 
 battery_t battery;
 button_t button;
+epoch_time_t epoch_time;
 led_t led;
 valve_t valve;
 wifi_t wifi;
 http_reporter_t reporter;
+
+// Command received by server
+http_reporter_t::command_t server_cmd;
 
 void setup()
 {
@@ -47,54 +53,17 @@ void setup()
   Serial.println("-- setup");
   
   button.init();
+  epoch_time.init();
   led.init();
-  //valve.init();
-
-  // debug, stay always connected
-  //while (false == wifi.connect())
-  //{}
-  //wifi.end();
+  valve.init();
 
   // Suspecting low power sleep to make USB serial unstable !!!
-
-#if 0
-  // trigs
-  attachInterrupt(
-    digitalPinToInterrupt(START_TRIG), start_water_isr, FALLING
-  );
-  LowPower.attachInterruptWakeup(
-    digitalPinToInterrupt(FLOW_TRIG), flow_trig_isr, RISING
-  );
-  LowPower.attachInterruptWakeup(
-    digitalPinToInterrupt(START_TRIG), start_water_isr, FALLING
-  );
-#endif
-  // wakeup on user input
-  //LowPower.attachInterruptWakeup(
-  //  digitalPinToInterrupt(START_TRIG), start_water_trig, RISING
-  //);
-#if 0
-  // trigs
-  // TODO make it better, coz it increments by many, not 1
-  // ... will it be the same for flow trig ??
-  attachInterrupt(
-    digitalPinToInterrupt(START_TRIG), start_water_trig, RISING
-  );
-  attachInterrupt(
-    digitalPinToInterrupt(FLOW_TRIG), flow_trig, RISING
-  );
-#endif
-  // LowPower.idle() sleeps until wakeup trig
-  // https://www.arduino.cc/reference/en/libraries/arduino-low-power/
-  // ? Can I sleep/idle(15min) AND use wake-up trig ?
+  // |--> confirm later, use normal interrupt for now
 
   // blink
-  led.off();
-  delay(1000);
-  led.on();
-  delay(1000);
-  led.off();
-
+  led.blink(3, 1000, 50);
+  
+  // Why ?
   pinMode(LED_BUILTIN, OUTPUT);
 
   Serial.println("--");
@@ -112,87 +81,23 @@ void setup()
 #endif
 }
 
+
 void loop()
 {
-  // main logic
-  // Wake up every 15min
-  // connect wifi
-  // do /report
-  //   - how to save new config ?
-  // check if it's time to water
-  // end wifi
-  // sleep
+  // debug
+  Serial.print("epoch time: ");
+  Serial.println(epoch_time.sec_since_epoch());
 
-  // interrupt should work, even when sleeping
-  // interrupt button should wake up the loop
+  Serial.print("minutes: ");
+  Serial.print(button.bit_value() * 15);
+  Serial.print(" allowed: ");
+  Serial.println(button.allow_water());
 
-  // ? Stay awake if watering ?
-
-  // TODO start with loop that does debug to display button
-  Serial.println("------------CONNECT");
-
-  wifi.connect();
-  http_reporter_t::command_t cmd = reporter.report();
-
-#if 0
-  Serial.println("BLOP before");
-  Serial.println("BLOP");
-  //http_client.debug("BLOP");
-  //http_client.report();
-  wifi.http_debug();
-  delay(10000000);
-#endif
-
-#if 0
-  wifi.report();
-  delay(10000);
-#endif
-
-#if 0
-  Serial.println("End wifi, then re-connect in 10 sec");
-  wifi.end();
-  delay(10000);
-  Serial.println("re-connecting...");
-  wifi.init();
-#endif
-
-#if 0
-  button.debug_read();
-  Serial.print("start_water_cnt: ");
-  Serial.println(start_water_cnt);
-  Serial.print("battery voltage: ");
+  Serial.print("Battery: ");
   Serial.println(battery.read_volt());
-  
-  delay(200);
-#endif
+  // debug end
 
-#if 0
-  delay(5000);
-  Serial.println("-- delay for 10 sec");
-  delay(10000);
-  Serial.println("-- wifi init 10 sec");
-  wifi.init();
-  delay(10000);
-  Serial.println("-- wifi sleep 10 sec");
-  wifi.sleep();
-  delay(10000);
-  Serial.println("-- wifi end10 sec");
-  wifi.end();
-  delay(10000);
-#endif
-
-#if 0
-  delay(5000);
-  Serial.println("-- delay for 10 sec");
-  delay(10000);
-  Serial.println("-- ");
-  LowPower.idle(10000);
-  Serial.println("-- ");
-  LowPower.sleep(10000);
-  Serial.println("-- ");
-  LowPower.deepSleep(10000);
-#endif
-
+  // TODO delete
 #if 0
   // debugu valve on/off
   digitalWrite(LED_BUILTIN, HIGH);
@@ -203,34 +108,45 @@ void loop()
   delay(20000);
 #endif
 
-#if 0
-  // debug wifi and http
-  Serial.println("-- Loop");
-  Serial.println("-- wifi waky");
-  wifi.connect();
-  Serial.println("-- http GET");
-  http_client.report();
-  wifi.end();
-
-  delay(10000);
-#endif
-
-#if 1
-  if (start_water)
+  // HTTP report
+  // Send status
+  // Get config including epoch time sync and watering schedule
+  if (last_report_millis == 0 ||
+    epoch_time_t::sec_between_millis(last_report_millis, millis()) >= sec_report_period)
   {
-    start_water = false;
-    // TODO read button, start water
-  }
-  else
-  {
-    // woke up with timer
-    // TODO http to /report
-    // not exist --> wifi.wakeup();
+    // Report via wifi
+    wifi.connect();
+    http_reporter_t::command_t cmd = reporter.report();
+    if (cmd.is_valid)
+    {
+      Serial.println("=== CMD FROM SERVER ===");
+      epoch_time.set_sec_since_epoch(cmd.sec_since_epoch);
+      last_report_millis = millis();
+      server_cmd = cmd;
+    }
+    wifi.end();
   }
 
-  Serial.println("-- Loop blop blip");
-  delay(millisec_between_report);
-#endif
+  if (server_cmd.is_valid)
+  {
+    // A config has been received from server
+    // TODO
+    // check current epoch time vs next scheduled
+    // add duration to current and set deadline
+    // Keep in this scope until water should be off
 
-  wifi.end();
+    // TODO also check water allowed and battery min level
+  }
+
+  if (button.start_water_was_pushed())
+  {
+    // TODO also check battery min level
+    if (button.allow_water())
+    {
+      Serial.println("Manual start !!!!");
+    }
+  }
+
+  Serial.println("---------------");
+  delay(millisec_loop_step);
 }

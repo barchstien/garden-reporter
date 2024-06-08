@@ -3,7 +3,7 @@
 #include <WiFiNINA.h>
 #include <ArduinoJson.h>
 
-#include "time_lib.h"
+//#include "time_lib.h"
 
 #define HTTP_SERVER_IP "192.168.1.175"//66"
 //#define HTTP_SERVER_IP "192.168.1.176"
@@ -94,37 +94,6 @@ struct wifi_t
   void end()
   {
     WiFi.end();
-  }
-
-  /**
-  * DO NOT USE !
-  * This give UTC time, with no way to get local or day light saving.
-  * Instead, get time from HTTP server, which already has local date logic.
-  */
-  void ntp_time_sync()
-  {
-    int t = WiFi.getTime();
-    int cnt = 0;
-    while(t == 0 && cnt < GET_TIME_MAX_TRY)
-    {
-      delay(GET_TIME_WAIT_MSEC);
-      t = WiFi.getTime();
-      cnt ++;
-    }
-    if (t == 0)
-    {
-      Serial.println("Failed to get NTP time, using already set time");
-      time_element_t dt = now_element();
-      Serial.println(dt.to_string());
-    }
-    else
-    {
-      Serial.println("Got NTP time");
-      set_time(t);
-      // print
-      time_element_t dt = now_element();
-      Serial.println(dt.to_string());
-    }
   }
 
   void print_status()

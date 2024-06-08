@@ -4,7 +4,7 @@
 #include <WiFiNINA.h>
 #include <ArduinoJson.h>
 
-#include "time_lib.h"
+//#include "time_lib.h"
 
 #define HTTP_SERVER_IP "192.168.1.175"//66"
 //#define HTTP_SERVER_IP "192.168.1.176"
@@ -24,6 +24,7 @@ struct http_reporter_t
     uint64_t start_time_sec_since_epoch{0};
     unsigned int period_day{0};
     unsigned int duration_minute{0};
+    bool is_valid{false};
   };
 
   command_t report()
@@ -80,6 +81,7 @@ struct http_reporter_t
         cmd.start_time_sec_since_epoch = root["start_time"].as<uint64_t>();
         cmd.period_day = root["period_day"].as<unsigned int>();
         cmd.duration_minute = root["duration_minute"].as<unsigned int>();
+        cmd.is_valid = true;
       }
     }
     else
