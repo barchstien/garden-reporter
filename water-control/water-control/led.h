@@ -12,17 +12,15 @@ struct led_t
 
   void on()
   {
-    digitalWrite(LED, 1);
+    analogWrite(LED, 255);
     is_on_ = true;
   }
 
   void off()
   {
-    digitalWrite(LED, 0);
+    analogWrite(LED, 0);
     is_on_ = false;
   }
-
-  // TODO blink using millisec
 
   bool is_on()
   {
@@ -32,12 +30,30 @@ struct led_t
   void blink(uint32_t duration_sec, uint32_t period_msec, uint8_t dutty_cycle=50)
   {
     uint32_t start = millis();
-    while(epoch_time_t::sec_between_millis(start, millis()) <= duration_sec)
+    while(epoch_time_t::diff_in_sec(millis(), start) <= duration_sec)
     {
       on();
       delay(period_msec * dutty_cycle / 100);
       off();
       delay(period_msec * (100 - dutty_cycle) / 100);
+    }
+  }
+
+  void fade(uint32_t duration_sec, uint32_t period_msec)
+  {
+    uint32_t start = millis();
+    while(epoch_time_t::diff_in_sec(millis(), start) <= duration_sec)
+    {
+      for (int i=0; i<25; i++)
+      {
+        analogWrite(LED, i*255/25);
+        delay((period_msec)/50);
+      }
+      for (int i=0; i<25; i++)
+      {
+        analogWrite(LED, (25-i)*255/25);
+        delay((period_msec)/50);
+      }
     }
   }
 

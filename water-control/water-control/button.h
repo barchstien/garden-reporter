@@ -53,6 +53,11 @@ struct button_t
     return false;
   }
 
+  void reset_start_water_push()
+  {
+    start_water = false;
+  }
+
   void debug_read()
   {
     Serial.print("debug button ");

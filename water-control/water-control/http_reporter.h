@@ -19,15 +19,27 @@ struct http_reporter_t
   /** Response from server */
   struct command_t
   {
+    // Time sync
     uint64_t sec_since_epoch{0};
+    // Water schedule
     bool enabled{false};
     uint64_t start_time_sec_since_epoch{0};
     unsigned int period_day{0};
     unsigned int duration_minute{0};
+    // status
     bool is_valid{false};
+
+    /** @warning Compare water schedule params only */
+    friend bool operator==(const command_t &left, const command_t &right)
+    {
+      return left.enabled == right.enabled
+        && left.start_time_sec_since_epoch == right.start_time_sec_since_epoch
+        && left.period_day == right.period_day
+        && left.duration_minute == right.duration_minute;
+    };
   };
 
-  command_t report()
+  command_t report(uint32_t water_liter, float battery_voltage)
   {
     Serial.print("-- http report to ");
     Serial.print(HTTP_SERVER_IP);
@@ -40,7 +52,11 @@ struct http_reporter_t
     {
       Serial.println("Client connected");
       // Make a HTTP request:
-      client.println("GET /report HTTP/1.1");
+      client.print("GET /report?water_liter=");
+      client.print(water_liter);
+      client.print("&battery_milliv=");
+      client.print(int(battery_voltage * 1000));
+      client.println(" HTTP/1.1");
       client.print("Host: ");
       client.print(HTTP_SERVER_IP);
       client.print(":");
@@ -86,9 +102,8 @@ struct http_reporter_t
     }
     else
     {
-      Serial.println("Client NOT connected");
+      Serial.println("Client failed to connected. Is server up ?");
     }
-    Serial.println("Client stop................");
     client.stop();
     return cmd;
   }

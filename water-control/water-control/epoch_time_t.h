@@ -23,6 +23,14 @@ struct epoch_time_t
    */
   void set_sec_since_epoch(uint64_t t);
 
-  static uint64_t sec_between_millis(uint32_t first, uint32_t second);
+  /** 
+   * Diff in seconds between 2 millis() values
+   * @warning the 2 millis() values shouldn't be more appart 
+   * ... than 1/2 millis() wrap, that is ~ 25 days
+   */
+  static int64_t diff_in_sec(uint32_t first, uint32_t second);
+
+  // value at which arduino millis() wraps
+  static const int64_t millis_wrap = 2^32;
 
 };

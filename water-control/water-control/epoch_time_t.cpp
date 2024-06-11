@@ -15,7 +15,7 @@ void epoch_time_t::init()
 uint64_t epoch_time_t::sec_since_epoch()
 {
   // calculate number of seconds passed since last call to now()
-  uint64_t passed_sec = sec_between_millis(sec_since_epoch_millis_, millis());
+  int64_t passed_sec = diff_in_sec(millis(), sec_since_epoch_millis_);
   // update local time ref if older than 1000 sec
   if (passed_sec >= 1000)
   {
@@ -32,15 +32,16 @@ void epoch_time_t::set_sec_since_epoch(uint64_t t)
   sec_since_epoch_millis_ = millis();
 } 
 
-uint64_t epoch_time_t::sec_between_millis(uint32_t first, uint32_t second)
+int64_t epoch_time_t::diff_in_sec(uint32_t first, uint32_t second)
 {
-  if (first > second)
+  int64_t diff = (int64_t)first - (int64_t)second;
+  if (diff < -1 * millis_wrap / 2)
   {
-    // overflow happened
-    return ((2^32ULL - (uint64_t)first) + (uint64_t)second) / (uint64_t)1000;
+    diff += millis_wrap;
   }
-  else
+  else if (diff > millis_wrap / 2)
   {
-    return ((uint64_t)second - (uint64_t)first) / (uint64_t)1000;
+    diff -= millis_wrap;
   }
+  return diff/1000;
 };

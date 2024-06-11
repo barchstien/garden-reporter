@@ -15,24 +15,17 @@ volatile uint32_t start_water_cnt = 0;
 volatile uint32_t start_water_cnt_last = 0;
 
 // Wifi report period
-const unsigned int sec_report_period = (10 * 1); // TODO 15 min
+const unsigned int sec_report_period = (60 * 1); // TODO 15 min
 // value returned by millis() when reported last
 volatile unsigned long last_report_millis = 0;
 
 // delay between loop
-const unsigned int millisec_loop_step = (1000);
+const unsigned int millisec_loop_step = (100);
 
-void flow_trig()
+void flow_trig_isr()
 {
   flow_cnt ++;
 }
-
-//void start_water_trig()
-//{
-//  start_water_cnt ++;
-//}
-
-unsigned long b = 10UL;
 
 battery_t battery;
 button_t button;
@@ -51,6 +44,11 @@ void setup()
   Serial.begin(9600);
   Serial.println("--");
   Serial.println("-- setup");
+
+  pinMode(FLOW_TRIG, INPUT_PULLUP);
+  attachInterrupt(
+    digitalPinToInterrupt(FLOW_TRIG), flow_trig_isr, FALLING
+  );
   
   button.init();
   epoch_time.init();
@@ -69,9 +67,6 @@ void setup()
   Serial.println("--");
   Serial.println("-- setup END");
 
-  // just to help debug
-  delay(10000);
-
 #if 0
   // debug
   delay(30000);
@@ -81,21 +76,26 @@ void setup()
 #endif
 }
 
+#define LOG(X) ({ \
+  Serial.print(epoch_time.sec_since_epoch()); \
+  Serial.print(" - "); \
+  Serial.print(X); \
+})
 
 void loop()
 {
-  // debug
-  Serial.print("epoch time: ");
-  Serial.println(epoch_time.sec_since_epoch());
+  //// debug
+  //Serial.print("epoch time: ");
+  //Serial.println(epoch_time.sec_since_epoch());
 
-  Serial.print("minutes: ");
-  Serial.print(button.bit_value() * 15);
-  Serial.print(" allowed: ");
-  Serial.println(button.allow_water());
+  //Serial.print("minutes: ");
+  //Serial.print(button.bit_value() * 15);
+  //Serial.print(" allowed: ");
+  //Serial.println(button.allow_water());
 
-  Serial.print("Battery: ");
-  Serial.println(battery.read_volt());
-  // debug end
+  //Serial.print("Battery: ");
+  //Serial.println(battery.read_volt());
+  //// debug end
 
   // TODO delete
 #if 0
@@ -111,28 +111,51 @@ void loop()
   // HTTP report
   // Send status
   // Get config including epoch time sync and watering schedule
-  if (last_report_millis == 0 ||
-    epoch_time_t::sec_between_millis(last_report_millis, millis()) >= sec_report_period)
+  if (last_report_millis == 0
+    || epoch_time_t::diff_in_sec(millis(), last_report_millis) >= sec_report_period)
   {
+#if 1
     // Report via wifi
-    wifi.connect();
-    http_reporter_t::command_t cmd = reporter.report();
-    if (cmd.is_valid)
+    led.on();
+    // TODO get flow trig, last scheduled, battery
+    if (wifi.connect())
     {
-      Serial.println("=== CMD FROM SERVER ===");
-      epoch_time.set_sec_since_epoch(cmd.sec_since_epoch);
-      last_report_millis = millis();
-      server_cmd = cmd;
+      http_reporter_t::command_t cmd = reporter.report(
+        flow_cnt,
+        battery.read_volt()
+      );
+      if (cmd.is_valid)
+      {
+        Serial.println("=== CMD FROM SERVER ===");
+        epoch_time.set_sec_since_epoch(cmd.sec_since_epoch);
+        //last_report_millis = millis();
+        if (server_cmd == cmd)
+        {
+          Serial.println("--> Ignore server command, already known");
+        }
+        else
+        {
+          server_cmd = cmd;
+          //apply_new_server_config = true;
+          Serial.println("--> Apply server command");
+          // TODO apply new config
+          // A config has been received from server
+          // TODO
+          // check current epoch time vs next scheduled
+          // add duration to current and set deadline
+        }
+      }
     }
+    // Regardless success or not, turn off Wifi
     wifi.end();
+    led.off();
+    last_report_millis = millis();
+#endif
   }
 
   if (server_cmd.is_valid)
   {
-    // A config has been received from server
-    // TODO
-    // check current epoch time vs next scheduled
-    // add duration to current and set deadline
+    // Perfom scheduled watering
     // Keep in this scope until water should be off
 
     // TODO also check water allowed and battery min level
@@ -140,13 +163,19 @@ void loop()
 
   if (button.start_water_was_pushed())
   {
-    // TODO also check battery min level
-    if (button.allow_water())
+    // check button on/off and battery
+    if (button.allow_water() && battery.can_use_water())
     {
-      Serial.println("Manual start !!!!");
+      valve.water_on();
+      uint32_t duration_sec = button.bit_value() * 5;
+      LOG("Manual start second : ");
+      Serial.println(duration_sec);
+      led.fade(duration_sec, 1000);
+      valve.water_off();
     }
+    button.reset_start_water_push();
   }
 
-  Serial.println("---------------");
+  //Serial.println("---------------");
   delay(millisec_loop_step);
 }

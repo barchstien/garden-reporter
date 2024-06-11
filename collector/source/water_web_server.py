@@ -81,7 +81,7 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             # get config from yaml
             config = self.load_config_file()
             if config != None:
-                self.render_index(config)
+                self.render_index(config["water-control"])
 
         # icon
         elif self.path == '/favicon.ico':
@@ -100,11 +100,14 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             query_components = urllib.parse.parse_qs(url_parsed.query)
             print(query_components)
-            period_day = query_components.get('period_day', [''])[0]
-            start_time_hour_minute = query_components.get('start_time_hour_minute', [''])[0]
-            duration_minute = query_components.get('duration_minute', [''])[0]
+            #period_day = query_components.get('period_day', [''])[0]
+            #start_time_hour_minute = query_components.get('start_time_hour_minute', [''])[0]
+            #duration_minute = query_components.get('duration_minute', [''])[0]
             enabled = query_components.get('enabled', [''])[0]
             water_liter = query_components.get('water_liter', [''])[0]
+            battery_milliv = query_components.get('battery_milliv', [''])[0]
+            print("water_liter: ", water_liter);
+            print("battery_voltage: ", battery_milliv);
 
             # TODO log report
             # WARNING

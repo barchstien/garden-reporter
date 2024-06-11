@@ -64,12 +64,14 @@ struct wifi_t
     //  return true;
     //}
     int status = WL_IDLE_STATUS;
-    while (status != WL_CONNECTED)
+    int cnt = 0;
+    while (status != WL_CONNECTED && cnt < 30)
     {
       Serial.print("-- Wifi connecting to ssid: ");
       Serial.println(ssid);
       status = WiFi.begin(ssid, pass);
-      delay(10000);
+      delay(1000);
+      cnt++;
     }
     print_status();
     if (status == WL_CONNECTED)
