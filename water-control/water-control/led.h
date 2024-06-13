@@ -29,8 +29,8 @@ struct led_t
 
   void blink(uint32_t duration_sec, uint32_t period_msec, uint8_t dutty_cycle=50)
   {
-    uint32_t start = millis();
-    while(epoch_time_t::diff_in_sec(millis(), start) <= duration_sec)
+    local_clock_t start = local_clock_t::now();
+    while(local_clock_t::now() - start <= local_clock_t::seconds(duration_sec))
     {
       on();
       delay(period_msec * dutty_cycle / 100);
@@ -41,8 +41,8 @@ struct led_t
 
   void fade(uint32_t duration_sec, uint32_t period_msec)
   {
-    uint32_t start = millis();
-    while(epoch_time_t::diff_in_sec(millis(), start) <= duration_sec)
+    local_clock_t start = local_clock_t::now();
+    while(local_clock_t::now() - start <= local_clock_t::seconds(duration_sec))
     {
       for (int i=0; i<25; i++)
       {

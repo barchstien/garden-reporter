@@ -8,19 +8,23 @@
 #include "valve.h"
 #include "wifi.h"
 
-volatile uint32_t flow_cnt = 0;
-volatile uint32_t flow_cnt_last = 0;
+uint32_t flow_cnt = 0;
+uint32_t flow_cnt_last = 0;
 
-volatile uint32_t start_water_cnt = 0;
-volatile uint32_t start_water_cnt_last = 0;
+uint32_t start_water_cnt = 0;
+uint32_t start_water_cnt_last = 0;
 
 // Wifi report period
 const unsigned int sec_report_period = (60 * 1); // TODO 15 min
 // value returned by millis() when reported last
-volatile unsigned long last_report_millis = 0;
+local_clock_t last_report_;
 
 // delay between loop
-const unsigned int millisec_loop_step = (100);
+const unsigned int millisec_loop_step = (3000);//(100); // TODO revert to 100
+
+const unsigned int water_schedule_margin_sec = (60*60);
+epoch_time_t next_water_schedule;
+epoch_time_t last_water_schedule;
 
 void flow_trig_isr()
 {
@@ -29,7 +33,7 @@ void flow_trig_isr()
 
 battery_t battery;
 button_t button;
-epoch_time_t epoch_time;
+epoch_time_sync_t epoch_time_sync;
 led_t led;
 valve_t valve;
 wifi_t wifi;
@@ -37,6 +41,7 @@ http_reporter_t reporter;
 
 // Command received by server
 http_reporter_t::command_t server_cmd;
+
 
 void setup()
 {
@@ -51,7 +56,7 @@ void setup()
   );
   
   button.init();
-  epoch_time.init();
+  epoch_time_sync.init();
   led.init();
   valve.init();
 
@@ -77,7 +82,7 @@ void setup()
 }
 
 #define LOG(X) ({ \
-  Serial.print(epoch_time.sec_since_epoch()); \
+  Serial.print(epoch_time_sync.sec_since_epoch()); \
   Serial.print(" - "); \
   Serial.print(X); \
 })
@@ -85,8 +90,8 @@ void setup()
 void loop()
 {
   //// debug
-  //Serial.print("epoch time: ");
-  //Serial.println(epoch_time.sec_since_epoch());
+  Serial.print("epoch time: ");
+  Serial.println(epoch_time_sync.sec_since_epoch());
 
   //Serial.print("minutes: ");
   //Serial.print(button.bit_value() * 15);
@@ -111,8 +116,8 @@ void loop()
   // HTTP report
   // Send status
   // Get config including epoch time sync and watering schedule
-  if (last_report_millis == 0
-    || epoch_time_t::diff_in_sec(millis(), last_report_millis) >= sec_report_period)
+  if (last_report_.is_valid() == false
+    || local_clock_t::now() - last_report_ > local_clock_t::seconds(sec_report_period))
   {
 #if 1
     // Report via wifi
@@ -127,7 +132,7 @@ void loop()
       if (cmd.is_valid)
       {
         Serial.println("=== CMD FROM SERVER ===");
-        epoch_time.set_sec_since_epoch(cmd.sec_since_epoch);
+        epoch_time_sync.set_sec_since_epoch(cmd.sec_since_epoch);
         //last_report_millis = millis();
         if (server_cmd == cmd)
         {
@@ -149,7 +154,7 @@ void loop()
     // Regardless success or not, turn off Wifi
     wifi.end();
     led.off();
-    last_report_millis = millis();
+    last_report_ = local_clock_t::now();
 #endif
   }
 
