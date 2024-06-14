@@ -19,10 +19,13 @@ const unsigned int sec_report_period = (60 * 1); // TODO 15 min
 // value returned by millis() when reported last
 local_clock_t last_report_;
 
+// Hard limit watering duration, 1hour
+const int64_t MAX_WATER_DURATION_SEC = 3600;
+
 // delay between loop
 const unsigned int millisec_loop_step = (3000);//(100); // TODO revert to 100
 
-const unsigned int water_schedule_margin_sec = (60*60);
+const epoch_time_t water_schedule_margin_sec = (10*60); // TODO 15 min ?
 epoch_time_t next_water_schedule;
 epoch_time_t last_water_schedule;
 
@@ -82,7 +85,7 @@ void setup()
 }
 
 #define LOG(X) ({ \
-  Serial.print(epoch_time_sync.sec_since_epoch()); \
+  Serial.print(epoch_time_sync.now()); \
   Serial.print(" - "); \
   Serial.print(X); \
 })
@@ -91,7 +94,7 @@ void loop()
 {
   //// debug
   Serial.print("epoch time: ");
-  Serial.println(epoch_time_sync.sec_since_epoch());
+  Serial.println(epoch_time_sync.now());
 
   //Serial.print("minutes: ");
   //Serial.print(button.bit_value() * 15);
@@ -101,17 +104,6 @@ void loop()
   //Serial.print("Battery: ");
   //Serial.println(battery.read_volt());
   //// debug end
-
-  // TODO delete
-#if 0
-  // debugu valve on/off
-  digitalWrite(LED_BUILTIN, HIGH);
-  valve.water_on();
-  delay(10000);
-  digitalWrite(LED_BUILTIN, LOW);
-  valve.water_off();
-  delay(20000);
-#endif
 
   // HTTP report
   // Send status
@@ -132,8 +124,7 @@ void loop()
       if (cmd.is_valid)
       {
         Serial.println("=== CMD FROM SERVER ===");
-        epoch_time_sync.set_sec_since_epoch(cmd.sec_since_epoch);
-        //last_report_millis = millis();
+        epoch_time_sync.set_now(cmd.sec_since_epoch);
         if (server_cmd == cmd)
         {
           Serial.println("--> Ignore server command, already known");
@@ -141,13 +132,20 @@ void loop()
         else
         {
           server_cmd = cmd;
-          //apply_new_server_config = true;
           Serial.println("--> Apply server command");
-          // TODO apply new config
           // A config has been received from server
           // TODO
           // check current epoch time vs next scheduled
           // add duration to current and set deadline
+          next_water_schedule = server_cmd.start_time_sec_since_epoch;
+          while(next_water_schedule < epoch_time_sync.now() - water_schedule_margin_sec)
+          {
+            next_water_schedule += server_cmd.period_day * 24 * 60 * 60;
+          }
+          Serial.print("Next watering at ");
+          Serial.println(next_water_schedule);
+          Serial.print("happening in sec: ");
+          Serial.println(next_water_schedule - epoch_time_sync.now());
         }
       }
     }
@@ -161,9 +159,38 @@ void loop()
   if (server_cmd.is_valid)
   {
     // Perfom scheduled watering
-    // Keep in this scope until water should be off
+    // Keep in this scope until water should be off <------ NOPE !
+    // ... coz that would mean that water can't be canceled
+    if (button.allow_water() && battery.can_use_water() && server_cmd.enabled)
+    {
+      if (next_water_schedule > epoch_time_sync.now())
+      {
+        uint32_t duration_sec = server_cmd.duration_minute * 60;
+        if (duration_sec > MAX_WATER_DURATION_SEC)
+        {
+          duration_sec = MAX_WATER_DURATION_SEC;
+        }
+        epoch_time_t deadline = epoch_time_sync.now() + duration_sec;
+        Serial.println("Water NOW ...................");
+        Serial.println("^^^^^ ^^^ ...................");
+        //digitalWrite(LED_BUILTIN, HIGH);
+        //valve.water_on();
 
-    // TODO also check water allowed and battery min level
+        // TODO check wifi, stay connected, to see if it gets disabled !
+
+        //digitalWrite(LED_BUILTIN, LOW);
+        //valve.water_off();
+        Serial.println("STOP Water ...................");
+
+        // re-schedule
+        last_water_schedule = next_water_schedule;
+        next_water_schedule += server_cmd.period_day * 24 * 60 * 60;
+        Serial.print("Next watering at ");
+        Serial.println(next_water_schedule);
+        Serial.print("happening in sec: ");
+        Serial.println(next_water_schedule - epoch_time_sync.now());
+      }
+    }
   }
 
   if (button.start_water_was_pushed())

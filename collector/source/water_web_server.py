@@ -103,7 +103,7 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             #period_day = query_components.get('period_day', [''])[0]
             #start_time_hour_minute = query_components.get('start_time_hour_minute', [''])[0]
             #duration_minute = query_components.get('duration_minute', [''])[0]
-            enabled = query_components.get('enabled', [''])[0]
+            #enabled = query_components.get('enabled', [''])[0]
             water_liter = query_components.get('water_liter', [''])[0]
             battery_milliv = query_components.get('battery_milliv', [''])[0]
             print("water_liter: ", water_liter);

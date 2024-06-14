@@ -24,8 +24,8 @@ struct http_reporter_t
     // Water schedule
     bool enabled{false};
     uint64_t start_time_sec_since_epoch{0};
-    unsigned int period_day{0};
-    unsigned int duration_minute{0};
+    uint32_t period_day{0};
+    uint32_t duration_minute{0};
     // status
     bool is_valid{false};
 
@@ -55,7 +55,15 @@ struct http_reporter_t
       client.print("GET /report?water_liter=");
       client.print(water_liter);
       client.print("&battery_milliv=");
-      client.print(int(battery_voltage * 1000));
+      client.print(int(battery_voltage * 1000.0 + 0.5));
+      client.print("&next_water_epoch_t=");
+      client.print(water_liter);
+      client.print("&last_water_epoch_t=");
+      client.print(water_liter);
+      client.print("&water_on=");
+      client.print(water_liter);
+      client.print("&uptime=");
+      client.print(water_liter);
       client.println(" HTTP/1.1");
       client.print("Host: ");
       client.print(HTTP_SERVER_IP);

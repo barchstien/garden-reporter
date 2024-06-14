@@ -2,10 +2,6 @@
 
 #include "pin.h"
 
-#define V_DIVIDER 0.454
-#define V_MAX     3.3
-#define ADC_MAX   1023
-
 // Lithium battery caracs
 // just for ref
 #define BATT_V_MAX 4.2
@@ -20,15 +16,11 @@ struct battery_t
 {
   float read_volt()
   {
-    // ADC * V_MAX / ADC_MAX * V_DIVIDER;
-    // |--> don't know V divider... Above const are bullcrap I believe
-    // Instead calibrate with multimeter
-    //  4.13V |  520
-    //  4.18V |  525
-    // debug
-    Serial.print("ADC: ");
-    Serial.print(analogRead(BATT_READ));
-    Serial.print(" ");
+    // Calibrate with multimeter vs read values
+    // Measured V | ADC value
+    //       4.13 |  520
+    //       4.18 |  525
+    //       4.06 |  516
     return analogRead(BATT_READ) * 0.00800;
   }
 

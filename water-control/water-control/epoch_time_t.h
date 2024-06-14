@@ -11,10 +11,6 @@ struct local_clock_t
     value_(-1)
   {}
 
-  local_clock_t(int64_t n) :
-    value_(n)
-  {}
-
   bool is_valid() const
   {
     return value_ != -1;
@@ -44,6 +40,7 @@ struct local_clock_t
   local_clock_t& operator+=(local_clock_t const &other)
   {
     value_ += other.value_;
+    value_ = value_ % millis_wrap;
     return *this;
   }
 
@@ -51,7 +48,7 @@ struct local_clock_t
   bool operator>(local_clock_t const &rhe) const;
   bool operator==(local_clock_t const &rhe) const;
   
-  operator int()
+  operator int() const
   {
     return value_;
   }
@@ -62,10 +59,21 @@ private:
 
   /** value at which arduino millis() wraps */
   static const int64_t millis_wrap = 2^32;
+
+  local_clock_t(int64_t n) : // private ??
+    value_(n)
+  {}
 };
 
-typedef uint64_t epoch_time_t;
+typedef int64_t epoch_time_t;
 
+/**
+ * Keep a counter of second since epoch
+ * Binds an epoch time to the local clock
+ * Those 2 values are regularly updated because :
+ *  - arduino drifts, server is NTP locked
+ *  - arduino local clock wraps every 49 days
+*/
 struct epoch_time_sync_t
 {
   void init();
@@ -73,12 +81,14 @@ struct epoch_time_sync_t
   /**
    * @return the current time as seconds since epoch, 01/01/1970
    */
-  epoch_time_t sec_since_epoch();
+  epoch_time_t now();
 
   /**
    * @param t sec since epoch, 01/01/1970
    */
-  void set_sec_since_epoch(epoch_time_t t);
+  void set_now(epoch_time_t t);
+
+  //int32_t uptime_sec();
 
 private:
 
@@ -86,8 +96,11 @@ private:
   epoch_time_t sec_since_epoch_;
 
   /** 
-   * Last time in millisec counter since board boot, that sec_since_epoch has been updated.
-   * It is used as time elapsed since time set or get (aka now())
+   * Local clock timestamp that correspond ti sec_since_epoch_
    */
-  local_clock_t sec_since_epoch_in_local_clock_;
+  local_clock_t local_timestamp_;
+
+  static const int32_t local_clock_sync_max_age_sec = 1 * 60;
+
+  //uint32_t wrap_cnt_ = 0;
 };
