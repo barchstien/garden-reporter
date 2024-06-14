@@ -47,10 +47,10 @@ bool local_clock_t::operator==(local_clock_t const &rhe) const
 
 void epoch_time_sync_t::init()
 {
-  sec_since_epoch_ = 0;
+  msec_since_epoch_ = 0;
   local_timestamp_ = local_clock_t::now();
   Serial.print("init epoch_time: ");
-  Serial.print(sec_since_epoch_);
+  Serial.print(msec_since_epoch_);
   Serial.print(" @ millis(): ");
   Serial.println(local_timestamp_);
 }
@@ -63,36 +63,24 @@ epoch_time_t epoch_time_sync_t::now()
   local_clock_t now = local_clock_t::now();
   int32_t passed_msec = now - local_timestamp_;
   // increment both epoch time and local timestamp
-  sec_since_epoch_ += (passed_msec + 500) / 1000;
+  msec_since_epoch_ += passed_msec;
   local_timestamp_ = now;
-
-  return sec_since_epoch_;
-  
-  //epoch_time_t s = sec_since_epoch_ + (epoch_time_t)(passed_msec/1000ULL);
-  // update local time ref if older than local_clock_sync_max_age sec
-  //if (passed_msec >= local_clock_t::seconds(local_clock_sync_max_age_sec))
-  //{
-  //  sec_since_epoch_ += local_clock_sync_max_age_sec;
-  //  // yes, it may overflow, just like millis()
-  //  sec_since_epoch_in_local_clock_ += local_clock_t::seconds(local_clock_sync_max_age_sec);
-  //}
-  
-  // update local reference
-  //sec_since_epoch_  += (epoch_time_t)(passed_msec/1000);
-  //local_clock_t last_local = sec_since_epoch_in_local_clock_;
-  //sec_since_epoch_in_local_clock_ += passed_msec;
-  //if (last_local > sec_since_epoch_in_local_clock_)
-  //{
-  //  Serial.println(" -- WRAP --");
-  //  wrap_cnt_ ++;
-  //}
-  //return sec_since_epoch_;
+  // round to seconds
+  return (msec_since_epoch_ + 500) / 1000;
 }
 
 void epoch_time_sync_t::set_now(epoch_time_t t)
 {
+  // save before update to compute drift
+  local_clock_t previous_ts = local_timestamp_;
+  int64_t previous_msec_since_epoch = msec_since_epoch_;
+  // update master counter and timestamp
   local_timestamp_ = local_clock_t::now();
-  sec_since_epoch_ = t;
+  msec_since_epoch_ = t * 1000;
+  // calculate drift
+  int64_t drift = (local_timestamp_ - previous_ts) - (msec_since_epoch_ - previous_msec_since_epoch);
+  Serial.print("epoch_time_sync_t drift msec: ");
+  Serial.println(drift);
 }
 
 //int32_t epoch_time_sync_t::uptime_sec()

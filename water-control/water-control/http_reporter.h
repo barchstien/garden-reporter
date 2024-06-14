@@ -83,9 +83,9 @@ struct http_reporter_t
         char c = client.read();
         response += c;
       }
-      Serial.println("");
-      Serial.print("server response: ");
-      Serial.println(response);
+      //Serial.println("");
+      //Serial.print("server response: ");
+      //Serial.println(response);
       String json_data = response.substring(response.indexOf('{'));
       // Parse JSON
       DynamicJsonDocument jsonDoc(1024);

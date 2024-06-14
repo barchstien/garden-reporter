@@ -65,6 +65,7 @@ private:
   {}
 };
 
+/** Seconds since epoch */
 typedef int64_t epoch_time_t;
 
 /**
@@ -84,7 +85,7 @@ struct epoch_time_sync_t
   epoch_time_t now();
 
   /**
-   * @param t sec since epoch, 01/01/1970
+   * @param t msec since epoch, 01/01/1970
    */
   void set_now(epoch_time_t t);
 
@@ -92,15 +93,17 @@ struct epoch_time_sync_t
 
 private:
 
-  /** Master sec counter since 01/01/1970 */
-  epoch_time_t sec_since_epoch_;
+  /** 
+   * Master millisec counter since 01/01/1970 
+   * Using millisec instead of sec to avoid drift due to rounding
+   * between local msec clock and master clock counter
+   */
+  int64_t msec_since_epoch_;
 
   /** 
    * Local clock timestamp that correspond ti sec_since_epoch_
    */
   local_clock_t local_timestamp_;
-
-  static const int32_t local_clock_sync_max_age_sec = 1 * 60;
 
   //uint32_t wrap_cnt_ = 0;
 };

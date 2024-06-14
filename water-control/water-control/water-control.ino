@@ -93,8 +93,8 @@ void setup()
 void loop()
 {
   //// debug
-  Serial.print("epoch time: ");
-  Serial.println(epoch_time_sync.now());
+  //Serial.print("epoch time: ");
+  //Serial.println(epoch_time_sync.now());
 
   //Serial.print("minutes: ");
   //Serial.print(button.bit_value() * 15);
@@ -134,9 +134,7 @@ void loop()
           server_cmd = cmd;
           Serial.println("--> Apply server command");
           // A config has been received from server
-          // TODO
-          // check current epoch time vs next scheduled
-          // add duration to current and set deadline
+          // ensure next scheduled water is in the future
           next_water_schedule = server_cmd.start_time_sec_since_epoch;
           while(next_water_schedule < epoch_time_sync.now() - water_schedule_margin_sec)
           {
