@@ -11,6 +11,13 @@
             margin-bottom: 20px;
         }
 
+        h2 {
+            text-align: center;
+            font-family: "Arial", sans-serif;
+            color: #009688;
+            margin-bottom: 20px;
+        }
+
         /* Set the content column width to 500px */
         .content-column {
             width: 510px;
@@ -31,6 +38,7 @@
             text-align: right;
             flex-basis: 250px; /* Set a fixed width for the left column */
             color: #333;
+            font-weight: bold;
         }
 
         /* Left-align the input fields */
@@ -100,7 +108,7 @@
     </style>
 </head>
 <body>
-    <h1>water-web-control</h1>
+    <a href="." style="text-decoration:none"><h1>water-web-control</h1></a>
     <!-- Removed the first line of text -->
     
     <!-- Content column -->
@@ -109,13 +117,13 @@
         <form method="post">
             <div  class="ascii-art-footer">
                 <div  class="ascii-art-footer-inner">
-   , ,    ^_^    ,_,    ^ ^
-  (@,@)  (-,-)  (o,o)  (*,*)
-  (`"')  (`"')  {`"'}  [`"']
----"-"----"-"----"-"----"-"---
-
+   , ,     ^_^     ,_,     ^ ^
+  (@,@)   (-,-)   (o,o)   (*,*)
+  (`"')   (`"')   {`"'}   [`"']
+---"-"-----"-"-----"-"-----"-"---
 </div>
             </div>
+            <h2>Watering Schedule</h2>
             <!-- Start time -->
             <div class="input-row">
                 <div class="label-column">
@@ -175,10 +183,9 @@
  //\\    .'/()\'.    //\\    .'/()\'. 
   \/      \\  //      \/      \\  //  
 
-
 </div>
             </div>
-
+            <h2>Valve Status</h2>
             <!-- Status -->
             <div class="input-row">
                 <div class="label-column">
@@ -225,7 +232,7 @@
                     Last report:
                 </div>
                 <div class="input-column">
-                    {{TODO}}
+                    {{last_report_value}}
                 </div>
             </div>
             
@@ -238,13 +245,13 @@
                     `::`
                      /    `;:`
                     `      /
-    _            .;:;     `        ,,, 
-  _(_)_          ::;       wWWWw  {{{}}
- (_)@(_)  ,,,  _ ';:;;'    (___)   ~Y~ 
-  /(_)   {{|}} >'. ||  _    ~Y~     |
-  |  {{}  ~Y~  `> \||.'< (@)\|/|}  \|/ 
-(\|/)~Y~  \|/    `>|/ <` \Y/\|~Y~  \|/ 
- \|//\|/  \|//    `||/`  \|/\|\|/ \\|//
+    _              .;:;      `         ,,, 
+  _(_)_            ::;        wWWWw   {{{}}
+ (_)@(_)   ,,,   _ ';:;;'     (___)    ~Y~ 
+  /(_)    {{|}}  >'. ||  _     ~Y~      |
+  |  {{}   ~Y~   `> \||.'<  (@)\|/|}   \|/ 
+(\|/)~Y~   \|/     `>|/ <`  \Y/\|~Y~   \|/ 
+ \|//\|/   \|//     `||/`   \|/\|\|/  \\|//
 </div>
             </div>
         </form>

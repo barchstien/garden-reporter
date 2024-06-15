@@ -5,6 +5,7 @@ from datetime import datetime
 import urllib.parse
 import yaml
 
+
 '''
 Logic that handles http requests from the water control unit
 And that exposes a simple wep page to set water scheduling (for humans)
@@ -35,6 +36,7 @@ The request is answered with a JSON object including :
 None of the above variables or json entries are guaranteed to be present
 '''
 class WaterWebRequestHandler(BaseHTTPRequestHandler):
+
     def do_POST(self):
         print('>>', self.path)
         url_parsed = urllib.parse.urlparse(self.path)
@@ -100,14 +102,17 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             query_components = urllib.parse.parse_qs(url_parsed.query)
             print(query_components)
-            #period_day = query_components.get('period_day', [''])[0]
-            #start_time_hour_minute = query_components.get('start_time_hour_minute', [''])[0]
-            #duration_minute = query_components.get('duration_minute', [''])[0]
-            #enabled = query_components.get('enabled', [''])[0]
-            water_liter = query_components.get('water_liter', [''])[0]
-            battery_milliv = query_components.get('battery_milliv', [''])[0]
-            print("water_liter: ", water_liter);
-            print("battery_voltage: ", battery_milliv);
+            # TODO also echo request ?
+            self.server.valve_status.water_liter = query_components.get('water_liter', [''])[0]
+            self.server.valve_status.battery_milliv = query_components.get('battery_milliv', [''])[0]
+            self.server.valve_status.next_water_epoch_t = int(query_components.get('next_water_epoch_t', [''])[0])
+            self.server.valve_status.last_water_epoch_t = int(query_components.get('last_water_epoch_t', [''])[0])
+            self.server.valve_status.is_water_on = query_components.get('water_on', [''])[0] != '0'
+            self.server.valve_status.uptime_sec = query_components.get('uptime_sec', [''])[0]
+            print("water_liter: ", self.server.valve_status.water_liter)
+            print("battery_voltage: ", self.server.valve_status.battery_milliv)
+            print("uptime_sec: ", self.server.valve_status.uptime_sec)
+            self.server.valve_status.last_report = time.time()
 
             # TODO log report
             # WARNING
@@ -152,13 +157,31 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             if config["enabled"]:
                 checked = b'checked'
             content = re.sub(b'{{enable}}', checked, content)
-            content = re.sub(b'{{last_scheduled_watering}}', b'unknown', content)
-            # TODO ?
-            next_debug = datetime.fromtimestamp(time.time() + (3600*12)).strftime('%Y-%m-%d %H:%M').encode('utf-8')
-            content = re.sub(b'{{next_scheduled_watering}}', next_debug, content)
-            content = re.sub(b'{{battery_status_string}}', b'100% (4.7V)', content)
-            content = re.sub(b'{{watering_now_string}}', b'nope', content)
-            content = re.sub(b'{{uptime_day_value}}', b'3 days', content)
+
+            last_schedule = b'unknown'
+            if self.server.valve_status.last_water_epoch_t != 0:
+                last_schedule = datetime.fromtimestamp(self.server.valve_status.last_water_epoch_t).strftime('%Y-%m-%d %H:%M').encode()
+            content = re.sub(b'{{last_scheduled_watering}}', last_schedule, content)
+
+            next_schedule = datetime.fromtimestamp(self.server.valve_status.next_water_epoch_t).strftime('%Y-%m-%d %H:%M').encode()
+            content = re.sub(b'{{next_scheduled_watering}}', next_schedule, content)
+            
+            content = re.sub(b'{{battery_status_string}}', 
+                             "{:.0f}% ({:.2f})V".format(
+                                 (float(self.server.valve_status.battery_milliv) / 1000.0 - 3.2) * 100  / 1, 
+                                 float(self.server.valve_status.battery_milliv) / 1000.0).encode(), 
+                            content)
+            
+            water_now = b'nope'
+            if self.server.valve_status.is_water_on :
+                water_now = b'yes'
+            content = re.sub(b'{{watering_now_string}}', water_now, content)
+            
+            content = re.sub(b'{{uptime_day_value}}', "{:.2f} days".format(float(self.server.valve_status.uptime_sec) / (3600.0 * 24.0)).encode(), content)
+
+            last_report = datetime.fromtimestamp(self.server.valve_status.last_report).strftime('%Y-%m-%d %H:%M').encode()
+            content = re.sub(b'{{last_report_value}}', last_report, content)
+
             self.wfile.write(content)
     
     def load_config_file(self):
@@ -176,14 +199,26 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             yaml.dump(config, file, sort_keys=False)
             file.truncate()
 
+class ValveStatus:
+    def __init__(self):
+        self.uptime_sec = 0
+        self.water_liter = 0
+        self.battery_milliv = 0
+        self.next_water_epoch_t = 0
+        self.last_water_epoch_t = 0
+        self.is_water_on = False
+        self.last_report = 0
+
 class WaterWebServer:
     def __init__(self, yaml_config_path) -> None:
         self.yaml_config_path = yaml_config_path
+        self.valve_status = ValveStatus()
 
     def run_server(self, port=8000):
         server_address = ('', port)
         httpd = HTTPServer(server_address, WaterWebRequestHandler)
         httpd.RequestHandlerClass.yaml_config_path = self.yaml_config_path
+        httpd.valve_status = ValveStatus()
         print(f"Server started on port {port}")
         httpd.serve_forever()
 
