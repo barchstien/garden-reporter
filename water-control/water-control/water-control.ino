@@ -23,7 +23,7 @@ local_clock_t last_report_;
 const int64_t MAX_WATER_DURATION_SEC = 3600;
 
 // delay between loop
-const unsigned int millisec_loop_step = (3000);//(100); // TODO revert to 100
+const unsigned int millisec_loop_step = (5000);//(100); // TODO revert to 100
 
 const epoch_time_t water_schedule_margin_sec = (10*60); // TODO 15 min ?
 epoch_time_t next_water_schedule;
@@ -93,8 +93,11 @@ void setup()
 void loop()
 {
   //// debug
-  //Serial.print("epoch time: ");
-  //Serial.println(epoch_time_sync.now());
+  Serial.print("epoch time: ");
+  Serial.println(epoch_time_sync.now());
+
+  Serial.print("uptime sec: ");
+  Serial.println(epoch_time_sync.uptime_sec());
 
   //Serial.print("minutes: ");
   //Serial.print(button.bit_value() * 15);
@@ -119,7 +122,11 @@ void loop()
     {
       http_reporter_t::command_t cmd = reporter.report(
         flow_cnt,
-        battery.read_volt()
+        battery.read_volt(),
+        next_water_schedule,
+        last_water_schedule,
+        valve.is_on(),
+        epoch_time_sync.uptime_sec()
       );
       if (cmd.is_valid)
       {

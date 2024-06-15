@@ -16,6 +16,13 @@ struct local_clock_t
     return value_ != -1;
   }
 
+  bool has_wrapped_since(const local_clock_t previous) const
+  {
+    // if previous hard (without wrap logic) is bigger
+    // ... it means this has been taken after WRAP
+    return value_ < previous.value_;
+  }
+
   static local_clock_t now();
 
   static int32_t days(unsigned int d)
@@ -89,7 +96,7 @@ struct epoch_time_sync_t
    */
   void set_now(epoch_time_t t);
 
-  //int32_t uptime_sec();
+  uint32_t uptime_sec();
 
 private:
 
@@ -105,5 +112,9 @@ private:
    */
   local_clock_t local_timestamp_;
 
-  //uint32_t wrap_cnt_ = 0;
+  /** 
+   * Count millis() wraps, assuming epoch_time_sync_t::now() 
+   * is called more than twice every 49 days 
+   */
+  uint32_t wrap_cnt_ = 0;
 };

@@ -55,13 +55,17 @@ void epoch_time_sync_t::init()
   Serial.println(local_timestamp_);
 }
 
-// Been tryong to add uptime by counting wraps....
-// ... but screwed up timing....
 epoch_time_t epoch_time_sync_t::now()
 {
   // calculate time passed since last sync from server or mast call to now()
   local_clock_t now = local_clock_t::now();
   int32_t passed_msec = now - local_timestamp_;
+  // detect millis() wrap
+  if (now.has_wrapped_since(local_timestamp_))
+  {
+    wrap_cnt_ ++;
+    Serial.println("---- WRAP detected");
+  }
   // increment both epoch time and local timestamp
   msec_since_epoch_ += passed_msec;
   local_timestamp_ = now;
@@ -83,8 +87,8 @@ void epoch_time_sync_t::set_now(epoch_time_t t)
   Serial.println(drift);
 }
 
-//int32_t epoch_time_sync_t::uptime_sec()
-//{
-//  return wrap_cnt_ * (int64_t)2^32 / (int64_t)1000 + local_clock_t::now() / 1000;
-//}
+uint32_t epoch_time_sync_t::uptime_sec()
+{
+  return wrap_cnt_ * ((int64_t)2^32 / (int64_t)1000) + (local_clock_t::now() / 1000);
+}
 

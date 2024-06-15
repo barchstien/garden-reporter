@@ -39,7 +39,13 @@ struct http_reporter_t
     };
   };
 
-  command_t report(uint32_t water_liter, float battery_voltage)
+  command_t report(
+    uint32_t water_liter, 
+    float battery_voltage,
+    epoch_time_t next_water_schedule,
+    epoch_time_t last_water_schedule,
+    bool water_on,
+    uint32_t uptime_sec)
   {
     Serial.print("-- http report to ");
     Serial.print(HTTP_SERVER_IP);
@@ -57,13 +63,13 @@ struct http_reporter_t
       client.print("&battery_milliv=");
       client.print(int(battery_voltage * 1000.0 + 0.5));
       client.print("&next_water_epoch_t=");
-      client.print(water_liter);
+      client.print(next_water_schedule);
       client.print("&last_water_epoch_t=");
-      client.print(water_liter);
+      client.print(last_water_schedule);
       client.print("&water_on=");
-      client.print(water_liter);
-      client.print("&uptime=");
-      client.print(water_liter);
+      client.print(water_on);
+      client.print("&uptime_sec=");
+      client.print(uptime_sec);
       client.println(" HTTP/1.1");
       client.print("Host: ");
       client.print(HTTP_SERVER_IP);
