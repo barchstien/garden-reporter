@@ -77,6 +77,37 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             config = self.load_config_file()
             if config != None:
                 self.render_index(config["water-control"])
+        
+        # human interface AJAX
+        elif self.path == '/status':
+            print('-- status !')
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            last_schedule = datetime.fromtimestamp(self.server.valve_status.last_water_epoch_t).strftime('%Y-%m-%d %H:%M')
+            next_schedule = datetime.fromtimestamp(self.server.valve_status.next_water_epoch_t).strftime('%Y-%m-%d %H:%M')
+            battery_status_string = "{:.0f}% ({:.2f})V".format(
+                (float(self.server.valve_status.battery_milliv) / 1000.0 - 3.2) * 100  / 1, 
+                float(self.server.valve_status.battery_milliv) / 1000.0
+            )
+            watering_now_string = 'nope'
+            if self.server.valve_status.is_water_on :
+                watering_now_string = 'yes'
+            uptime_day_value = "{:.2f} days".format(
+                float(self.server.valve_status.uptime_sec) / (3600.0 * 24.0)
+            )
+            last_report = datetime.fromtimestamp(self.server.valve_status.last_report).strftime('%Y-%m-%d %H:%M')
+            data = {\
+                'last_scheduled_watering': last_schedule,
+                'next_scheduled_watering': next_schedule,
+                'battery_status': battery_status_string,
+                'watering_now': watering_now_string,
+                'uptime_day': uptime_day_value,
+                'last_report': last_report
+            }
+            print("Sending: ", data)
+            json_data = json.dumps(data)
+            self.wfile.write(json_data.encode())
 
         # icon
         elif self.path == '/favicon.ico':
@@ -143,6 +174,7 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
         # Read template content, fill it, send it as the response
         with open('source/static/index.html', 'rb') as file:
             content = file.read()
+            # config
             content = re.sub(b'{{start_time}}', config['start_time'].encode(), content)
             content = re.sub(b'{{period_day}}', str(config['period_day']).encode(), content)
             content = re.sub(b'{{duration_minute}}', str(config['duration_minute']).encode(), content)
@@ -151,13 +183,14 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
                 checked = b'checked'
             content = re.sub(b'{{enable}}', checked, content)
 
+            # status
             last_schedule = b'unknown'
             if self.server.valve_status.last_water_epoch_t != 0:
                 last_schedule = datetime.fromtimestamp(self.server.valve_status.last_water_epoch_t).strftime('%Y-%m-%d %H:%M').encode()
-            content = re.sub(b'{{last_scheduled_watering}}', last_schedule, content)
+            content = re.sub(b'{{last_scheduled_watering_string}}', last_schedule, content)
 
             next_schedule = datetime.fromtimestamp(self.server.valve_status.next_water_epoch_t).strftime('%Y-%m-%d %H:%M').encode()
-            content = re.sub(b'{{next_scheduled_watering}}', next_schedule, content)
+            content = re.sub(b'{{next_scheduled_watering_string}}', next_schedule, content)
             
             content = re.sub(b'{{battery_status_string}}', 
                              "{:.0f}% ({:.2f})V".format(
@@ -170,10 +203,10 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
                 water_now = b'yes'
             content = re.sub(b'{{watering_now_string}}', water_now, content)
             
-            content = re.sub(b'{{uptime_day_value}}', "{:.2f} days".format(float(self.server.valve_status.uptime_sec) / (3600.0 * 24.0)).encode(), content)
+            content = re.sub(b'{{uptime_day_string}}', "{:.2f} days".format(float(self.server.valve_status.uptime_sec) / (3600.0 * 24.0)).encode(), content)
 
             last_report = datetime.fromtimestamp(self.server.valve_status.last_report).strftime('%Y-%m-%d %H:%M').encode()
-            content = re.sub(b'{{last_report_value}}', last_report, content)
+            content = re.sub(b'{{last_report_string}}', last_report, content)
 
             self.wfile.write(content)
     
