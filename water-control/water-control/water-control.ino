@@ -69,19 +69,11 @@ void setup()
   // blink
   led.blink(3, 1000, 50);
   
-  // Why ?
+  // Debug
   pinMode(LED_BUILTIN, OUTPUT);
 
   Serial.println("--");
   Serial.println("-- setup END");
-
-#if 0
-  // debug
-  delay(30000);
-  valve.water_on();
-  delay(60000);
-  valve.water_off();
-#endif
 }
 
 #define LOG(X) ({ \
@@ -89,6 +81,51 @@ void setup()
   Serial.print(" - "); \
   Serial.print(X); \
 })
+
+/**
+ * @warning Expects Wifi to be connected !
+*/
+report_status report_via_wifi()
+{
+  report_status rs = report_status::FAILURE;
+  http_reporter_t::command_t cmd = reporter.report(
+    flow_cnt,
+    battery.read_volt(),
+    next_water_schedule,
+    last_water_schedule,
+    valve.is_on(),
+    epoch_time_sync.uptime_sec()
+  );
+  if (cmd.is_valid)
+  {
+    Serial.println("=== CMD FROM SERVER ===");
+    epoch_time_sync.set_now(cmd.sec_since_epoch);
+    if (server_cmd == cmd)
+    {
+      Serial.println("--> Ignore server command, already known");
+      rs = report_status::CMD_ALREADY_KOWN;
+    }
+    else
+    {
+      server_cmd = cmd;
+      Serial.println("--> Apply server command");
+      // A config has been received from server
+      // ensure next scheduled water is in the future
+      next_water_schedule = server_cmd.start_time_sec_since_epoch;
+      while(next_water_schedule < epoch_time_sync.now() - water_schedule_margin_sec)
+      {
+        next_water_schedule += server_cmd.period_day * 24 * 60 * 60;
+      }
+      Serial.print("Next watering at ");
+      Serial.println(next_water_schedule);
+      Serial.print("happening in sec: ");
+      Serial.println(next_water_schedule - epoch_time_sync.now());
+      rs = report_status::CMD_APPLIED;
+    }
+  }
+  return rs;
+}
+
 
 void loop()
 {
@@ -117,44 +154,15 @@ void loop()
 #if 1
     // Report via wifi
     led.on();
-    // TODO get flow trig, last scheduled, battery
     if (wifi.connect())
     {
-      http_reporter_t::command_t cmd = reporter.report(
-        flow_cnt,
-        battery.read_volt(),
-        next_water_schedule,
-        last_water_schedule,
-        valve.is_on(),
-        epoch_time_sync.uptime_sec()
-      );
-      if (cmd.is_valid)
+      if (CMD_APPLIED == report_via_wifi())
       {
-        Serial.println("=== CMD FROM SERVER ===");
-        epoch_time_sync.set_now(cmd.sec_since_epoch);
-        if (server_cmd == cmd)
-        {
-          Serial.println("--> Ignore server command, already known");
-        }
-        else
-        {
-          server_cmd = cmd;
-          Serial.println("--> Apply server command");
-          // A config has been received from server
-          // ensure next scheduled water is in the future
-          next_water_schedule = server_cmd.start_time_sec_since_epoch;
-          while(next_water_schedule < epoch_time_sync.now() - water_schedule_margin_sec)
-          {
-            next_water_schedule += server_cmd.period_day * 24 * 60 * 60;
-          }
-          Serial.print("Next watering at ");
-          Serial.println(next_water_schedule);
-          Serial.print("happening in sec: ");
-          Serial.println(next_water_schedule - epoch_time_sync.now());
-        }
+        // received a new config, re-report to update status
+        report_via_wifi();
       }
     }
-    // Regardless success or not, turn off Wifi
+    // Regardless success or not, need to turn off Wifi
     wifi.end();
     led.off();
     last_report_ = local_clock_t::now();
@@ -168,7 +176,7 @@ void loop()
     // ... coz that would mean that water can't be canceled
     if (button.allow_water() && battery.can_use_water() && server_cmd.enabled)
     {
-      if (next_water_schedule > epoch_time_sync.now())
+      if (epoch_time_sync.now() > next_water_schedule)
       {
         uint32_t duration_sec = server_cmd.duration_minute * 60;
         if (duration_sec > MAX_WATER_DURATION_SEC)
@@ -178,13 +186,42 @@ void loop()
         epoch_time_t deadline = epoch_time_sync.now() + duration_sec;
         Serial.println("Water NOW ...................");
         Serial.println("^^^^^ ^^^ ...................");
+
+        led.on();
         //digitalWrite(LED_BUILTIN, HIGH);
-        //valve.water_on();
-
-        // TODO check wifi, stay connected, to see if it gets disabled !
-
+        valve.water_on();
+        bool wifi_is_connected = false;
+        if (wifi.connect())
+        {
+          wifi_is_connected = true;
+        }
+        // Report as long as it is watering
+        // ... and check if config get changed
+        while(epoch_time_sync.now() < deadline)
+        {
+          if (wifi_is_connected)
+          {
+            led.on();
+            report_status rs = report_via_wifi();
+            if (rs == report_status::CMD_APPLIED)
+            {
+              // Check enabled only ? 
+              // What about new schedule ?
+              // start/period/duration
+              if (server_cmd.enabled == false)
+              {
+                Serial.println("Cancel scheduled watering, by order of server");
+                break;
+              }
+            }
+          }
+          // fade for 5 sec
+          led.fade(5, 1000);
+        }
+        
         //digitalWrite(LED_BUILTIN, LOW);
-        //valve.water_off();
+        valve.water_off();
+        led.off();
         Serial.println("STOP Water ...................");
 
         // re-schedule
@@ -194,6 +231,12 @@ void loop()
         Serial.println(next_water_schedule);
         Serial.print("happening in sec: ");
         Serial.println(next_water_schedule - epoch_time_sync.now());
+
+        // report to update status
+        report_via_wifi();
+
+        // Regardless success or not, need to turn off Wifi
+        wifi.end();
       }
     }
   }

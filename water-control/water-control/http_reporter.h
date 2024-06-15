@@ -12,6 +12,13 @@
 #define HTTP_REPORT "/report"
 #define HTTP_DEBUG "/debug"
 
+enum report_status
+{
+  FAILURE,
+  CMD_ALREADY_KOWN,
+  CMD_APPLIED
+};
+
 struct http_reporter_t
 {
   WiFiClient client;

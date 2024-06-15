@@ -1,5 +1,4 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
-import cgi
 import re, json, time
 from datetime import datetime
 import urllib.parse
@@ -47,28 +46,22 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             # get config from yaml
             config = self.load_config_file()
             if config != None:
-                # get GET params, if any
-                #query_components = urllib.parse.parse_qs(url_parsed.query)
-                form = cgi.FieldStorage(
-                    fp=self.rfile,
-                    headers=self.headers,
-                    environ={
-                        'REQUEST_METHOD': 'POST',
-                        'CONTENT_TYPE': self.headers['Content-Type'],
-                    }
-                )
-                ## Get the form values
-                #first_name = form.getvalue("first_name")
-                #last_name = form.getvalue("last_name")
-                print(form.list)
-                #for key in form.keys():
-                #    config["water-control"][key] = form.getvalue(key)
-                config["water-control"]['start_time'] = form.getvalue('start_time')
-                config["water-control"]['period_day'] = int(form.getvalue('period_day'))
-                config["water-control"]['duration_minute'] = int(form.getvalue('duration_minute'))
-                config["water-control"]['enabled'] = form.getvalue('enable') == 'on'
-                print('-->', config)
-                self.write_config_file(config)
+                content_len = int(self.headers.get('Content-Length'))
+                post_body = self.rfile.read(content_len)
+                print('post_body', post_body.decode("utf-8"))
+                # get POST params, if any
+                query_components = urllib.parse.parse_qs(post_body.decode("utf-8"))
+                print('query_components', query_components)
+                try:
+                    config["water-control"]['start_time'] = query_components.get('start_time')[0]
+                    config["water-control"]['period_day'] = int(query_components.get('period_day')[0])
+                    config["water-control"]['duration_minute'] = int(query_components.get('duration_minute')[0])
+                    config["water-control"]['enabled'] = query_components.get('enable', ['off'])[0] == 'on'
+                    print('-->', config)
+                    self.write_config_file(config)
+                except Exception as e:
+                    print('POST data does not contain expected params, ignore it...')
+                    print(e)
                 
                 self.render_index(config["water-control"])
         
