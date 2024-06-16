@@ -10,6 +10,7 @@
 
 uint32_t flow_cnt = 0;
 uint32_t flow_cnt_last = 0;
+const float liter_per_edge = 0.00245;
 
 uint32_t start_water_cnt = 0;
 uint32_t start_water_cnt_last = 0;
@@ -19,8 +20,8 @@ const unsigned int sec_report_period = (60 * 1); // TODO 15 min
 // value returned by millis() when reported last
 local_clock_t last_report_;
 
-// Hard limit watering duration, 1hour
-const int64_t MAX_WATER_DURATION_SEC = 3600;
+// Hard limit watering duration, 1.5 hour
+const int64_t MAX_WATER_DURATION_SEC = 5400;
 
 // delay between loop
 const unsigned int millisec_loop_step = (5000);//(100); // TODO revert to 100
@@ -71,6 +72,10 @@ void setup()
   
   // Debug
   pinMode(LED_BUILTIN, OUTPUT);
+
+  // Avoid false positive on startup
+  // (only happens when plug/unplug, not when using arduino reset button)
+  button.reset_start_water_push();
 
   Serial.println("--");
   Serial.println("-- setup END");
@@ -184,8 +189,9 @@ void loop()
           duration_sec = MAX_WATER_DURATION_SEC;
         }
         epoch_time_t deadline = epoch_time_sync.now() + duration_sec;
-        Serial.println("Water NOW ...................");
-        Serial.println("^^^^^ ^^^ ...................");
+        Serial.println("");
+        Serial.println(" >>>> Water NOW <<<<");
+        Serial.println("");
 
         led.on();
         //digitalWrite(LED_BUILTIN, HIGH);
@@ -215,6 +221,11 @@ void loop()
               }
             }
           }
+          if (button.allow_water() == false)
+          {
+            Serial.println("Cancel scheduled watering, by order of button");
+            break;
+          }
           // fade for 5 sec
           led.fade(5, 1000);
         }
@@ -222,7 +233,9 @@ void loop()
         //digitalWrite(LED_BUILTIN, LOW);
         valve.water_off();
         led.off();
-        Serial.println("STOP Water ...................");
+        Serial.println("");
+        Serial.println(" >>>> STOP Water <<<<");
+        Serial.println("");
 
         // re-schedule
         last_water_schedule = next_water_schedule;
@@ -252,6 +265,7 @@ void loop()
       Serial.println(duration_sec);
       led.fade(duration_sec, 1000);
       valve.water_off();
+      led.off();
     }
     button.reset_start_water_push();
   }

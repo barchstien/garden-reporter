@@ -2,7 +2,7 @@
 
 #include "pin.h"
 
-#define VALVE_PULSE_MSEC 500
+#define VALVE_PULSE_MSEC 1000
 #define VALVE_PHASE_OPEN 1
 #define VALVE_PHASE_CLOSE 0
 
