@@ -1,4 +1,4 @@
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 import re, json, time
 from datetime import datetime
 import urllib.parse
@@ -242,7 +242,7 @@ class WaterWebServer:
 
     def run_server(self, port=8000):
         server_address = ('', port)
-        httpd = HTTPServer(server_address, WaterWebRequestHandler)
+        httpd = ThreadingHTTPServer(server_address, WaterWebRequestHandler)
         httpd.RequestHandlerClass.yaml_config_path = self.yaml_config_path
         httpd.valve_status = ValveStatus()
         print(f"Server started on port {port}")

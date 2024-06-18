@@ -117,4 +117,12 @@ private:
    * is called more than twice every 49 days 
    */
   uint32_t wrap_cnt_ = 0;
+
+  /**
+   * Sum of all drifts recorded when syncing local clock to epoch time
+  */
+  int64_t drift_sum_ = 0;
+
+  /** Used to avoid first big sync drift in sum */
+  bool never_been_set_ = true;
 };

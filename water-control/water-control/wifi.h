@@ -52,23 +52,15 @@ struct wifi_t
       delay(5000);
     }
     // print your MAC address:
-    byte mac[6];
-    WiFi.macAddress(mac);
-    Serial.print("MAC: ");
-    printMacAddress(mac);
+    //byte mac[6];
+    //WiFi.macAddress(mac);
+    //Serial.print("MAC: ");
+    //printMacAddress(mac);
 
-    //int status = WiFi.status();
-    //if (status == WL_CONNECTED)
-    //{
-    //  // already connected
-    //  return true;
-    //}
     int status = WL_IDLE_STATUS;
     int cnt = 0;
     while (status != WL_CONNECTED && cnt < 30)
     {
-      Serial.print("-- Wifi connecting to ssid: ");
-      Serial.println(ssid);
       status = WiFi.begin(ssid, pass);
       delay(1000);
       cnt++;
@@ -103,12 +95,13 @@ struct wifi_t
     int status = WiFi.status();
     if (status == WL_CONNECTED)
     {
-      Serial.print("   Connected to ");
-      Serial.println(WiFi.SSID());
-      Serial.print("   rssi: ");
+      Serial.print("Connected to ");
+      Serial.print(WiFi.SSID());
+      Serial.print(" : ");
+      Serial.print(WiFi.localIP());
+      Serial.print(" rssi: ");
       Serial.print(WiFi.RSSI());
       Serial.println(" dBm");
-      Serial.println(WiFi.localIP());
     }
     else
     {

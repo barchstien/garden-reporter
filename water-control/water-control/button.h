@@ -26,8 +26,6 @@ struct button_t
     );
   }
 
-  // TODO read
-
   /** @return the value coded in 3 bit */
   int bit_value()
   {

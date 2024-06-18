@@ -83,8 +83,18 @@ void epoch_time_sync_t::set_now(epoch_time_t t)
   msec_since_epoch_ = t * 1000;
   // calculate drift
   int64_t drift = (local_timestamp_ - previous_ts) - (msec_since_epoch_ - previous_msec_since_epoch);
-  Serial.print("epoch_time_sync_t drift msec: ");
-  Serial.println(drift);
+  if (never_been_set_)
+  {
+    never_been_set_ = false;
+  }
+  else
+  {
+    drift_sum_ += drift;
+  }
+  Serial.print("drift msec: ");
+  Serial.print(drift);
+  Serial.print(" SUM: ");
+  Serial.println(drift_sum_);
 }
 
 uint32_t epoch_time_sync_t::uptime_sec()

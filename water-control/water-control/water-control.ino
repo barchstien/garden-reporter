@@ -10,23 +10,25 @@
 
 uint32_t flow_cnt = 0;
 uint32_t flow_cnt_last = 0;
-const float liter_per_edge = 0.00245;
+const float flow_cnt_liter_per_edge = 0.00245;
 
 uint32_t start_water_cnt = 0;
 uint32_t start_water_cnt_last = 0;
 
 // Wifi report period
-const unsigned int sec_report_period = (60 * 1); // TODO 15 min
+const unsigned int sec_report_period = (2 * 60); // TODO 15 min
 // value returned by millis() when reported last
 local_clock_t last_report_;
+const unsigned int sec_report_period_when_watering = 60;
 
 // Hard limit watering duration, 1.5 hour
 const int64_t MAX_WATER_DURATION_SEC = 5400;
 
 // delay between loop
-const unsigned int millisec_loop_step = (5000);//(100); // TODO revert to 100
+const unsigned int millisec_loop_step = (100);
 
-const epoch_time_t water_schedule_margin_sec = (10*60); // TODO 15 min ?
+//const epoch_time_t water_schedule_margin_sec = (10*60); // TODO 15 min ?
+const epoch_time_t water_schedule_margin_sec = sec_report_period * 2;
 epoch_time_t next_water_schedule;
 epoch_time_t last_water_schedule;
 
@@ -50,7 +52,7 @@ http_reporter_t::command_t server_cmd;
 void setup()
 {
   // debug
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("--");
   Serial.println("-- setup");
 
@@ -93,8 +95,13 @@ void setup()
 report_status report_via_wifi()
 {
   report_status rs = report_status::FAILURE;
+  
+  // Compute wtaer since last successful report
+  int32_t flow_cnt_tmp = flow_cnt;
+  float water_liter = (float)(flow_cnt_tmp - flow_cnt_last) * flow_cnt_liter_per_edge;
+
   http_reporter_t::command_t cmd = reporter.report(
-    flow_cnt,
+    water_liter,
     battery.read_volt(),
     next_water_schedule,
     last_water_schedule,
@@ -103,11 +110,14 @@ report_status report_via_wifi()
   );
   if (cmd.is_valid)
   {
-    Serial.println("=== CMD FROM SERVER ===");
+    // report was succesful, reset flow cnt last
+    flow_cnt_last = flow_cnt_tmp;
+
+    //Serial.println("=== CMD FROM SERVER ===");
     epoch_time_sync.set_now(cmd.sec_since_epoch);
     if (server_cmd == cmd)
     {
-      Serial.println("--> Ignore server command, already known");
+      //Serial.println("--> Ignore server command, already known");
       rs = report_status::CMD_ALREADY_KOWN;
     }
     else
@@ -121,9 +131,9 @@ report_status report_via_wifi()
       {
         next_water_schedule += server_cmd.period_day * 24 * 60 * 60;
       }
-      Serial.print("Next watering at ");
+      Serial.print("    Next watering at ");
       Serial.println(next_water_schedule);
-      Serial.print("happening in sec: ");
+      Serial.print("    happening in sec: ");
       Serial.println(next_water_schedule - epoch_time_sync.now());
       rs = report_status::CMD_APPLIED;
     }
@@ -135,11 +145,11 @@ report_status report_via_wifi()
 void loop()
 {
   //// debug
-  Serial.print("epoch time: ");
-  Serial.println(epoch_time_sync.now());
+  //Serial.print("epoch time: ");
+  //Serial.println(epoch_time_sync.now());
 
-  Serial.print("uptime sec: ");
-  Serial.println(epoch_time_sync.uptime_sec());
+  //Serial.print("uptime sec: ");
+  //Serial.println(epoch_time_sync.uptime_sec());
 
   //Serial.print("minutes: ");
   //Serial.print(button.bit_value() * 15);
@@ -177,8 +187,6 @@ void loop()
   if (server_cmd.is_valid)
   {
     // Perfom scheduled watering
-    // Keep in this scope until water should be off <------ NOPE !
-    // ... coz that would mean that water can't be canceled
     if (button.allow_water() && battery.can_use_water() && server_cmd.enabled)
     {
       if (epoch_time_sync.now() > next_water_schedule)
@@ -226,8 +234,8 @@ void loop()
             Serial.println("Cancel scheduled watering, by order of button");
             break;
           }
-          // fade for 5 sec
-          led.fade(5, 1000);
+          // fade also means delay
+          led.fade(sec_report_period_when_watering, 1000);
         }
         
         //digitalWrite(LED_BUILTIN, LOW);
@@ -237,7 +245,7 @@ void loop()
         Serial.println(" >>>> STOP Water <<<<");
         Serial.println("");
 
-        // re-schedule
+        
         last_water_schedule = next_water_schedule;
         next_water_schedule += server_cmd.period_day * 24 * 60 * 60;
         Serial.print("Next watering at ");

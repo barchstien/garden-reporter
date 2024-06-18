@@ -44,12 +44,12 @@ struct led_t
     local_clock_t start = local_clock_t::now();
     while(local_clock_t::now() - start <= local_clock_t::seconds(duration_sec))
     {
-      for (int i=0; i<25; i++)
+      for (int i=1; i<=25; i++)
       {
         analogWrite(LED, i*255/25);
         delay((period_msec)/50);
       }
-      for (int i=0; i<25; i++)
+      for (int i=1; i<=25; i++)
       {
         analogWrite(LED, (25-i)*255/25);
         delay((period_msec)/50);
