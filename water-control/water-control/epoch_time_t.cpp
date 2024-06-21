@@ -4,9 +4,20 @@
 
 //---- local_clock_t
 
+//RTCZero local_clock_t::rtc_zero_;
+
 local_clock_t local_clock_t::now()
 {
-  return local_clock_t((int64_t)millis());
+  local_clock_t l;
+  l.value_ = (int64_t)millis();
+  //l.value_ = (int64_t)(rtc_zero_.getEpoch()) * 1000;
+  return l;
+}
+
+void local_clock_t::init()
+{
+  //local_clock_t::rtc_zero_.begin();
+  //local_clock_t::rtc_zero_.setEpoch(0);
 }
 
 int32_t local_clock_t::operator-(const local_clock_t &rhe) const
@@ -47,10 +58,12 @@ bool local_clock_t::operator==(local_clock_t const &rhe) const
 
 void epoch_time_sync_t::init()
 {
-  msec_since_epoch_ = 0;
+  //rtc_zero_.begin();
+  local_clock_t::init();
+  epoch_timestamp_ = 0;
   local_timestamp_ = local_clock_t::now();
   Serial.print("init epoch_time: ");
-  Serial.print(msec_since_epoch_);
+  Serial.print(epoch_timestamp_);
   Serial.print(" @ millis(): ");
   Serial.println(local_timestamp_);
 }
@@ -61,40 +74,50 @@ epoch_time_t epoch_time_sync_t::now()
   local_clock_t now = local_clock_t::now();
   int32_t passed_msec = now - local_timestamp_;
   // detect millis() wrap
-  if (now.has_wrapped_since(local_timestamp_))
-  {
-    wrap_cnt_ ++;
-    Serial.println("---- WRAP detected");
-  }
+  //if (now.has_wrapped_since(local_timestamp_))
+  //{
+  //  wrap_cnt_ ++;
+  //  Serial.println("---- WRAP detected");
+  //}
   // increment both epoch time and local timestamp
-  msec_since_epoch_ += passed_msec;
+  epoch_timestamp_ += passed_msec;
   local_timestamp_ = now;
   // round to seconds
-  return (msec_since_epoch_ + 500) / 1000;
+  return (epoch_timestamp_ + 500) / 1000;
 }
 
-void epoch_time_sync_t::set_now(epoch_time_t t)
+void epoch_time_sync_t::set_now(epoch_time_t t, local_clock_t l)
 {
   // save before update to compute drift
   local_clock_t previous_ts = local_timestamp_;
-  int64_t previous_msec_since_epoch = msec_since_epoch_;
+  epoch_time_t previous_epoch_timestamp = epoch_timestamp_;
+  //time_t previous_rtc_timestamp = rtc_timestamp_;
   // update master counter and timestamp
-  local_timestamp_ = local_clock_t::now();
-  msec_since_epoch_ = t * 1000;
+  local_timestamp_ = l;//local_clock_t::now();
+  epoch_timestamp_ = t * 1000;
+  //rtc_timestamp_ = rtc_zero_.getEpoch();
+  //rtc_zero_.setEpoch(t);
   // calculate drift
-  int64_t drift = (local_timestamp_ - previous_ts) - (msec_since_epoch_ - previous_msec_since_epoch);
+  int64_t drift = (local_timestamp_ - previous_ts) - (epoch_timestamp_ - previous_epoch_timestamp);
   if (never_been_set_)
   {
     never_been_set_ = false;
+    //rtc_zero_.setEpoch(t);
   }
   else
   {
     drift_sum_ += drift;
   }
-  Serial.print("drift msec: ");
+  Serial.print(t);
+  Serial.print(" - drift msec: ");
   Serial.print(drift);
   Serial.print(" SUM: ");
   Serial.println(drift_sum_);
+  // drift from RTC
+  //int64_t drift_rtc = (local_timestamp_/1000 - previous_ts/1000) - (rtc_timestamp_ - previous_rtc_timestamp);
+  //Serial.print(t);
+  //Serial.print(" -   rtc msec: ");
+  //Serial.println(drift_rtc);
 }
 
 uint32_t epoch_time_sync_t::uptime_sec()

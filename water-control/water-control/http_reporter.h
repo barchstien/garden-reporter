@@ -4,11 +4,17 @@
 #include <WiFiNINA.h>
 #include <ArduinoJson.h>
 
+#include "epoch_time_t.h"
+
 #define HTTP_SERVER_IP "192.168.1.176"//175"//66"
 //#define HTTP_SERVER_IP "192.168.1.176"
 #define HTTP_SERVER_PORT 8000
 #define HTTP_REPORT "/report"
 #define HTTP_DEBUG "/debug"
+
+#define MAX_WAIT_RESPONSE_SEC 10
+
+#define READ_BUFF_SIZE 1024
 
 enum report_status
 {
@@ -26,6 +32,7 @@ struct http_reporter_t
   {
     // Time sync
     uint64_t sec_since_epoch{0};
+    local_clock_t sec_since_epoch_as_local;
     // Water schedule
     bool enabled{false};
     uint64_t start_time_sec_since_epoch{0};
@@ -83,27 +90,58 @@ struct http_reporter_t
       client.println("Connection: close");
       client.println();
 
-      // give server time to respond
-      delay(1000);
+      // Give server time to respond
+      bool timed_out = true;
+      local_clock_t start = local_clock_t::now();
+      while (local_clock_t::now() - start < local_clock_t::seconds(MAX_WAIT_RESPONSE_SEC))
+      {
+        if (client.available())
+        {
+          timed_out = false;
+          cmd.sec_since_epoch_as_local = local_clock_t::now();
+          break;
+        }
+        delay(10);
+      }
+
+      if (timed_out)
+      {
+        Serial.println("** Didn't receive response from report !");
+      }
 
       // Read and parse the response
-      String response;
+      char response[READ_BUFF_SIZE];
+      unsigned int i = 0;
       while (client.available())
       {
         char c = client.read();
-        response += c;
+        response[i] = c;
+        i++;
+        if (i >= READ_BUFF_SIZE - 1)
+        {
+          Serial.println("** READ_BUFF_SIZE too small, message truncated");
+          break;
+        }
+        // May be reading too fast, missing bytes, give it a chance
+        if (client.available() == false)
+        {
+          delay(100);
+        }
       }
+      response[i] = '\0';
       //Serial.println("");
       //Serial.print("server response: ");
       //Serial.println(response);
-      String json_data = response.substring(response.indexOf('{'));
+      //Serial.println("");
+      // Point to JSON data start
+      char* json_data_ptr = strchr(response, '{');
       // Parse JSON
-      DynamicJsonDocument jsonDoc(1024);
-      DeserializationError jsonError = deserializeJson(jsonDoc, json_data.c_str());
+      DynamicJsonDocument jsonDoc(READ_BUFF_SIZE);
+      DeserializationError jsonError = deserializeJson(jsonDoc, json_data_ptr);
 
       if (jsonError)
       {
-        Serial.print("JSON Parsing Error: ");
+        Serial.print("** JSON Parsing Error: ");
         Serial.println(jsonError.c_str());
       }
       else

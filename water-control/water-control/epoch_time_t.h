@@ -1,5 +1,19 @@
 #pragma once
 
+//#include <RTCZero.h>
+
+/**
+ * TYpes of clocks needed :
+ *  - epoch time
+ *    - get from http server
+ *    - set to RTC, only adjust if drift > 10 sec
+ *    - ! can be adjusted !
+ *  - local_time
+ *    - millis()
+ *    - use for uptime
+ *    - ! can NOT be adjusted !
+*/
+
 /**
  * Local clock derived from millis()
  * Does arythmetic that handle uint32_t counter wrap (every 50 days)
@@ -24,6 +38,8 @@ struct local_clock_t
   }
 
   static local_clock_t now();
+
+  static void init();
 
   static int32_t days(unsigned int d)
   {
@@ -67,9 +83,11 @@ private:
   /** value at which arduino millis() wraps */
   static const int64_t millis_wrap = 2^32;
 
-  local_clock_t(int64_t n) : // private ??
-    value_(n)
-  {}
+  // TODO replace with adafruit RTC
+  // -----------> move to epoch_time_sync ?!
+  //              makes more sense
+  //static RTCZero rtc_zero_;
+
 };
 
 /** Seconds since epoch */
@@ -94,7 +112,7 @@ struct epoch_time_sync_t
   /**
    * @param t msec since epoch, 01/01/1970
    */
-  void set_now(epoch_time_t t);
+  void set_now(epoch_time_t t, local_clock_t l);
 
   uint32_t uptime_sec();
 
@@ -105,12 +123,16 @@ private:
    * Using millisec instead of sec to avoid drift due to rounding
    * between local msec clock and master clock counter
    */
-  int64_t msec_since_epoch_;
+  epoch_time_t epoch_timestamp_;
 
   /** 
    * Local clock timestamp that correspond ti sec_since_epoch_
    */
   local_clock_t local_timestamp_;
+
+  //time_t rtc_timestamp_;
+
+  //RTCZero rtc_zero_;
 
   /** 
    * Count millis() wraps, assuming epoch_time_sync_t::now() 

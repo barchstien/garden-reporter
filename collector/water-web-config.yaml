@@ -1,5 +1,5 @@
 water-control:
-  start_time: 2024-06-16T19:50
-  period_day: 2
-  duration_minute: 1
-  enabled: false
+  start_time: 2024-06-21T22:11
+  period_day: 1
+  duration_minute: 6
+  enabled: true

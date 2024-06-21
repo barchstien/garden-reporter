@@ -37,9 +37,7 @@ None of the above variables or json entries are guaranteed to be present
 class WaterWebRequestHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
-        print('>>', self.path)
         url_parsed = urllib.parse.urlparse(self.path)
-        print('>>>>', url_parsed)
         
         # human interface
         if url_parsed.path == '/':
@@ -48,10 +46,10 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             if config != None:
                 content_len = int(self.headers.get('Content-Length'))
                 post_body = self.rfile.read(content_len)
-                print('post_body', post_body.decode("utf-8"))
+                #print('post_body', post_body.decode("utf-8"))
                 # get POST params, if any
                 query_components = urllib.parse.parse_qs(post_body.decode("utf-8"))
-                print('query_components', query_components)
+                #print('query_components', query_components)
                 try:
                     config["water-control"]['start_time'] = query_components.get('start_time')[0]
                     config["water-control"]['period_day'] = int(query_components.get('period_day')[0])
@@ -67,9 +65,7 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
         
 
     def do_GET(self):
-        print('>>', self.path)
         url_parsed = urllib.parse.urlparse(self.path)
-        print('>>>>', url_parsed)
 
         # human interface
         if url_parsed.path == '/':
@@ -105,7 +101,7 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
                 'uptime_day': uptime_day_value,
                 'last_report': last_report
             }
-            print("Sending: ", data)
+            #print("Sending: ", data)
             json_data = json.dumps(data)
             self.wfile.write(json_data.encode())
 
@@ -115,7 +111,6 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'image/x-icon')
             self.end_headers()
             with open('source/static/favicon.ico', 'rb') as file:
-                #self.send_header('Content-Length', 0)
                 self.wfile.write(file.read())
         
         # water-controller, ie machine
