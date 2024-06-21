@@ -2,20 +2,26 @@
 
 #include "pin.h"
 
-#define V_DIVIDER 0.454
-#define V_MAX     3.3
-#define ADC_MAX   1023
-
-// just a 100% ref
+// Lithium battery caracs
+// just for ref
 #define BATT_V_MAX 4.2
 // Should be safe to open water above that voltage
 #define BATT_V_MIN 3.2
 
+/**
+ * Measure voltage of lithium battery, 
+ * not voltage provided to ardui-box regulator
+*/
 struct battery_t
 {
-  uint32_t read_volt()
+  float read_volt()
   {
-    return analogRead(BATT_READ);// * V_MAX / ADC_MAX * V_DIVIDER;
+    // Calibrate with multimeter vs read values
+    // Measured V | ADC value
+    //       4.13 |  520
+    //       4.18 |  525
+    //       4.06 |  516
+    return analogRead(BATT_READ) * 0.00800;
   }
 
   /** @return true if enoug battery */

@@ -77,10 +77,14 @@ Components datasheet are in **probe/datasheet** folder
 
 ## Photo transistor
  * TEPT5700 [782-TEPT5700]  
-   Use with 5K resistor, measure U, then I = U/R  
+   Use with 5K resistor for outside use with diffuser, measure U, then I = U/R  
    From I, get Lux, using calibration with a ref lux meter  
  The value of R will set the sensibility and saturation level  
- Use with a diffuser, to mitigate the effect of the angle towards the light source
+ Use with a diffuser, to mitigate the effect of the angle towards the light source  
+ 
+ For inside use, use a higher R value. 
+ Aiming 5000 Lux max inside, which is 1/10 of outside max use
+ Outside uses 5K --> use 50K --> only have 2x 20K
 
 ## Battery level sensor
  * Add battery level check with voltage divider  

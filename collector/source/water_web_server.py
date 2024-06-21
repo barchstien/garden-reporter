@@ -1,6 +1,9 @@
-from http.server import HTTPServer, BaseHTTPRequestHandler
-import re, json, time, datetime
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
+import re, json, time
+from datetime import datetime
 import urllib.parse
+import yaml
+
 
 '''
 Logic that handles http requests from the water control unit
@@ -12,55 +15,105 @@ Which variables :
    (could be reset any time to 0)
  * water schedule : 
    - period in days
-   - start time in HH:mm
+   - next scheduled start time in sec since EPOCH
    - duration in minute
+   - enabled
  * status (Could be all 0 after reboot)
-  - current time in sec since epoch
-  - last water scheduled time in sec since epoch
-  - last water scheduled duration in minutes
+  - sec since last boot
+  - last water time in sec since epoch
+  - last water duration in minutes
   - next water scheduled time in sec since epoch
   - next water scheduled duration in minutes
 
 The request is answered with a JSON object including :
  * water schedule config : 
+   - start time in sec since EPOCH
    - period in days
-   - start time in HH:mm
    - duration in minute
-   (Normally is the same as the request, except if it had been changed by humans)
- * water schedule command :
-   - period in days
-   - start time in HH:mm
-   - duration in minute
+   - enabled
 
 None of the above variables or json entries are guaranteed to be present
 '''
 class WaterWebRequestHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        print('>>', self.path)
-        print('>>>>', urllib.parse.urlparse(self.path))
+
+    def do_POST(self):
         url_parsed = urllib.parse.urlparse(self.path)
         
+        # human interface
         if url_parsed.path == '/':
-            self.send_response(200)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-
-            # Read content from index.html file and send it as the response
-            with open('source/index.html', 'rb') as file:
-                content = file.read()
-                content = re.sub(b'{{period_day_value}}', b'2', content)
-                content = re.sub(b'{{start_time_hour_minute_value}}', b'20:03', content)
-                content = re.sub(b'{{duration_minute_value}}', b'45', content)
-                content = re.sub(b'{{enable_value}}', b'checked', content)
-                content = re.sub(b'{{last_scheduled_watering}}', b'unknown', content)
-                # debug
-                next_debug = datetime.datetime.fromtimestamp(time.time() + (3600*12)).strftime('%Y-%m-%d %H:%M').encode('utf-8')
-                content = re.sub(b'{{next_scheduled_watering}}', next_debug, content)
-                content = re.sub(b'{{battery_status_string}}', b'100% (4.7V)', content)
-                content = re.sub(b'{{watering_now_string}}', b'nope', content)
-                content = re.sub(b'{{uptime_day_value}}', b'3 days', content)
-                self.wfile.write(content)
+            # get config from yaml
+            config = self.load_config_file()
+            if config != None:
+                content_len = int(self.headers.get('Content-Length'))
+                post_body = self.rfile.read(content_len)
+                #print('post_body', post_body.decode("utf-8"))
+                # get POST params, if any
+                query_components = urllib.parse.parse_qs(post_body.decode("utf-8"))
+                #print('query_components', query_components)
+                try:
+                    config["water-control"]['start_time'] = query_components.get('start_time')[0]
+                    config["water-control"]['period_day'] = int(query_components.get('period_day')[0])
+                    config["water-control"]['duration_minute'] = int(query_components.get('duration_minute')[0])
+                    config["water-control"]['enabled'] = query_components.get('enable', ['off'])[0] == 'on'
+                    print('-->', config)
+                    self.write_config_file(config)
+                except Exception as e:
+                    print('POST data does not contain expected params, ignore it...')
+                    print(e)
+                
+                self.render_index(config["water-control"])
         
+
+    def do_GET(self):
+        url_parsed = urllib.parse.urlparse(self.path)
+
+        # human interface
+        if url_parsed.path == '/':
+            # get config from yaml
+            config = self.load_config_file()
+            if config != None:
+                self.render_index(config["water-control"])
+        
+        # human interface AJAX
+        elif self.path == '/status':
+            print('-- status !')
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            last_schedule = datetime.fromtimestamp(self.server.valve_status.last_water_epoch_t).strftime('%Y-%m-%d %H:%M')
+            next_schedule = datetime.fromtimestamp(self.server.valve_status.next_water_epoch_t).strftime('%Y-%m-%d %H:%M')
+            battery_status_string = "{:.0f}% ({:.2f})V".format(
+                (float(self.server.valve_status.battery_milliv) / 1000.0 - 3.2) * 100  / 1, 
+                float(self.server.valve_status.battery_milliv) / 1000.0
+            )
+            watering_now_string = 'nope'
+            if self.server.valve_status.is_water_on :
+                watering_now_string = 'yes'
+            uptime_day_value = "{:.2f} days".format(
+                float(self.server.valve_status.uptime_sec) / (3600.0 * 24.0)
+            )
+            last_report = datetime.fromtimestamp(self.server.valve_status.last_report).strftime('%Y-%m-%d %H:%M')
+            data = {\
+                'last_scheduled_watering': last_schedule,
+                'next_scheduled_watering': next_schedule,
+                'battery_status': battery_status_string,
+                'watering_now': watering_now_string,
+                'uptime_day': uptime_day_value,
+                'last_report': last_report
+            }
+            #print("Sending: ", data)
+            json_data = json.dumps(data)
+            self.wfile.write(json_data.encode())
+
+        # icon
+        elif self.path == '/favicon.ico':
+            self.send_response(200)
+            self.send_header('Content-Type', 'image/x-icon')
+            self.end_headers()
+            with open('source/static/favicon.ico', 'rb') as file:
+                self.wfile.write(file.read())
+        
+        # water-controller, ie machine
         elif url_parsed.path == '/report':
             print('-- report !')
             self.send_response(200)
@@ -68,59 +121,130 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             query_components = urllib.parse.parse_qs(url_parsed.query)
             print(query_components)
-            period_day_value = query_components.get('period_day_value', [''])[0]
-            start_time_hour_minute_value = query_components.get('start_time_hour_minute_value', [''])[0]
-            duration_minute_value = query_components.get('duration_minute_value', [''])[0]
-            water_liter_value = query_components.get('water_liter_value', [''])[0]
+            # TODO also echo request ?
+            self.server.valve_status.water_liter = query_components.get('water_liter', [''])[0]
+            self.server.valve_status.battery_milliv = query_components.get('battery_milliv', [''])[0]
+            self.server.valve_status.next_water_epoch_t = int(query_components.get('next_water_epoch_t', [''])[0])
+            self.server.valve_status.last_water_epoch_t = int(query_components.get('last_water_epoch_t', [''])[0])
+            self.server.valve_status.is_water_on = query_components.get('water_on', [''])[0] != '0'
+            self.server.valve_status.uptime_sec = query_components.get('uptime_sec', [''])[0]
+            print("water_liter: ", self.server.valve_status.water_liter)
+            print("battery_voltage: ", self.server.valve_status.battery_milliv)
+            print("uptime_sec: ", self.server.valve_status.uptime_sec)
+            self.server.valve_status.last_report = time.time()
 
-            print(time.time())
-            print(int(time.time()))
-            print('++++')
-            print(time.gmtime())
-            print(time.gmtime().tm_zone)
-            print(time.localtime())
-            print('=====')
-            print(time.mktime(time.localtime()))
-            print(time.mktime(time.localtime()) - time.mktime(time.gmtime()))
-            print('///////')
-            f = 1676591760.6215856
-            print(time.mktime(time.localtime(f)) - time.mktime(time.gmtime(f)))
-            print(time.gmtime(f))
-            print(time.localtime(f))
-            # TODO diff gives the +1 of UTC+1, localtile().tm_isdst if true => +1
-            f = time.time()
-            time_to_send = int(f)
-            time_to_send += int(time.mktime(time.localtime(f)) - time.mktime(time.gmtime(f)))
-            if time.localtime(f).tm_isdst:
-                time_to_send += 3600
+            # TODO log report
+            # WARNING
+            # Looks like server epoch time is always GMT
+            # --> but no need for convertion coz it's never displayed to humans
 
-
-            # TODO save those var to display in web ui
-
-            # TODO send new config, if any...
-            # debug : echo back the request
+            config = self.load_config_file()
+            start_time = datetime.strptime(config["water-control"]['start_time'], '%Y-%m-%dT%H:%M')
+            print('-->', start_time)
             data = {\
-                'period_day_value': period_day_value,
-                'start_time_hour_minute_value': start_time_hour_minute_value,
-                'duration_minute_value': duration_minute_value,
-                'sec_since_1970': time_to_send
+                'start_time': int(time.mktime(start_time.timetuple())),
+                'period_day': config["water-control"]['period_day'],
+                'duration_minute': config["water-control"]['duration_minute'],
+                'enabled': config["water-control"]['enabled'],
+                'sec_since_1970': int(time.mktime(time.localtime()))
             }
-            print(data)
+            print("Sending: ", data)
             json_data = json.dumps(data)
             self.wfile.write(json_data.encode())
 
+        elif url_parsed.path == '/debug':
+            print('-- debug !')
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            query_components = urllib.parse.parse_qs(url_parsed.query)
+            print(query_components)
         else:
             self.send_error(404, "File Not Found at path:", self.path)
+    
+    def render_index(self, config):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+        # Read template content, fill it, send it as the response
+        with open('source/static/index.html', 'rb') as file:
+            content = file.read()
+            # config
+            content = re.sub(b'{{start_time}}', config['start_time'].encode(), content)
+            content = re.sub(b'{{period_day}}', str(config['period_day']).encode(), content)
+            content = re.sub(b'{{duration_minute}}', str(config['duration_minute']).encode(), content)
+            checked = b''
+            if config["enabled"]:
+                checked = b'checked'
+            content = re.sub(b'{{enable}}', checked, content)
+
+            # status
+            last_schedule = b'unknown'
+            if self.server.valve_status.last_water_epoch_t != 0:
+                last_schedule = datetime.fromtimestamp(self.server.valve_status.last_water_epoch_t).strftime('%Y-%m-%d %H:%M').encode()
+            content = re.sub(b'{{last_scheduled_watering_string}}', last_schedule, content)
+
+            next_schedule = datetime.fromtimestamp(self.server.valve_status.next_water_epoch_t).strftime('%Y-%m-%d %H:%M').encode()
+            content = re.sub(b'{{next_scheduled_watering_string}}', next_schedule, content)
+            
+            content = re.sub(b'{{battery_status_string}}', 
+                             "{:.0f}% ({:.2f})V".format(
+                                 (float(self.server.valve_status.battery_milliv) / 1000.0 - 3.2) * 100  / 1, 
+                                 float(self.server.valve_status.battery_milliv) / 1000.0).encode(), 
+                            content)
+            
+            water_now = b'nope'
+            if self.server.valve_status.is_water_on :
+                water_now = b'yes'
+            content = re.sub(b'{{watering_now_string}}', water_now, content)
+            
+            content = re.sub(b'{{uptime_day_string}}', "{:.2f} days".format(float(self.server.valve_status.uptime_sec) / (3600.0 * 24.0)).encode(), content)
+
+            last_report = datetime.fromtimestamp(self.server.valve_status.last_report).strftime('%Y-%m-%d %H:%M').encode()
+            content = re.sub(b'{{last_report_string}}', last_report, content)
+
+            self.wfile.write(content)
+    
+    def load_config_file(self):
+        config = None
+        with open(self.yaml_config_path, 'r+') as file:
+            try:
+                config = yaml.safe_load(file)
+            except yaml.YAMLError as e:
+                print("Failed loading YAML water controller config", e)
+        return config
+    
+    def write_config_file(self, config):
+        with open(self.yaml_config_path, 'r+') as file:
+            file.seek(0)
+            yaml.dump(config, file, sort_keys=False)
+            file.truncate()
+
+class ValveStatus:
+    def __init__(self):
+        self.uptime_sec = 0
+        self.water_liter = 0
+        self.battery_milliv = 0
+        self.next_water_epoch_t = 0
+        self.last_water_epoch_t = 0
+        self.is_water_on = False
+        self.last_report = 0
 
 class WaterWebServer:
-    def run_server(this, port=8000):
+    def __init__(self, yaml_config_path) -> None:
+        self.yaml_config_path = yaml_config_path
+        self.valve_status = ValveStatus()
+
+    def run_server(self, port=8000):
         server_address = ('', port)
-        httpd = HTTPServer(server_address, WaterWebRequestHandler)
+        httpd = ThreadingHTTPServer(server_address, WaterWebRequestHandler)
+        httpd.RequestHandlerClass.yaml_config_path = self.yaml_config_path
+        httpd.valve_status = ValveStatus()
         print(f"Server started on port {port}")
         httpd.serve_forever()
 
 
 '''For standalone tests'''
 if __name__ == '__main__':
-    wwc = WaterWebServer()
+    wwc = WaterWebServer(yaml_config_path="./water-web-config.yaml")
     wwc.run_server()

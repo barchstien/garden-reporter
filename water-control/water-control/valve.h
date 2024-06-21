@@ -2,7 +2,7 @@
 
 #include "pin.h"
 
-#define VALVE_PULSE_MSEC 500
+#define VALVE_PULSE_MSEC 1000
 #define VALVE_PHASE_OPEN 1
 #define VALVE_PHASE_CLOSE 0
 
@@ -35,6 +35,7 @@ struct valve_t
     digitalWrite(VALVE_ENABLE, 1);
     delay(VALVE_PULSE_MSEC);
     digitalWrite(VALVE_ENABLE, 0);
+    is_on_ = true;
   }
 
   void water_off()
@@ -43,5 +44,14 @@ struct valve_t
     digitalWrite(VALVE_ENABLE, 1);
     delay(VALVE_PULSE_MSEC);
     digitalWrite(VALVE_ENABLE, 0);
+    is_on_ = false;
   }
+
+  bool is_on() const
+  {
+    return is_on_;
+  }
+
+private:
+ bool is_on_{false};
 };

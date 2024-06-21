@@ -1,8 +1,15 @@
 #pragma once
 
 #include <WiFiNINA.h>
+#include <ArduinoJson.h>
 
-#include "time_lib.h"
+//#include "time_lib.h"
+
+#define HTTP_SERVER_IP "192.168.1.175"//66"
+//#define HTTP_SERVER_IP "192.168.1.176"
+#define HTTP_SERVER_PORT 8000
+#define HTTP_REPORT "/report"
+#define HTTP_DEBUG "/debug"
 
 // Expects arduino_secrets.h to be like :
 // #define SECRET_SSID "your-ssid"
@@ -15,38 +22,52 @@ char pass[] = SECRET_PASS;
 #define GET_TIME_MAX_TRY   20
 #define GET_TIME_WAIT_MSEC 1000
 
-struct wifi_t
+// debug
+void printMacAddress(byte mac[])
 {
-  void init()
+  for (int i = 5; i >= 0; i--)
   {
-    //WiFi.setTimeout(10000);
-    // Connect on init, gives time to NTP lock
-    bool connected = connect();
-    //// wait for NTP sync
-    if (connected)
+    if (mac[i] < 16)
     {
-      ntp_time_sync();
+      Serial.print("0");
+    }
+    Serial.print(mac[i], HEX);
+    if (i > 0)
+    {
+      Serial.print(":");
     }
   }
+  Serial.println();
+}
+
+struct wifi_t
+{
 
   bool connect()
   {
-    int status = WiFi.status();
-    if (status == WL_CONNECTED)
+    // debug list
+    if (WiFi.status() == WL_NO_MODULE)
     {
-      // already connected
-      return true;
+      Serial.println("Communication with WiFi module failed!");
+      delay(5000);
     }
-    
-    Serial.print("-- Wifi connecting to ssid: ");
-    Serial.println(ssid);
-    status = WiFi.begin(ssid, pass);
+    // print your MAC address:
+    //byte mac[6];
+    //WiFi.macAddress(mac);
+    //Serial.print("MAC: ");
+    //printMacAddress(mac);
+
+    int status = WL_IDLE_STATUS;
+    int cnt = 0;
+    while (status != WL_CONNECTED && cnt < 30)
+    {
+      status = WiFi.begin(ssid, pass);
+      delay(1000);
+      cnt++;
+    }
+    print_status();
     if (status == WL_CONNECTED)
     {
-      Serial.print("   Connected to ");
-      Serial.println(WiFi.SSID());
-      Serial.print("   rssi: ");
-      Serial.println(WiFi.RSSI());
       return true;
     }
     else if (status == WL_NO_MODULE)
@@ -69,39 +90,18 @@ struct wifi_t
     WiFi.end();
   }
 
-  void ntp_time_sync()
-  {
-    int t = WiFi.getTime();
-    int cnt = 0;
-    while(t == 0 && cnt < GET_TIME_MAX_TRY)
-    {
-      delay(GET_TIME_WAIT_MSEC);
-      t = WiFi.getTime();
-      cnt ++;
-    }
-    if (t == 0)
-    {
-      Serial.println("Failed to get NTP time, using already set time");
-      time_element_t dt = now_element();
-      Serial.println(dt.to_string());
-    }
-    else
-    {
-      Serial.println("Got NTP time");
-      set_time(t);
-      // print
-      time_element_t dt = now_element();
-      Serial.println(dt.to_string());
-    }
-  }
-
   void print_status()
   {
     int status = WiFi.status();
     if (status == WL_CONNECTED)
     {
       Serial.print("Connected to ");
-      Serial.println(WiFi.SSID());
+      Serial.print(WiFi.SSID());
+      Serial.print(" : ");
+      Serial.print(WiFi.localIP());
+      Serial.print(" rssi: ");
+      Serial.print(WiFi.RSSI());
+      Serial.println(" dBm");
     }
     else
     {

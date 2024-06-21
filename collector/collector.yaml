@@ -80,5 +80,22 @@
       light:
         coef: 60.6
         offset: 0
+    - name: "Unit #4"
+      id: 0x0013A200420821EB
+      location: "maison"
+      battery:
+        v-divider: 6.0
+      soil-moisture:
+        # dummy
+        immerged-value: 0
+        # dummy
+        dry-value: 0
+      temperature:
+        coef: 0.1173
+        offset: -50.0
+      # TODO
+      light:
+        coef: 1.068
+        offset: -107.0
 
 

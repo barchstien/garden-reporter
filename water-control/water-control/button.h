@@ -26,20 +26,18 @@ struct button_t
     );
   }
 
-  // TODO read
-
   /** @return the value coded in 3 bit */
   int bit_value()
   {
-    int b0 = digitalRead(BIT0);
-    int b1 = digitalRead(BIT1);
-    int b2 = digitalRead(BIT2);
+    int b0 = digitalRead(BIT0) == LOW;
+    int b1 = digitalRead(BIT1) == LOW;
+    int b2 = digitalRead(BIT2) == HIGH;
     return b2 * 4 + b1 * 2 + b0; 
   }
 
   bool allow_water()
   {
-    return digitalRead(ALLOW_WATER) == HIGH;
+    return digitalRead(ALLOW_WATER) == LOW;
   }
 
   bool start_water_was_pushed()
@@ -51,6 +49,11 @@ struct button_t
     }
     // else
     return false;
+  }
+
+  void reset_start_water_push()
+  {
+    start_water = false;
   }
 
   void debug_read()

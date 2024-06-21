@@ -21,7 +21,7 @@ Control a solenoid valve, measure the outgoing water flow, report and take order
  * Interface
    - LED
    - Start watering push button
-   - 3 button to code 3 bits (x15min, to set wtaering duration)
+   - 3 button to code 3 bits (x15min, to set watering duration)
    - On/Off button, forbid water use when off
 
 ## Schematics
@@ -41,7 +41,7 @@ TODO
 
 # SW
 using Arduino IDE, source is in [water-control](./water-control)  
-Requires Arduino Libraires (to on install with IDE) :  
+Requires Arduino Libraires (to install with IDE) :  
  * ArduinoHttpClient (easy http GET)
  * ArduinoJson (Json http response)
  * Arduino_Low_Power (to confirm, to keep power usage to min)

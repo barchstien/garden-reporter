@@ -2,9 +2,39 @@
 <html>
 <head>
     <title>water-control</title>
+    <script>
+        function ajax_refresh() {
+            //
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    console.log(this.responseText);
+                    const status = JSON.parse(this.responseText);
+                    document.getElementById("last_scheduled_watering").innerHTML = status.last_scheduled_watering;
+                    document.getElementById("next_scheduled_watering").innerHTML = status.next_scheduled_watering;
+                    document.getElementById("battery_status").innerHTML = status.battery_status;
+                    document.getElementById("watering_now").innerHTML = status.watering_now;
+                    document.getElementById("uptime_day").innerHTML = status.uptime_day;
+                    document.getElementById("last_report").innerHTML = status.last_report;
+                }
+            };
+            xhttp.open("GET", "status", true);
+            xhttp.send();
+            setTimeout(ajax_refresh, 10000);
+        }
+
+        setTimeout(ajax_refresh, 10000);
+    </script>
     <style>
         /* Center the h1 element */
         h1 {
+            text-align: center;
+            font-family: "Arial", sans-serif;
+            color: #009688;
+            margin-bottom: 20px;
+        }
+
+        h2 {
             text-align: center;
             font-family: "Arial", sans-serif;
             color: #009688;
@@ -31,6 +61,7 @@
             text-align: right;
             flex-basis: 250px; /* Set a fixed width for the left column */
             color: #333;
+            font-weight: bold;
         }
 
         /* Left-align the input fields */
@@ -100,51 +131,51 @@
     </style>
 </head>
 <body>
-    <h1>water-web-control</h1>
+    <a href="." style="text-decoration:none"><h1>water-web-control</h1></a>
     <!-- Removed the first line of text -->
     
     <!-- Content column -->
     <div class="content-column">
         <!-- Wrap all the input elements in a form -->
-        <form>
+        <form method="post" accept-charset="utf-8">
             <div  class="ascii-art-footer">
                 <div  class="ascii-art-footer-inner">
-   , ,    ^_^    ,_,    ^ ^
-  (@,@)  (-,-)  (o,o)  (*,*)
-  (`"')  (`"')  {`"'}  [`"']
----"-"----"-"----"-"----"-"---
-
+   , ,     ^_^     ,_,     ^ ^
+  (@,@)   (-,-)   (o,o)   (*,*)
+  (`"')   (`"')   {`"'}   [`"']
+---"-"-----"-"-----"-"-----"-"---
 </div>
-                </div>
-            <!-- Period in days -->
-            <div class="input-row">
-                <div class="label-column">
-                    <label for="period" title="Number of days between each watering.">Period in days:</label>
-                </div>
-                <div class="input-column">
-                    <!-- Use input type "number" with size attribute -->
-                    <input type="number" id="period" name="period" min="0" max="7" step="1" size="2" value="{{period_day_value}}">
-                </div>
             </div>
-
+            <h2>Watering Schedule</h2>
             <!-- Start time -->
             <div class="input-row">
                 <div class="label-column">
-                    <label for="start-time" title="What time the watering start.">Start time:</label>
+                    <label for="start_time" title="What time the watering start.">Start time:</label>
                 </div>
                 <div class="input-column">
                     <!-- Set the time input to 24-hour format -->
-                    <input type="time" id="start-time" name="start-time" inputmode="time" step="3600" value="{{start_time_hour_minute_value}}">
+                    <input type="datetime-local" id="start_time" name="start_time" inputmode="datetime-local" step="60" value="{{start_time}}">
+                </div>
+            </div>
+
+            <!-- Period in days -->
+            <div class="input-row">
+                <div class="label-column">
+                    <label for="period_day" title="Number of days between each watering.">Period in days:</label>
+                </div>
+                <div class="input-column">
+                    <!-- Use input type "number" with size attribute -->
+                    <input type="number" id="period_day" name="period_day" min="1" max="10" step="1" size="4" value="{{period_day}}">
                 </div>
             </div>
 
             <!-- Duration in minutes -->
             <div class="input-row">
                 <div class="label-column">
-                    <label for="duration" title="How many minutes is it watering.">Duration in minutes:</label>
+                    <label for="duration_minute" title="How many minutes is it watering.">Duration in minutes:</label>
                 </div>
                 <div class="input-column">
-                    <input type="number" id="duration" name="duration" min="0" max="105" size="3" step="15" value="{{duration_minute_value}}">
+                    <input type="number" id="duration_minute" name="duration_minute" min="1" max="60" size="4" step="1" value="{{duration_minute}}">
                 </div>
             </div>
 
@@ -154,7 +185,7 @@
                     <label for="enable"  title="If un-checked, no watering is scheduled.">Enable:</label>
                 </div>
                 <div class="input-column">
-                    <input type="checkbox" id="enable" name="enable" {{enable_value}}>
+                    <input type="checkbox" id="enable" name="enable" {{enable}}>
                 </div>
             </div>
 
@@ -175,32 +206,31 @@
  //\\    .'/()\'.    //\\    .'/()\'. 
   \/      \\  //      \/      \\  //  
 
-
 </div>
             </div>
-
+            <h2>Valve Status</h2>
             <!-- Status -->
             <div class="input-row">
                 <div class="label-column">
                     Last scheduled watering:
                 </div>
-                <div class="input-column">
-                    {{last_scheduled_watering}}
+                <div class="input-column" id="last_scheduled_watering">
+                    {{last_scheduled_watering_string}}
                 </div>
             </div>
             <div class="input-row">
                 <div class="label-column">
                     Next scheduled watering:
                 </div>
-                <div class="input-column">
-                    {{next_scheduled_watering}}
+                <div class="input-column" id="next_scheduled_watering">
+                    {{next_scheduled_watering_string}}
                 </div>
             </div>
             <div class="input-row">
                 <div class="label-column">
                     Battery % (Volt):
                 </div>
-                <div class="input-column">
+                <div class="input-column" id="battery_status">
                     {{battery_status_string}}
                 </div>
             </div>
@@ -208,7 +238,7 @@
                 <div class="label-column">
                     Watering now:
                 </div>
-                <div class="input-column">
+                <div class="input-column" id="watering_now">
                     {{watering_now_string}}
                 </div>
             </div>
@@ -216,8 +246,16 @@
                 <div class="label-column">
                     Uptime:
                 </div>
-                <div class="input-column">
-                    {{uptime_day_value}}
+                <div class="input-column" id="uptime_day">
+                    {{uptime_day_string}}
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="label-column">
+                    Last report:
+                </div>
+                <div class="input-column" id="last_report">
+                    {{last_report_string}}
                 </div>
             </div>
             
@@ -230,13 +268,13 @@
                     `::`
                      /    `;:`
                     `      /
-    _            .;:;     `        ,,, 
-  _(_)_          ::;       wWWWw  {{{}}
- (_)@(_)  ,,,  _ ';:;;'    (___)   ~Y~ 
-  /(_)   {{|}} >'. ||  _    ~Y~     |
-  |  {{}  ~Y~  `> \||.'< (@)\|/|}  \|/ 
-(\|/)~Y~  \|/    `>|/ <` \Y/\|~Y~  \|/ 
- \|//\|/  \|//    `||/`  \|/\|\|/ \\|//
+    _              .;:;      `         ,,, 
+  _(_)_            ::;        wWWWw   {{{}}
+ (_)@(_)   ,,,   _ ';:;;'     (___)    ~Y~ 
+  /(_)    {{|}}  >'. ||  _     ~Y~      |
+  |  {{}   ~Y~   `> \||.'<  (@)\|/|}   \|/ 
+(\|/)~Y~   \|/     `>|/ <`  \Y/\|~Y~   \|/ 
+ \|//\|/   \|//     `||/`   \|/\|\|/  \\|//
 </div>
             </div>
         </form>
