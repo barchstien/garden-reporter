@@ -76,7 +76,7 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
         
         # human interface AJAX
         elif self.path == '/status':
-            print('-- status !')
+            #print('-- status !')
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
