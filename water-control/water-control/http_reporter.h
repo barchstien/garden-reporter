@@ -12,6 +12,7 @@
 #define HTTP_REPORT "/report"
 #define HTTP_DEBUG "/debug"
 
+#define MAX_REQUEST_TRY 10
 #define MAX_WAIT_RESPONSE_SEC 10
 
 #define READ_BUFF_SIZE 1024
@@ -66,7 +67,15 @@ struct http_reporter_t
 
     command_t cmd;
 
-    if (client.connect(HTTP_SERVER_IP, HTTP_SERVER_PORT))
+    unsigned int cnt = 0;
+    while (
+      client.connect(HTTP_SERVER_IP, HTTP_SERVER_PORT) == false
+      && cnt < MAX_REQUEST_TRY)
+    {
+      cnt ++;
+      delay(1000);
+    }
+    if (cnt < MAX_REQUEST_TRY)
     {
       // Make a HTTP request:
       client.print("GET /report?water_liter=");
