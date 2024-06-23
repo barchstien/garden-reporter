@@ -1,5 +1,4 @@
 //#include <ArduinoLowPower.h>
-//#include <RTCZero.h>
 
 #include "battery.h"
 #include "button.h"
@@ -18,7 +17,8 @@ uint32_t start_water_cnt = 0;
 uint32_t start_water_cnt_last = 0;
 
 // Wifi report period
-const unsigned int sec_report_period = (0.5 * 60); // TODO 15 min
+const unsigned int sec_report_period = (1 * 60); // TODO 15 min
+// local clock of last report, or invalid if previously failed
 local_clock_t last_report_;
 const unsigned int sec_report_period_when_watering = 60;
 
@@ -104,15 +104,16 @@ report_status report_via_wifi()
     next_water_schedule,
     last_water_schedule,
     valve.is_on(),
-    epoch_time_sync.uptime_sec()
+    local_clock_t::uptime_sec()
   );
+  
   if (cmd.is_valid)
   {
     // report was succesful, reset flow cnt last
     flow_cnt_last = flow_cnt_tmp;
 
     //Serial.println("=== CMD FROM SERVER ===");
-    epoch_time_sync.set_now(cmd.sec_since_epoch, cmd.sec_since_epoch_as_local);
+    epoch_time_sync.set_now(cmd.sec_since_epoch);
 
     if (server_cmd == cmd)
     {
@@ -166,22 +167,34 @@ void loop()
   if (last_report_.is_valid() == false
     || local_clock_t::now() - last_report_ > local_clock_t::seconds(sec_report_period))
   {
-#if 1
     // Report via wifi
     led.on();
+    bool failed = false;
     if (wifi.connect())
     {
-      if (CMD_APPLIED == report_via_wifi())
+      report_status rs = report_via_wifi();
+      if (CMD_APPLIED == rs)
       {
         // received a new config, re-report to update status
         report_via_wifi();
+      }
+      else if (FAILURE == rs)
+      {
+        //
+        failed = true;
       }
     }
     // Regardless of success or not, turn off Wifi
     wifi.end();
     led.off();
-    last_report_ = local_clock_t::now();
-#endif
+    if (failed == false)
+    {
+      last_report_ = local_clock_t::now();
+    }
+    else
+    {
+      last_report_ = local_clock_t();
+    }
   }
 
   if (server_cmd.is_valid)
@@ -277,21 +290,9 @@ void loop()
   {
     if (button.bit_value() == 0)
     {
-      // report to HTTP server
-      // Report via wifi
-      led.on();
-      if (wifi.connect())
-      {
-        if (CMD_APPLIED == report_via_wifi())
-        {
-          // received a new config, re-report to update status
-          report_via_wifi();
-        }
-      }
-      // Regardless of success or not, turn off Wifi
-      wifi.end();
-      led.off();
-      last_report_ = local_clock_t::now();
+      // trigger report to HTTP server on next iteration
+      // makes last_report_ local clock invalid
+      last_report_ = local_clock_t();
     }
     else
     {
@@ -316,6 +317,9 @@ void loop()
         }
         valve.water_off();
         led.off();
+        // trigger report to HTTP server on next iteration
+        // makes last_report_ local clock invalid
+        last_report_ = local_clock_t();
       }
     }
     button.reset_start_water_push();

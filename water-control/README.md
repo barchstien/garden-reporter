@@ -13,6 +13,9 @@ Control a solenoid valve, measure the outgoing water flow, report and take order
    - [Official doc](https://www.pololu.com/product/4035)
    - [board schematic](../water-control/datasheet/drv887x-single-brushed-dc-motor-driver-carrier-schematic.pdf)
    - [drv8874 datasheet](../water-control/datasheet/drv8874.pdf)
+ * Adafruit DS3231 breakout board
+   - [Official doc](https://www.adafruit.com/product/3013)
+   - Note SAMD31 does have an RTC, but not crystal, so no good stability
  * UPS 9v:
    - Provide uninterrupted 9V, use lithium batteries, power from USB-C
    - commercial name : Type-C 15W 3A 18650 Lithium Battery Charger Module DC-DC Step Up Booster Fast Charge UPS Power Supply / Converter 9V
@@ -45,7 +48,7 @@ Requires Arduino Libraires (to install with IDE) :
  * ArduinoHttpClient (easy http GET)
  * ArduinoJson (Json http response)
  * Arduino_Low_Power (to confirm, to keep power usage to min)
- * RTCZero (No RTC module installed, would be a great addon)
+ * RTCLib for Adafruit DS3231 breakout board
  * Time (unix to date/time, local time sync)
  * WiFiNINA (wifi connection + web client)
 
