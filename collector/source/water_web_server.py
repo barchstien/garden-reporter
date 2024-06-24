@@ -258,12 +258,12 @@ class WaterWebServer:
 
     '''Serve, using current thread'''
     def run_server(self):
-        print(f"Server started on ip:port {self.server_address[0]}:{self.server_address[1]}")
+        print(f"Water Web Control on ip:port {self.server_address[0]}:{self.server_address[1]}")
         self.httpd.serve_forever()
     
     '''Serve, using separate thread'''
     def run_server_in_background(self):
-        print(f"Server started on ip:port {self.server_address[0]}:{self.server_address[1]}")
+        print(f"Water Web Control started on ip:port {self.server_address[0]}:{self.server_address[1]}")
         thread = threading.Thread(target = self.httpd.serve_forever)
         # make it a dameon, so it is killed when main thread exits
         thread.daemon = True

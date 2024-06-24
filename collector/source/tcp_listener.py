@@ -21,7 +21,7 @@ class TcpListener:
         # create/bind socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        print('Listenning on: ', self.host, self.port)
+        print('Tcp listener on: ', self.host, self.port)
         self.sock.bind((self.host, int(self.port)))
         # future single client socket, returned by accept()
         self.connection = None
