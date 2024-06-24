@@ -59,7 +59,6 @@ if __name__ == "__main__":
                 # nothing received, but run the pop model
                 # ... to release from config for exemple
                 population_model.consume(None)
-                pass
             
             #### TX
             # Check population model for frames to send
@@ -67,7 +66,6 @@ if __name__ == "__main__":
             for f in f_to_send:
                 f_coded = encoder.encode(f)
                 hub_w_q.put(f_coded)
-                pass
             
             #### Record (influxdb)
             # Check population model for records to write to db
@@ -75,12 +73,11 @@ if __name__ == "__main__":
             for f in f_to_record:
                 data_calib.apply(f)
                 db_writer.write(f)
-                pass
 
             # Poll web water controller
             water_counter_msg = water_web_server.pop_water_counter_volume_liter()
             while water_counter_msg != None:
-                
+                db_writer.write_water_counter(water_counter_msg)
                 water_counter_msg = water_web_server.pop_water_counter_volume_liter()
             
     except KeyboardInterrupt:
