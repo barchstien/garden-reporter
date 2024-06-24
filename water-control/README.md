@@ -108,6 +108,8 @@ Requires Arduino Libraires (to install with IDE) :
  * Do report to HTTP when manual watering, coz it may just water for 1h45min
    ... that would be without report
  * Write to influxdb
+ * Verify what happens if not WIFI/http server, and watering
+   |--> it should not lead to water significantly more while trying to reach network
 
 # Notes
 file:///home/bastien/while-true/common/garden-reporter/water-control/index.html?period=1&start-time=12%3A30&duration=66

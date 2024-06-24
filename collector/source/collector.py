@@ -5,6 +5,7 @@ from tcp_listener import *
 from xbee_frame_decoder import *
 from xbee_frame_encoder import *
 from xbee_population_model import *
+from water_web_server import *
 
 import yaml, time
 import sys, signal
@@ -20,6 +21,8 @@ if __name__ == "__main__":
     serial = SerialHub(config)
     # extracte frames and decode it to dict
     decoder = XbeeFrameDecoder()
+    # encode frames for xbee network
+    encoder = XbeeFrameEncoder()
     # population model, keep tracks of xbee enpoint
     # do the logic to querry and config them
     population_model = XbeePopulationModel(config)
@@ -29,8 +32,9 @@ if __name__ == "__main__":
     data_calib = DataCalibrator(config)
     # write to influxdb
     db_writer = InfluxDBWriter(config)
-    
-    encoder = XbeeFrameEncoder()
+    # web server for human and for water control unit
+    water_web_server = WaterWebServer(yaml_config_path="./water-web-config.yaml")
+    water_web_server.run_server_in_background()
     
     # Serial hub read and write queues
     # that the main loop read/write from/to
@@ -73,7 +77,11 @@ if __name__ == "__main__":
                 db_writer.write(f)
                 pass
 
-            # TODO check web server for water flow
+            # Poll web water controller
+            water_counter_msg = water_web_server.pop_water_counter_volume_liter()
+            while water_counter_msg != None:
+                
+                water_counter_msg = water_web_server.pop_water_counter_volume_liter()
             
     except KeyboardInterrupt:
         print("Keyboard Interrupt ------> exiting all...")
