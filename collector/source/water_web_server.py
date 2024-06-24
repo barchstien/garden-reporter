@@ -35,6 +35,8 @@ The request is answered with a JSON object including :
 None of the above variables or json entries are guaranteed to be present
 '''
 class WaterWebRequestHandler(BaseHTTPRequestHandler):
+    def log_request(self, code):
+        pass
 
     def do_POST(self):
         url_parsed = urllib.parse.urlparse(self.path)
@@ -128,9 +130,9 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             self.server.valve_status.last_water_epoch_t = int(query_components.get('last_water_epoch_t', [''])[0])
             self.server.valve_status.is_water_on = query_components.get('water_on', [''])[0] != '0'
             self.server.valve_status.uptime_sec = query_components.get('uptime_sec', [''])[0]
-            print("water_liter: ", self.server.valve_status.water_liter)
-            print("battery_voltage: ", self.server.valve_status.battery_milliv)
-            print("uptime_sec: ", self.server.valve_status.uptime_sec)
+            #print("water_liter: ", self.server.valve_status.water_liter)
+            #print("battery_voltage: ", self.server.valve_status.battery_milliv)
+            #print("uptime_sec: ", self.server.valve_status.uptime_sec)
             self.server.valve_status.last_report = time.time()
 
             # TODO log report
@@ -140,7 +142,7 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
 
             config = self.load_config_file()
             start_time = datetime.strptime(config["water-control"]['start_time'], '%Y-%m-%dT%H:%M')
-            print('-->', start_time)
+            #print('-->', start_time)
             data = {\
                 'start_time': int(time.mktime(start_time.timetuple())),
                 'period_day': config["water-control"]['period_day'],
