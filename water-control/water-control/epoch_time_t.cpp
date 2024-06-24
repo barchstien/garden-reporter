@@ -7,6 +7,7 @@
 int64_t local_clock_t::wrap_cnt_ = 0;
 int64_t local_clock_t::last_millis_value_;
 
+// Tested with 0x1ffff and len 17 --> wraps every 130 sec
 #define WRAP_MASK 0xffffffff
 #define WRAP_BIT_LEN 32
 

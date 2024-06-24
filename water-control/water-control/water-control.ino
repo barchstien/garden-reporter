@@ -17,7 +17,7 @@ uint32_t start_water_cnt = 0;
 uint32_t start_water_cnt_last = 0;
 
 // Wifi report period
-const unsigned int sec_report_period = (1 * 60); // TODO 15 min
+const unsigned int sec_report_period = (15 * 60); // TODO 15 min
 // local clock of last report, or invalid if previously failed
 local_clock_t last_report_;
 const unsigned int sec_report_period_when_watering = 60;
