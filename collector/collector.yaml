@@ -66,7 +66,10 @@
         # --> must be due to outside temp, see below
         # 2023/05/18 seen unexpectidly high value, then 109% with 572
         # --> use 572 coz it correspond to manual watering on probe
-        immerged-value: 572
+        #immerged-value: 572
+        # seeing values around -76%, while expect around 70%
+        # |--> hack remove 76 + 70 ==> 426
+        immerged-value: 426
         # first calib got 897, but then leaving it outside got 914
         # Using 914, on the base that long term calib is better
         # actually, looks like 35deg gives 914, 25deg 897, and 20deg 896
@@ -96,6 +99,6 @@
       # TODO
       light:
         coef: 1.068
-        offset: -107.0
+        offset: -79.0
 
 
