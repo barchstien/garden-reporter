@@ -19,7 +19,7 @@ uint32_t start_water_cnt_last = 0;
 // Wifi report period
 const unsigned int sec_report_period = (2 * 60); // TODO 15 min
 // local clock of last report, or invalid if previously failed
-epoch_time_t last_report_;
+epoch_time_t last_report_ = -1;
 const unsigned int sec_report_period_when_watering = 60;
 
 // Hard limit watering duration, 1.5 hour
@@ -200,7 +200,7 @@ void loop()
 {
   //// HTTP report ////
   // Send status and get config including epoch time sync and watering schedule
-  if (last_report_ < 0 || epoch_time_sync.now() - last_report_ > sec_report_period)
+  if (last_report_ < 0 || (epoch_time_sync.now() - last_report_ > sec_report_period))
   {
     // Report via wifi
     led.on();
@@ -209,9 +209,14 @@ void loop()
       report_status rs = sync_with_server(true);
       if (CMD_APPLIED == rs)
       {
-        // Sync with wuccess
+        // Sync with success
         // received a new config, re-report to update status
         sync_with_server(true);
+        last_report_ = epoch_time_sync.now();
+      }
+      else if (CMD_ALREADY_KOWN == rs)
+      {
+        // Sync success, not config update
         last_report_ = epoch_time_sync.now();
       }
       else if (FAILURE == rs)
@@ -266,10 +271,12 @@ void loop()
     if (button.bit_value() == 0)
     {
       // trigger report to HTTP server on next iteration
+      LOG("-- Manual trigger HTTP report");
       last_report_ = -1;
     }
     else
     {
+      LOG("-- Manual trigger water");
       // check button on/off and battery
       if (button.allow_water() && battery.can_use_water())
       {
