@@ -119,12 +119,10 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
 
         # icon
         elif self.path == '/favicon.ico':
-            print('-- favicon')
             self.send_response(200)
             self.send_header('Content-Type', 'image/x-icon')
             self.end_headers()
             with open('source/static/favicon.ico', 'rb') as file:
-                print('-- write favicon')
                 self.wfile.write(file.read())
         
         # water-controller, ie machine
@@ -230,9 +228,9 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
     
     def load_config_file(self):
         config = None
-        print("Openning WWS config:", self.yaml_config_path)
-        print("Current folder:", os.getcwd())
-        print("list: ", os.listdir('.'))
+        #print("Openning WWS config:", self.yaml_config_path)
+        #print("Current folder:", os.getcwd())
+        #print("list: ", os.listdir('.'))
         with open(self.yaml_config_path, 'r+') as file:
             try:
                 config = yaml.safe_load(file)
