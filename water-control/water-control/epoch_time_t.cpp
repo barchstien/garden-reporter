@@ -28,11 +28,6 @@ local_clock_t local_clock_t::now()
   return l;
 }
 
-uint32_t local_clock_t::uptime_sec()
-{
-  return now().value_ / 1000;
-}
-
 int32_t local_clock_t::operator-(const local_clock_t &rhe) const
 {
   return this->value_ - rhe.value_;
@@ -63,6 +58,7 @@ bool local_clock_t::operator==(local_clock_t const &rhe) const
 void epoch_time_sync_t::init()
 {
   rtc_.begin();
+  start_time_ = now();
 }
 
 epoch_time_t epoch_time_sync_t::now()
@@ -84,4 +80,8 @@ void epoch_time_sync_t::set_now(epoch_time_t t)
   }
 }
 
+uint32_t epoch_time_sync_t::uptime_sec()
+{
+  return now() - start_time_;
+}
 

@@ -6,7 +6,7 @@
 
 #include "epoch_time_t.h"
 
-#define HTTP_SERVER_IP "192.168.1.176"//175"//66"
+#define HTTP_SERVER_IP "192.168.1.66"//176"//175"//66"
 //#define HTTP_SERVER_IP "192.168.1.176"
 #define HTTP_SERVER_PORT 8000
 #define HTTP_REPORT "/report"
@@ -33,7 +33,6 @@ struct http_reporter_t
   {
     // Time sync
     uint64_t sec_since_epoch{0};
-    local_clock_t sec_since_epoch_as_local;
     // Water schedule
     bool enabled{false};
     uint64_t start_time_sec_since_epoch{0};
@@ -107,7 +106,6 @@ struct http_reporter_t
         if (client.available())
         {
           timed_out = false;
-          cmd.sec_since_epoch_as_local = local_clock_t::now();
           break;
         }
         delay(10);
@@ -167,7 +165,7 @@ struct http_reporter_t
     }
     else
     {
-      Serial.println("Client failed to connected. Is server up ?");
+      Serial.println("Client failed to connect. Is server up ?");
     }
     client.stop();
     return cmd;

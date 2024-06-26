@@ -59,10 +59,10 @@ struct wifi_t
 
     int status = WL_IDLE_STATUS;
     int cnt = 0;
-    while (status != WL_CONNECTED && cnt < 30)
+    while (status != WL_CONNECTED && cnt < 20)
     {
       status = WiFi.begin(ssid, pass);
-      delay(1000);
+      delay(500);
       cnt++;
     }
     print_status();
@@ -88,6 +88,11 @@ struct wifi_t
   void end()
   {
     WiFi.end();
+  }
+
+  bool is_connected()
+  {
+    return WiFi.status() == WL_CONNECTED;
   }
 
   void print_status()
