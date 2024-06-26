@@ -4,7 +4,16 @@ from datetime import datetime
 import urllib.parse
 import yaml
 import threading
+import shutil
 
+# debug/test
+import os
+
+CONFIG_BASE_NAME = "water-web-config.yaml"
+# template used if no config already present
+CONFIG_TEMPLATE = "./" + CONFIG_BASE_NAME
+# config, placed in a docker named volume
+CONFIG_PATH = "/var/lib/water-web-control/" + CONFIG_BASE_NAME
 
 '''
 Logic that handles http requests from the water control unit
@@ -110,10 +119,12 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
 
         # icon
         elif self.path == '/favicon.ico':
+            print('-- favicon')
             self.send_response(200)
             self.send_header('Content-Type', 'image/x-icon')
             self.end_headers()
             with open('source/static/favicon.ico', 'rb') as file:
+                print('-- write favicon')
                 self.wfile.write(file.read())
         
         # water-controller, ie machine
@@ -219,6 +230,9 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
     
     def load_config_file(self):
         config = None
+        print("Openning WWS config:", self.yaml_config_path)
+        print("Current folder:", os.getcwd())
+        print("list: ", os.listdir('.'))
         with open(self.yaml_config_path, 'r+') as file:
             try:
                 config = yaml.safe_load(file)
@@ -244,8 +258,12 @@ class ValveStatus:
         self.last_report = 0
 
 class WaterWebServer:
-    def __init__(self, yaml_config_path, port=8000) -> None:
-        #self.yaml_config_path = yaml_config_path
+    def __init__(self, yaml_config_path=CONFIG_PATH, port=8000) -> None:
+        # If config file does not exist in expected path, copy template
+        if (not os.path.isfile(yaml_config_path)):
+            # copy template to target config path
+            shutil.copyfile(CONFIG_TEMPLATE, yaml_config_path)
+        
         self.server_address = ('', port)
         self.httpd = ThreadingHTTPServer(self.server_address, WaterWebRequestHandler)
         self.httpd.RequestHandlerClass.yaml_config_path = yaml_config_path
@@ -253,7 +271,6 @@ class WaterWebServer:
         self.httpd.valve_status = ValveStatus()
         # custom property for outgoing message
         # (to be written to influxdb)
-        # 
         self.httpd.water_counter = []
 
     '''Serve, using current thread'''
@@ -278,5 +295,6 @@ class WaterWebServer:
 
 '''For standalone tests'''
 if __name__ == '__main__':
-    wws = WaterWebServer(yaml_config_path="./water-web-config.yaml", port=8000)
+    # For test, use local config YAML
+    wws = WaterWebServer(yaml_config_path="./" + CONFIG_BASE_NAME, port=8000)
     wws.run_server()

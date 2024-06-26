@@ -137,7 +137,7 @@ Load .xpro profiles for collector, and for each probe
  * 0x82 64-bit I/O Sample Indicator, p144
  * Channel (CH) B seams to have better RSSI
 
-## Python
+## Python Collector
 Use **pipenv** to manage virtual env and packages
 ```bash
 # load Pipfile
@@ -155,6 +155,10 @@ pipenv install|uninstall blabla
 pipenv shell
 pipenv run <cmd>
 ```
+
+### docker
+Run collector in docker, see [./restart_container.sh](restart_container.sh)  
+Using a named volume for retaining config. Especially required for water-web-control which read and write to config
 
 ### influxdb token and secrets
 ```bash

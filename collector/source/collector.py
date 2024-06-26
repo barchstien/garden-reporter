@@ -33,7 +33,7 @@ if __name__ == "__main__":
     # write to influxdb
     db_writer = InfluxDBWriter(config)
     # web server for human and for water control unit
-    water_web_server = WaterWebServer(yaml_config_path="./water-web-config.yaml")
+    water_web_server = WaterWebServer()
     water_web_server.run_server_in_background()
     
     # Serial hub read and write queues
