@@ -50,3 +50,15 @@ class InfluxDBWriter:
         except Exception as e:
             print('Cant reach influx-db for record:', record)
             print(e)
+    
+    def write_water_counter(self, record):
+        try:
+            p = Point(
+                self.measurement) \
+                .tag("topic", "water-web-control")\
+                .field("water", float(record['water_liter']))\
+                .field("battery", float(record['battery_volt']))
+            self.write_api.write(bucket=self.bucket, record=p)
+        except Exception as e:
+            print('Cant reach influx-db for record:', record)
+            print(e)

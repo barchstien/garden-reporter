@@ -2,21 +2,11 @@
 
 #include "RTClib.h"
 
-/**
- * TYpes of clocks needed :
- *  - epoch time
- *    - get from http server
- *    - set to RTC, only adjust if drift > 10 sec
- *    - ! can be adjusted !
- *  - local_time
- *    - millis()
- *    - use for uptime
- *    - ! can NOT be adjusted !
-*/
 
 /**
  * Local clock derived from millis()
  * @warning Logic is in milliseconds !
+ * @warning DRIFTS a lot ! Found 10% to 30%
  * Does arythmetic that handle uint32_t counter wrap (every 50 days)
 */
 struct local_clock_t
@@ -32,21 +22,7 @@ struct local_clock_t
 
   static local_clock_t now();
 
-  static uint32_t uptime_sec();
-
   // Const durations
-  static int32_t days(unsigned int d)
-  {
-    return (int32_t)(d * 24 * 60 * 60 * 1000);
-  }
-  static int32_t hours(unsigned int h)
-  {
-    return (int32_t)(h * 60 * 60 * 1000);
-  }
-  static int32_t minutes(unsigned int m)
-  {
-    return (int32_t)(m * 60 * 1000);
-  }
   static int32_t seconds(unsigned int s)
   {
     return (int32_t)(s * 1000);
@@ -105,9 +81,13 @@ struct epoch_time_sync_t
    */
   void set_now(epoch_time_t t);
 
+  uint32_t uptime_sec();
+
 private:
 
   static const int MAX_SERVER_RTC_OFFSET_SEC = 30;
 
   RTC_DS3231 rtc_;
+
+  epoch_time_t start_time_;
 };

@@ -3,7 +3,17 @@ import re, json, time
 from datetime import datetime
 import urllib.parse
 import yaml
+import threading
+import shutil
 
+# debug/test
+import os
+
+CONFIG_BASE_NAME = "water-web-config.yaml"
+# template used if no config already present
+CONFIG_TEMPLATE = "./" + CONFIG_BASE_NAME
+# config, placed in a docker named volume
+CONFIG_PATH = "/var/lib/water-web-control/" + CONFIG_BASE_NAME
 
 '''
 Logic that handles http requests from the water control unit
@@ -124,7 +134,8 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             query_components = urllib.parse.parse_qs(url_parsed.query)
             print(query_components)
             # TODO also echo request ?
-            self.server.valve_status.water_liter = query_components.get('water_liter', [''])[0]
+            # water volume is received as milliLiter
+            self.server.valve_status.water_liter = float(query_components.get('water_liter', [''])[0]) / 1000.0
             self.server.valve_status.battery_milliv = query_components.get('battery_milliv', [''])[0]
             self.server.valve_status.next_water_epoch_t = int(query_components.get('next_water_epoch_t', [''])[0])
             self.server.valve_status.last_water_epoch_t = int(query_components.get('last_water_epoch_t', [''])[0])
@@ -134,6 +145,14 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             #print("battery_voltage: ", self.server.valve_status.battery_milliv)
             #print("uptime_sec: ", self.server.valve_status.uptime_sec)
             self.server.valve_status.last_report = time.time()
+            self.server.water_counter.append(
+                {
+                    # needed ??
+                    'epoch_time': int(time.mktime(time.localtime())),
+                    'water_liter': self.server.valve_status.water_liter,
+                    'battery_volt': float(self.server.valve_status.battery_milliv) / 1000.0,
+                }
+            )
 
             # TODO log report
             # WARNING
@@ -209,6 +228,9 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
     
     def load_config_file(self):
         config = None
+        #print("Openning WWS config:", self.yaml_config_path)
+        #print("Current folder:", os.getcwd())
+        #print("list: ", os.listdir('.'))
         with open(self.yaml_config_path, 'r+') as file:
             try:
                 config = yaml.safe_load(file)
@@ -225,6 +247,7 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
 class ValveStatus:
     def __init__(self):
         self.uptime_sec = 0
+        # keep ? un-used so far
         self.water_liter = 0
         self.battery_milliv = 0
         self.next_water_epoch_t = 0
@@ -233,20 +256,43 @@ class ValveStatus:
         self.last_report = 0
 
 class WaterWebServer:
-    def __init__(self, yaml_config_path) -> None:
-        self.yaml_config_path = yaml_config_path
-        self.valve_status = ValveStatus()
+    def __init__(self, yaml_config_path=CONFIG_PATH, port=8000) -> None:
+        # If config file does not exist in expected path, copy template
+        if (not os.path.isfile(yaml_config_path)):
+            # copy template to target config path
+            shutil.copyfile(CONFIG_TEMPLATE, yaml_config_path)
+        
+        self.server_address = ('', port)
+        self.httpd = ThreadingHTTPServer(self.server_address, WaterWebRequestHandler)
+        self.httpd.RequestHandlerClass.yaml_config_path = yaml_config_path
+        # custom property to keep status alive across requests
+        self.httpd.valve_status = ValveStatus()
+        # custom property for outgoing message
+        # (to be written to influxdb)
+        self.httpd.water_counter = []
 
-    def run_server(self, port=8000):
-        server_address = ('', port)
-        httpd = ThreadingHTTPServer(server_address, WaterWebRequestHandler)
-        httpd.RequestHandlerClass.yaml_config_path = self.yaml_config_path
-        httpd.valve_status = ValveStatus()
-        print(f"Server started on port {port}")
-        httpd.serve_forever()
+    '''Serve, using current thread'''
+    def run_server(self):
+        print(f"Water Web Control on ip:port {self.server_address[0]}:{self.server_address[1]}")
+        self.httpd.serve_forever()
+    
+    '''Serve, using separate thread'''
+    def run_server_in_background(self):
+        print(f"Water Web Control started on ip:port {self.server_address[0]}:{self.server_address[1]}")
+        thread = threading.Thread(target = self.httpd.serve_forever)
+        # make it a dameon, so it is killed when main thread exits
+        thread.daemon = True
+        thread.start()
+    
+    def pop_water_counter_volume_liter(self):
+        if len(self.httpd.water_counter) == 0:
+            return None
+        else:
+            return self.httpd.water_counter.pop(0)
 
 
 '''For standalone tests'''
 if __name__ == '__main__':
-    wwc = WaterWebServer(yaml_config_path="./water-web-config.yaml")
-    wwc.run_server()
+    # For test, use local config YAML
+    wws = WaterWebServer(yaml_config_path="./" + CONFIG_BASE_NAME, port=8000)
+    wws.run_server()
