@@ -12,12 +12,13 @@
 uint32_t flow_cnt = 0;
 uint32_t flow_cnt_last = 0;
 const float flow_cnt_liter_per_edge = 0.00245;
+//const float flow_cnt_liter_per_edge = 0.00237;
 
 uint32_t start_water_cnt = 0;
 uint32_t start_water_cnt_last = 0;
 
 // Wifi report period
-const unsigned int sec_report_period = (2 * 60); // TODO 15 min
+const unsigned int sec_report_period = (15 * 60); // TODO 15 min
 // local clock of last report, or invalid if previously failed
 epoch_time_t last_report_ = -1;
 const unsigned int sec_report_period_when_watering = 60;
@@ -185,6 +186,12 @@ void water_for_duration(int32_t duration_sec, bool is_manual_triggered)
       Serial.println("");
       break;
     }
+    if (battery.can_use_water() == false)
+    {
+      LOG("Cancel watering, by order of battery");
+      Serial.println("");
+      break;
+    }
     // fade also means delay
     led.fade(sec_report_period_when_watering, 1000);
   }
@@ -221,6 +228,9 @@ void loop()
       }
       else if (FAILURE == rs)
       {
+        // Also update timestamp, to avoid fast re-try
+        // ... which may happen if server or net is down
+        last_report_ = epoch_time_sync.now();
         LOG("[!] Failed periodic sync with server !!");
       }
     }
