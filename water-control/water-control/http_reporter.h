@@ -1,4 +1,3 @@
-#if 1
 #pragma once
 
 #include <WiFiNINA.h>
@@ -172,4 +171,3 @@ struct http_reporter_t
   }
 
 };
-#endif
