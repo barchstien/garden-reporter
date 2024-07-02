@@ -192,8 +192,9 @@ socat pty,link=/tmp/garden0,raw,echo=0 tcp:192.168.1.66:8087
 # install
 # env-file contains basic setups
 docker run -d --restart always -p 8086:8086 \
-    --env-file env_file_influxdb \
+    --env-file ./env_file_influxdb \
     -v garden-reporter-influxdb:/var/lib/influxdb2 \
+    --memory=5000m \
     --name garden-reporter-influxdb influxdb
 
 # docker stop/rm/start garden-reporter
@@ -217,8 +218,18 @@ docker exec -it garden-reporter-influxdb bash -c "influx restore /tmp/backup --f
 
 ## grafana
 ```bash
-docker run -d --restart always -p 3000:3000 -v grafana:/var/lib/grafana --name garden-reporter-grafana grafana/grafana
+docker run -d --restart always -p 3000:3000 \
+    -v grafana:/var/lib/grafana \
+    --memory=5000m \
+    --name garden-reporter-grafana grafana/grafana
 ```
+### source config
+All was working, then I had to re-laucnh to apply max use of RAM
+Then grafana couldn't reach influxdb, complaining about IP .53 not reachable
+... no-one has such IP
+After loging on as admin, found influxdb config URL to be : http://garden-reporter-influxdb:8086
+--> Directly set to host server IP (.66) --> working again !
+
 
 # server crash investigations
 ```sh
