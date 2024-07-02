@@ -49,15 +49,15 @@ struct led_t
     epoch_time_t start = epoch_time_sync_->now();
     while(epoch_time_sync_->now() - start <= duration_sec)
     {
-      for (int i=1; i<=25; i++)
+      for (int i=1; i<=15; i++)
       {
-        analogWrite(LED, i*255/25);
-        delay((period_msec)/50);
+        analogWrite(LED, i*255/15);
+        delay((period_msec)/30);
       }
-      for (int i=1; i<=25; i++)
+      for (int i=1; i<=15; i++)
       {
-        analogWrite(LED, (25-i)*255/25);
-        delay((period_msec)/50);
+        analogWrite(LED, (15-i)*255/15);
+        delay((period_msec)/30);
       }
     }
   }
