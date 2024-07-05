@@ -93,3 +93,7 @@ uint32_t epoch_time_sync_t::uptime_sec()
   return now() - start_time_;
 }
 
+float epoch_time_sync_t::rtc_temp_celsius()
+{
+  return rtc_.getTemperature();
+}

@@ -95,6 +95,11 @@ struct wifi_t
     return WiFi.status() == WL_CONNECTED;
   }
 
+  int32_t rssi_dbm()
+  {
+    return WiFi.RSSI();
+  }
+
   void print_status()
   {
     int status = WiFi.status();

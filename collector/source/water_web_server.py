@@ -169,6 +169,8 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
                     'epoch_time': int(time.mktime(time.localtime())),
                     'water_liter': self.server.valve_status.water_liter,
                     'battery_volt': float(self.server.valve_status.battery_milliv) / 1000.0,
+                    'rssi_dbm': int(query_components.get('rssi_dbm', [''])[0]),
+                    'temp_celsius': float(query_components.get('temperature_celsius', [''])[0])
                 }
             )
 

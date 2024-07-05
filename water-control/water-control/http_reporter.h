@@ -59,6 +59,8 @@ struct http_reporter_t
     epoch_time_t last_water_schedule,
     bool water_on,
     uint32_t uptime_sec,
+    int rssi_dbm,
+    float temperature_celsius,
     web_log_t* web_log)
   {
     //Serial.print("-- http report to ");
@@ -93,6 +95,10 @@ struct http_reporter_t
       client.print(water_on);
       client.print("&uptime_sec=");
       client.print(uptime_sec);
+      client.print("&rssi_dbm=");
+      client.print(rssi_dbm);
+      client.print("&temperature_celsius=");
+      client.print(temperature_celsius);
       web_log->write_to_client(&client);
       client.println(" HTTP/1.1");
       client.print("Host: ");

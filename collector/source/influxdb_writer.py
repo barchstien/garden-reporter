@@ -57,7 +57,9 @@ class InfluxDBWriter:
                 self.measurement) \
                 .tag("topic", "water-web-control")\
                 .field("water", float(record['water_liter']))\
-                .field("battery", float(record['battery_volt']))
+                .field("battery", float(record['battery_volt']))\
+                .field("rssi", float(record['rssi_dbm']))\
+                .field("temp", float(record['temp_celsius']))
             self.write_api.write(bucket=self.bucket, record=p)
         except Exception as e:
             print('Cant reach influx-db for record:', record)
