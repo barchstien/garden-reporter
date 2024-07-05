@@ -66,18 +66,26 @@ epoch_time_t epoch_time_sync_t::now()
   return rtc_.now().unixtime();
 }
 
-void epoch_time_sync_t::set_now(epoch_time_t t)
+String epoch_time_sync_t::now_as_string()
+{
+  char buf2[] = "YY%2FMM%2FDD hh:mm:ss";
+  return rtc_.now().toString(buf2);
+}
+
+int epoch_time_sync_t::set_now(epoch_time_t t)
 {
   epoch_time_t rtc_now = now();
   // calculate offset
-  int offset = abs(rtc_now - t);
-  if (offset > MAX_SERVER_RTC_OFFSET_SEC)
+  int offset = rtc_now - t;
+  if (abs(offset) > MAX_SERVER_RTC_OFFSET_SEC)
   {
     Serial.print("RTC to Server sec offset over threshold: ");
     Serial.println(offset);
     Serial.println("  |--> Adjust RTC !!");
     rtc_.adjust(DateTime(t));
+    return offset;
   }
+  return 0;
 }
 
 uint32_t epoch_time_sync_t::uptime_sec()

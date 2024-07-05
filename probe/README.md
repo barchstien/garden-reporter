@@ -66,7 +66,7 @@ Components datasheet are in **probe/datasheet** folder
 ## Soil moisture sensor
  * Capacitor sensor  
    SEN0193 DFRobot 7.9E [426-SEN0193]  
-   SEN0308 DFRobot 15E  
+   SEN0308 DFRobot 15E [https://wiki.dfrobot.com/Waterproof_Capacitive_Soil_Moisture_Sensor_SKU_SEN0308]  
    3.3V 5mA  
    **Warning** some cheapper alternative exists but aren't documented, nor reliable  
    Protect with nail polish

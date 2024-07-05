@@ -75,11 +75,15 @@ struct epoch_time_sync_t
    */
   epoch_time_t now();
 
+  String now_as_string();
+
   /**
    * @param t msec since epoch, 01/01/1970
    * Called whit time received from server
+   * Adjust RTC clock if above threshold
+   * @return offset applied in seconds
    */
-  void set_now(epoch_time_t t);
+  int set_now(epoch_time_t t);
 
   uint32_t uptime_sec();
 

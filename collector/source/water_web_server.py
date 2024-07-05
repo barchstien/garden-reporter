@@ -111,7 +111,8 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
                 'battery_status': battery_status_string,
                 'watering_now': watering_now_string,
                 'uptime_day': uptime_day_value,
-                'last_report': last_report
+                'last_report': last_report,
+                'weblog': self.server.valve_status.weblog
             }
             #print("Sending: ", data)
             json_data = json.dumps(data)
@@ -141,13 +142,14 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             self.server.valve_status.last_water_epoch_t = int(query_components.get('last_water_epoch_t', [''])[0])
             self.server.valve_status.is_water_on = query_components.get('water_on', [''])[0] != '0'
             self.server.valve_status.uptime_sec = query_components.get('uptime_sec', [''])[0]
+            self.server.valve_status.weblog = query_components.get('log', [''])
             #print("water_liter: ", self.server.valve_status.water_liter)
             #print("battery_voltage: ", self.server.valve_status.battery_milliv)
             #print("uptime_sec: ", self.server.valve_status.uptime_sec)
             self.server.valve_status.last_report = time.time()
             self.server.water_counter.append(
                 {
-                    # needed ??
+                    # keep ?
                     'epoch_time': int(time.mktime(time.localtime())),
                     'water_liter': self.server.valve_status.water_liter,
                     'battery_volt': float(self.server.valve_status.battery_milliv) / 1000.0,
@@ -206,6 +208,8 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             content = re.sub(b'{{last_scheduled_watering_string}}', last_schedule, content)
 
             next_schedule = datetime.fromtimestamp(self.server.valve_status.next_water_epoch_t).strftime('%Y-%m-%d %H:%M').encode()
+            if config["enabled"] == False:
+                next_schedule += b' <i>(disabled)</i>'
             content = re.sub(b'{{next_scheduled_watering_string}}', next_schedule, content)
             
             content = re.sub(b'{{battery_status_string}}', 
@@ -254,6 +258,7 @@ class ValveStatus:
         self.last_water_epoch_t = 0
         self.is_water_on = False
         self.last_report = 0
+        self.weblog = []
 
 class WaterWebServer:
     def __init__(self, yaml_config_path=CONFIG_PATH, port=8000) -> None:

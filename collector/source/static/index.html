@@ -3,6 +3,8 @@
 <head>
     <title>water-control</title>
     <meta name="viewport" content="height=device-height, initial-scale=0.7" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function ajax_refresh() {
             //
@@ -17,6 +19,13 @@
                     document.getElementById("watering_now").innerHTML = status.watering_now;
                     document.getElementById("uptime_day").innerHTML = status.uptime_day;
                     document.getElementById("last_report").innerHTML = status.last_report;
+                    document.getElementById("weblog-list").innerHTML = '';
+                    status.weblog.sort().reverse();
+                    let i = 0;
+                    while (i < status.weblog.length) {
+                        document.getElementById("weblog-list").innerHTML += "<tr><td>" + status.weblog[i] + "</tr></td>";
+                        i++;
+                    }
                 }
             };
             xhttp.open("GET", "status", true);
@@ -30,14 +39,12 @@
         /* Center the h1 element */
         h1 {
             text-align: center;
-            font-family: "Arial", sans-serif;
             color: #009688;
             margin-bottom: 20px;
         }
 
         h2 {
             text-align: center;
-            font-family: "Arial", sans-serif;
             color: #009688;
             margin-bottom: 20px;
         }
@@ -54,7 +61,7 @@
             align-items: center;
             gap: 10px;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         /* Right-align the labels */
@@ -100,7 +107,7 @@
         /* Style the input fields */
         input[type="number"],
         input[type="time"] {
-            padding: 10px;
+            padding: 5px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 16px;
@@ -108,7 +115,7 @@
 
         /* Style the buttons */
         button {
-            padding: 10px 20px;
+            padding: 5px 12px;
             background-color: #009688;
             color: #fff;
             border: none;
@@ -129,6 +136,16 @@
             padding: 20px;
             background-color: #fff;
         }
+
+        #weblog-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #weblog-list tr {
+            border-bottom: 1px solid #333;
+        }
+
     </style>
 </head>
 <body>
@@ -259,6 +276,10 @@
                     {{last_report_string}}
                 </div>
             </div>
+
+            <div class="input-row">
+                
+            </div>
             
 
             <!-- TODO also add message in text ? 
@@ -278,7 +299,18 @@
  \|//\|/   \|//     `||/`   \|/\|\|/  \\|//
 </div>
             </div>
+        
+            <div class="container mt-3">
+                <a href="#log-collapse" data-bs-toggle="collapse" style="text-decoration:none; color:#009688">Logs</a>
+                <div id="log-collapse" class="collapse">
+                <table id="weblog-list">
+                </table>
+                </div>
+            </div>
         </form>
     </div>
+
+    
+
 </body>
 </html>

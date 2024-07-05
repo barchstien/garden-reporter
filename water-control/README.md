@@ -105,15 +105,22 @@ Requires Arduino Libraires (to install with IDE) :
 |7| bit 0 |
 
 # TODO
- * Do report to HTTP when manual watering, coz it may just water for 1h45min
-   ... that would be without report
  * Verify what happens if not WIFI/http server, and watering
    |--> it should not lead to water significantly more while trying to reach network
    |--> looks ok, wifi connect is done outside of water scope
         and HTTP reports fails within 10sec or so
  * When server cannot be reached, WWC keeps most of its time re-trying
    |--> should use a minimum try time
- * use again garden-collector intead of garden-collector-dev
+   |---> instead, use the same report period
+         ... which means that when a report fails, it increments next report time 
+         ... the same as if it had succeeded
+ * show last duration in human web ui
+ * save in RTC flash (alarm), next epoch time and perdio/duration
+   |--> if power comes back, and server isn't up <--- no so likely..
+ * read RTC temp, log it
+ * read wifi dbm, log it
+ * check battery vs water already started
+ * add message (errors) to HTTP request
 
 # Notes
 file:///home/bastien/while-true/common/garden-reporter/water-control/index.html?period=1&start-time=12%3A30&duration=66

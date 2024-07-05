@@ -8,7 +8,7 @@
 // At this level, system can shutdown anytime
 #define BATT_V_EMPTY 3.2
 // This is about 1/3 of the time left
-#define BATT_V_SAFE 3.9
+#define BATT_V_SAFE 3.75
 // Smoother read curve
 #define NUM_OF_VALUE_TO_AVG 5
 // ADC read to Volt
