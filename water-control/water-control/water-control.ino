@@ -7,6 +7,7 @@
 #include "led.h"
 #include "http_reporter.h"
 #include "valve.h"
+#include "web_log.hpp"
 #include "wifi.h"
 
 uint32_t flow_cnt = 0;
@@ -18,10 +19,11 @@ uint32_t start_water_cnt = 0;
 uint32_t start_water_cnt_last = 0;
 
 // Wifi report period
-const unsigned int sec_report_period = (15 * 60); // TODO 15 min
+const unsigned int sec_report_period = (1 * 60); // TODO 15 min
 // local clock of last report, or invalid if previously failed
 epoch_time_t last_report_ = -1;
 const unsigned int sec_report_period_when_watering = 60;
+const unsigned int water_loop_period_sec = 5;
 
 // Hard limit watering duration, 1.5 hour
 const int64_t MAX_WATER_DURATION_SEC = 5400;
@@ -29,7 +31,7 @@ const int64_t MAX_WATER_DURATION_SEC = 5400;
 // delay between loop
 const unsigned int millisec_loop_step = (100);
 
-// Twice report period, to avoid missing first waterin
+// Twice report period, to avoid missing first watering
 // 20 min minimum !
 const epoch_time_t water_schedule_margin_sec = max(sec_report_period * 2, 20 * 60);
 
@@ -45,6 +47,7 @@ battery_t battery;
 button_t button;
 epoch_time_sync_t epoch_time_sync;
 led_t led(&epoch_time_sync);
+web_log_t web_log;
 valve_t valve;
 wifi_t wifi;
 http_reporter_t reporter;
@@ -52,6 +55,14 @@ http_reporter_t reporter;
 // Command received by server
 http_reporter_t::command_t server_cmd;
 
+// Log with a timestamp to web server. Send unix time as hex string
+#define WEB_LOG(STR) ({ \
+  epoch_time_t now = epoch_time_sync.now(); \
+  web_log.append(String((uint32_t)(now >> 32), HEX)); \
+  web_log.append(String((uint32_t)(now & 0xffffffff), HEX) + " "); \
+  web_log.append(STR); \
+  web_log.commit(); \
+})
 
 void setup()
 {
@@ -85,6 +96,8 @@ void setup()
 
   Serial.println("--");
   Serial.println("-- setup END");
+
+  WEB_LOG("Setup END");
 }
 
 
@@ -103,9 +116,11 @@ report_status sync_with_server(bool allow_clock_adjust)
     water_liter,
     battery.read_volt(),
     next_water_schedule,
+    server_cmd.enabled,
     last_water_schedule,
     valve.is_on(),
-    epoch_time_sync.uptime_sec()
+    epoch_time_sync.uptime_sec(),
+    &web_log
   );
   
   if (cmd.is_valid)
@@ -115,7 +130,11 @@ report_status sync_with_server(bool allow_clock_adjust)
 
     if (allow_clock_adjust)
     {
-      epoch_time_sync.set_now(cmd.sec_since_epoch);
+      int offset_applied = epoch_time_sync.set_now(cmd.sec_since_epoch);
+      if (offset_applied != 0)
+      {
+        WEB_LOG(String("Adjusted RTC clock by ") + offset_applied + String(" seconds"));
+      }
     }
 
     if (server_cmd == cmd)
@@ -128,6 +147,7 @@ report_status sync_with_server(bool allow_clock_adjust)
       server_cmd = cmd;
       LOG("--> Apply server command");
       Serial.println("");
+      WEB_LOG("Apply new schedule from server");
       // A config has been received from server
       // ensure next scheduled water is in the future
       next_water_schedule = server_cmd.start_time_sec_since_epoch;
@@ -153,17 +173,38 @@ void water_for_duration(int32_t duration_sec, bool is_manual_triggered)
   }
 
   epoch_time_t deadline = epoch_time_sync.now() + duration_sec;
+
   LOG(" >>>> Water NOW <<<< duration minutes: ");
   Serial.println((float)duration_sec / 60.0);
+  WEB_LOG(String("Water for ") + (int)(((float)duration_sec / 60.0) + 0.5) + String(" minutes"));
   //digitalWrite(LED_BUILTIN, HIGH);
   valve.water_on();
+
+  // Report on first iteration
+  epoch_time_t http_report_deadline = epoch_time_sync.now();
 
   // Report as long as it is watering
   // ... and check if config get changed
   while(epoch_time_sync.now() < deadline)
   {
-    if (wifi.is_connected())
+    // Cancel if button is off or battery low
+    if (button.allow_water() == false)
     {
+      LOG("Cancel watering, by order of button");
+      Serial.println("");
+      WEB_LOG("Cancel watering, by order of button");
+      break;
+    }
+    if (battery.can_use_water() == false)
+    {
+      LOG("Cancel watering, by order of battery");
+      Serial.println("");
+      WEB_LOG("Cancel watering, by order of battery");
+      break;
+    }
+    if (wifi.is_connected() && epoch_time_sync.now() >= http_report_deadline)
+    {
+      // HTTP report
       led.on();
       report_status rs = sync_with_server(false);
       // manual triger ignores water schedule enable/disable
@@ -175,30 +216,21 @@ void water_for_duration(int32_t duration_sec, bool is_manual_triggered)
         {
           LOG("Cancel scheduled watering, by order of server");
           Serial.println("");
+          WEB_LOG("Cancel scheduled watering, by order of server");
           break;
         }
       }
+      http_report_deadline = epoch_time_sync.now() + sec_report_period_when_watering;
       led.off();
     }
-    if (button.allow_water() == false)
-    {
-      LOG("Cancel watering, by order of button");
-      Serial.println("");
-      break;
-    }
-    if (battery.can_use_water() == false)
-    {
-      LOG("Cancel watering, by order of battery");
-      Serial.println("");
-      break;
-    }
     // fade also means delay
-    led.fade(sec_report_period_when_watering, 1000);
+    led.fade(water_loop_period_sec, 1000);
   }
   
   //digitalWrite(LED_BUILTIN, LOW);
   valve.water_off();
   LOG(" >>>> STOP Water <<<<");
+  WEB_LOG(" >>>> STOP Water <<<<");
   Serial.println("");
 }
 
@@ -219,20 +251,14 @@ void loop()
         // Sync with success
         // received a new config, re-report to update status
         sync_with_server(true);
-        last_report_ = epoch_time_sync.now();
-      }
-      else if (CMD_ALREADY_KOWN == rs)
-      {
-        // Sync success, not config update
-        last_report_ = epoch_time_sync.now();
       }
       else if (FAILURE == rs)
       {
         // Also update timestamp, to avoid fast re-try
         // ... which may happen if server or net is down
-        last_report_ = epoch_time_sync.now();
         LOG("[!] Failed periodic sync with server !!");
       }
+      last_report_ = epoch_time_sync.now();
     }
     // Regardless of success or not, turn off Wifi
     wifi.end();
