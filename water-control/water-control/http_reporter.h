@@ -6,7 +6,7 @@
 #include "epoch_time_t.h"
 #include "web_log.hpp"
 
-#define HTTP_SERVER_IP "192.168.1.176"//176"//175"//66"
+#define HTTP_SERVER_IP "192.168.1.66"//176"//175"//66"
 //#define HTTP_SERVER_IP "192.168.1.176"
 #define HTTP_SERVER_PORT 8000
 #define HTTP_REPORT "/report"
