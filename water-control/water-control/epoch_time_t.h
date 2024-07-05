@@ -87,6 +87,8 @@ struct epoch_time_sync_t
 
   uint32_t uptime_sec();
 
+  float rtc_temp_celsius();
+
 private:
 
   static const int MAX_SERVER_RTC_OFFSET_SEC = 30;

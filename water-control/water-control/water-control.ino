@@ -2,7 +2,6 @@
 
 #include "battery.h"
 #include "button.h"
-#include "const.h"
 #include "epoch_time_t.h"
 #include "led.h"
 #include "http_reporter.h"
@@ -19,7 +18,7 @@ uint32_t start_water_cnt = 0;
 uint32_t start_water_cnt_last = 0;
 
 // Wifi report period
-const unsigned int sec_report_period = (1 * 60); // TODO 15 min
+const unsigned int sec_report_period = (15 * 60); // TODO 15 min
 // local clock of last report, or invalid if previously failed
 epoch_time_t last_report_ = -1;
 const unsigned int sec_report_period_when_watering = 60;
@@ -54,6 +53,13 @@ http_reporter_t reporter;
 
 // Command received by server
 http_reporter_t::command_t server_cmd;
+
+// Log tp serial/usb
+#define LOG(X) ({ \
+  Serial.print(epoch_time_sync.now_as_string()); \
+  Serial.print(" - "); \
+  Serial.print(X); \
+})
 
 // Log with a timestamp to web server. Send unix time as hex string
 #define WEB_LOG(STR) ({ \
@@ -120,6 +126,8 @@ report_status sync_with_server(bool allow_clock_adjust)
     last_water_schedule,
     valve.is_on(),
     epoch_time_sync.uptime_sec(),
+    wifi.rssi_dbm(),
+    epoch_time_sync.rtc_temp_celsius(),
     &web_log
   );
   
