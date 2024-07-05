@@ -15,15 +15,17 @@
                     const status = JSON.parse(this.responseText);
                     document.getElementById("last_scheduled_watering").innerHTML = status.last_scheduled_watering;
                     document.getElementById("next_scheduled_watering").innerHTML = status.next_scheduled_watering;
+                    if (status.water_schedule_enabled == '0') {
+                        document.getElementById("next_scheduled_watering").innerHTML += " <i>(disabled)</i>";
+                    }
                     document.getElementById("battery_status").innerHTML = status.battery_status;
                     document.getElementById("watering_now").innerHTML = status.watering_now;
                     document.getElementById("uptime_day").innerHTML = status.uptime_day;
                     document.getElementById("last_report").innerHTML = status.last_report;
                     document.getElementById("weblog-list").innerHTML = '';
-                    status.weblog.sort().reverse();
                     let i = 0;
                     while (i < status.weblog.length) {
-                        document.getElementById("weblog-list").innerHTML += "<tr><td>" + status.weblog[i] + "</tr></td>";
+                        document.getElementById("weblog-list").innerHTML += "<tr><td>" + status.weblog[i] + "</td></tr>";
                         i++;
                     }
                 }
@@ -137,14 +139,18 @@
             background-color: #fff;
         }
 
-        #weblog-table {
+        #weblog-list table {
             border-collapse: collapse;
             width: 100%;
         }
 
-        #weblog-list tr {
-            border-bottom: 1px solid #333;
+        #weblog-list td {
+            border-top: 1px solid #009688;
+            font-family: "Courier", monospace;
+            font-size: 12px;
         }
+
+        #weblog-list tr:hover {background-color: #009688;}
 
     </style>
 </head>

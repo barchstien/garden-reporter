@@ -55,8 +55,11 @@ http_reporter_t reporter;
 // Command received by server
 http_reporter_t::command_t server_cmd;
 
+// Log with a timestamp to web server. Send unix time as hex string
 #define WEB_LOG(STR) ({ \
-  web_log.append(epoch_time_sync.now_as_string() + " "); \
+  epoch_time_t now = epoch_time_sync.now(); \
+  web_log.append(String((uint32_t)(now >> 32), HEX)); \
+  web_log.append(String((uint32_t)(now & 0xffffffff), HEX) + " "); \
   web_log.append(STR); \
   web_log.commit(); \
 })
@@ -113,6 +116,7 @@ report_status sync_with_server(bool allow_clock_adjust)
     water_liter,
     battery.read_volt(),
     next_water_schedule,
+    server_cmd.enabled,
     last_water_schedule,
     valve.is_on(),
     epoch_time_sync.uptime_sec(),
@@ -176,7 +180,8 @@ void water_for_duration(int32_t duration_sec, bool is_manual_triggered)
   //digitalWrite(LED_BUILTIN, HIGH);
   valve.water_on();
 
-  epoch_time_t http_report_deadline = epoch_time_sync.now() + sec_report_period_when_watering;
+  // Report on first iteration
+  epoch_time_t http_report_deadline = epoch_time_sync.now();
 
   // Report as long as it is watering
   // ... and check if config get changed

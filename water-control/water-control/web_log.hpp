@@ -43,6 +43,8 @@ struct web_log_t
         {
             messages_cursor_ = 0;
         }
+        // reset next entry to empty string
+        messages_[messages_cursor_] = String();
     }
 
     inline void write_to_client(WiFiClient* client)

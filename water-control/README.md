@@ -118,9 +118,9 @@ Requires Arduino Libraires (to install with IDE) :
  * save in RTC flash (alarm), next epoch time and perdio/duration
    |--> if power comes back, and server isn't up <--- no so likely..
  * read RTC temp, log it
- * read wifi dbm, log it
+ * read wifi rssi, log it
  * check battery vs water already started
- * add message (errors) to HTTP request
+ * add message (errors) to HTTP request <--- send timestamp as unit to resolve local by server !!!
 
 # Notes
 file:///home/bastien/while-true/common/garden-reporter/water-control/index.html?period=1&start-time=12%3A30&duration=66

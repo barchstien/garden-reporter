@@ -93,6 +93,9 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             self.send_header('Content-type', 'application/json')
             self.end_headers()
             last_schedule = datetime.fromtimestamp(self.server.valve_status.last_water_epoch_t).strftime('%Y-%m-%d %H:%M')
+            water_schedule_enabled = '1'
+            if self.server.valve_status.water_schedule_enabled == False:
+                water_schedule_enabled = '0'
             next_schedule = datetime.fromtimestamp(self.server.valve_status.next_water_epoch_t).strftime('%Y-%m-%d %H:%M')
             battery_status_string = "{:.0f}% ({:.2f})V".format(
                 (float(self.server.valve_status.battery_milliv) / 1000.0 - 3.2) * 100  / 1, 
@@ -107,6 +110,7 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             last_report = datetime.fromtimestamp(self.server.valve_status.last_report).strftime('%Y-%m-%d %H:%M')
             data = {\
                 'last_scheduled_watering': last_schedule,
+                'water_schedule_enabled': water_schedule_enabled,
                 'next_scheduled_watering': next_schedule,
                 'battery_status': battery_status_string,
                 'watering_now': watering_now_string,
@@ -139,10 +143,22 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             self.server.valve_status.water_liter = float(query_components.get('water_liter', [''])[0]) / 1000.0
             self.server.valve_status.battery_milliv = query_components.get('battery_milliv', [''])[0]
             self.server.valve_status.next_water_epoch_t = int(query_components.get('next_water_epoch_t', [''])[0])
+            self.server.valve_status.water_schedule_enabled = query_components.get('water_sch_enabled', [''])[0] != '0'
             self.server.valve_status.last_water_epoch_t = int(query_components.get('last_water_epoch_t', [''])[0])
             self.server.valve_status.is_water_on = query_components.get('water_on', [''])[0] != '0'
             self.server.valve_status.uptime_sec = query_components.get('uptime_sec', [''])[0]
             self.server.valve_status.weblog = query_components.get('log', [''])
+            # sort with latest entry first
+            self.server.valve_status.weblog.sort(reverse=True)
+            # convert unix timestamp to date time
+            pretty_weblog = []
+            for entry in self.server.valve_status.weblog:
+                # first word is unix timestamp
+                words = entry.split()
+                # next_schedule = datetime.fromtimestamp(self.server.valve_status.next_water_epoch_t).strftime('%Y-%m-%d %H:%M').encode()
+                words[0] = datetime.fromtimestamp(int(words[0], 16)).strftime('%Y-%m-%d %H:%M')
+                pretty_weblog.append(' '.join(words))
+            self.server.valve_status.weblog = pretty_weblog
             #print("water_liter: ", self.server.valve_status.water_liter)
             #print("battery_voltage: ", self.server.valve_status.battery_milliv)
             #print("uptime_sec: ", self.server.valve_status.uptime_sec)
@@ -208,7 +224,7 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
             content = re.sub(b'{{last_scheduled_watering_string}}', last_schedule, content)
 
             next_schedule = datetime.fromtimestamp(self.server.valve_status.next_water_epoch_t).strftime('%Y-%m-%d %H:%M').encode()
-            if config["enabled"] == False:
+            if self.server.valve_status.water_schedule_enabled == False:
                 next_schedule += b' <i>(disabled)</i>'
             content = re.sub(b'{{next_scheduled_watering_string}}', next_schedule, content)
             
@@ -255,6 +271,7 @@ class ValveStatus:
         self.water_liter = 0
         self.battery_milliv = 0
         self.next_water_epoch_t = 0
+        self.water_schedule_enabled = False
         self.last_water_epoch_t = 0
         self.is_water_on = False
         self.last_report = 0

@@ -55,6 +55,7 @@ struct http_reporter_t
     float water_liter, 
     float battery_voltage,
     epoch_time_t next_water_schedule,
+    bool water_schedule_enabled,
     epoch_time_t last_water_schedule,
     bool water_on,
     uint32_t uptime_sec,
@@ -84,6 +85,8 @@ struct http_reporter_t
       client.print(int(battery_voltage * 1000.0 + 0.5));
       client.print("&next_water_epoch_t=");
       client.print(next_water_schedule);
+      client.print("&water_sch_enabled=");
+      client.print(water_schedule_enabled);
       client.print("&last_water_epoch_t=");
       client.print(last_water_schedule);
       client.print("&water_on=");
