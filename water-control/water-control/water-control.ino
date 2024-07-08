@@ -182,9 +182,14 @@ void water_for_duration(int32_t duration_sec, bool is_manual_triggered)
 
   epoch_time_t deadline = epoch_time_sync.now() + duration_sec;
 
-  LOG(" >>>> Water NOW <<<< duration minutes: ");
+  LOG(" >> Water NOW << duration minutes: ");
   Serial.println((float)duration_sec / 60.0);
-  WEB_LOG(String("Water for ") + (int)(((float)duration_sec / 60.0) + 0.5) + String(" minutes"));
+  String manual_suffix = "";
+  if (is_manual_triggered)
+  {
+    manual_suffix = " (manual trigger)";
+  }
+  WEB_LOG(String(">> Water for ") + (int)(((float)duration_sec / 60.0) + 0.5) + String(" minutes") + manual_suffix);
   //digitalWrite(LED_BUILTIN, HIGH);
   valve.water_on();
 
@@ -237,8 +242,8 @@ void water_for_duration(int32_t duration_sec, bool is_manual_triggered)
   
   //digitalWrite(LED_BUILTIN, LOW);
   valve.water_off();
-  LOG(" >>>> STOP Water <<<<");
-  WEB_LOG(" >>>> STOP Water <<<<");
+  LOG(" >> STOP Water <<");
+  WEB_LOG(" >> STOP Water <<");
   Serial.println("");
 }
 
@@ -286,8 +291,13 @@ void loop()
       {
         water_for_duration(server_cmd.duration_minute * 60, false);
       }
+      else
+      {
+        // First arg should be String, so other operands can be auto-cast to String
+        WEB_LOG(String("Scheduled water skipped button:") + button.allow_water() + " battery:" + battery.can_use_water() + " web enabled:" + server_cmd.enabled);
+      }
 
-      // re-schedule
+      // Re-schedule
       // ... but not if it has been re-scheduled by wifi config already
       // ... meaning next schedule is not already set in future
       if (epoch_time_sync.now() > next_water_schedule)
@@ -298,6 +308,7 @@ void loop()
         Serial.println(next_water_schedule);
         Serial.print("  happening in sec: ");
         Serial.println(next_water_schedule - epoch_time_sync.now());
+        WEB_LOG("Re-schedule next water");
       }
       // report to update status
       if (wifi.is_connected())
@@ -336,6 +347,11 @@ void loop()
         
         wifi.end();
         led.off();
+      }
+      else
+      {
+        // First arg should be String, so other operands can be auto-cast to String
+        WEB_LOG(String("Manual water skipped button:") + button.allow_water() + " battery:" + battery.can_use_water());
       }
     }
     button.reset_start_water_push();
