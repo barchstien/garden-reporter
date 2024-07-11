@@ -64,12 +64,19 @@ Components datasheet are in **probe/datasheet** folder
    Use 1uF co at output (and 1 at input ?)  
  
 ## Soil moisture sensor
- * Capacitor sensor  
-   SEN0193 DFRobot 7.9E [426-SEN0193]  
-   SEN0308 DFRobot 15E [https://wiki.dfrobot.com/Waterproof_Capacitive_Soil_Moisture_Sensor_SKU_SEN0308]  
-   3.3V 5mA  
-   **Warning** some cheapper alternative exists but aren't documented, nor reliable  
-   Protect with nail polish
+Capacitor sensor  
+  * SEN0193 DFRobot 7.9E [426-SEN0193]  
+   |--> Protect with nail polish
+   |--> been using that one at first. Wire wares off with UV  
+        nail polish coating seams to hold fine after 1.5 year  
+  * SEN0308 DFRobot 15E [https://wiki.dfrobot.com/Waterproof_Capacitive_Soil_Moisture_Sensor_SKU_SEN0308]  
+   |--> Now uses that one, goes deeper, better wire, only nail polish coat the PCB edge
+   |--> Use extra 55KOhm in serie of signal, solder in wire  
+        This gives ADC values around [75; 800]  
+  * 3.3V 5mA  
+  * **Warning** some cheapper alternative exists but aren't documented, nor reliable  
+  
+  
 
 ## Temp sensor
  * TMP36GT9Z [584-TMP36GT9Z] 1.81E  
