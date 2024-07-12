@@ -15,12 +15,14 @@ Things such as :
 '''
 class XbeeAwakening:
     TIMEOUT_SEC = 10.0
+    SENSOR_SETTLING_TIME_SEC = 0.3
     
-    def __init__(self, io_sample_frame):
+    def __init__(self, io_sample_frame, sample_cnt=0):
         # io_sample received upon awakening
         self.io_sample_frame = io_sample_frame
         # timestamp
         self.start = datetime.now()
+        self.last = datetime.now()
         # record that will be sent to influxdb
         self.record = {
             'source_id' : io_sample_frame['source_id'],
@@ -33,6 +35,13 @@ class XbeeAwakening:
         self.log = ()
         # debug
         self.debug = 1
+        # sample counter, default to 0, for consecutive samples when calibrating
+        self.sample_cnt = sample_cnt
+        # Sample is done last in an awakening, used to schedule samples
+        self.is_sampling = False
+    
+    def has_settled(self):
+        return (datetime.now() - self.start).total_seconds() >= XbeeAwakening.SENSOR_SETTLING_TIME_SEC
 
 
 '''
@@ -43,8 +52,9 @@ Implements the logic required to interface with a single xbee
 class Xbee:
     TIMEOUT_DIAGNOSTIC_POLL = timedelta(hours=24)
     
-    def __init__(self, mac):
-        self.mac = mac
+    def __init__(self, config):
+        self.mac = config['id']
+        self.config = config
         # incoming decoded messages
         self.incoming = []
         # awakening session
@@ -61,6 +71,9 @@ class Xbee:
         self.config_mode = threading.Event()
         self.config_holding = threading.Event()
     
+    def is_calibrating(self):
+        return self.config.get('calibration', False)
+
     def get_next_frame_id(self):
         self.frame_id = (self.frame_id + 1) % 256
         if self.frame_id == 0:
@@ -75,11 +88,23 @@ class Xbee:
         to_send = []
         to_rec = []
         
-        # check that current awakening hasn't timed out
         if self.awakening != None:
+            # check that current awakening hasn't timed out
+            # TODO should timeout just be longer ?
             if (datetime.now() - self.awakening.start).total_seconds() > XbeeAwakening.TIMEOUT_SEC:
                 # awakening has timed out, delete it
                 self.awakening = None
+            # check if message should be scheduled
+            # TODO ensure this doesn't kick in all the time
+            elif not self.is_calibrating() and self.awakening.is_sampling:
+                if (datetime.now() - self.awakening.last).total_seconds() > 0.05:
+                    to_send.append({
+                        'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
+                        'frame_id': self.get_next_frame_id(),
+                        'dest_id': self.awakening.record['source_id'],
+                        'AT': XbeeFrameDecoder.AT_IS_FORCE_SAMPLE # TODO firware or HW version ? Would that change power use ?
+                    })
+                    self.awakening.last = datetime.now()
         
         # check if Cycle sleep should be re-enabled
         if not self.config_mode.is_set() and self.config_holding.is_set():
@@ -124,7 +149,11 @@ class Xbee:
             if in_f['type'] == XbeeFrameDecoder.API_64_BIT_IO_SAMPLE:
                 # This is considered as a wakeup frame
                 # ADCs values are ignored coz sensors need startup delay
-                self.awakening = XbeeAwakening(in_f)
+                sample_cnt = 0
+                if self.is_calibrating():
+                    # sample 100 times in a raw when calibrating
+                    sample_cnt = 100
+                self.awakening = XbeeAwakening(in_f, sample_cnt)
                 
                 # DEBUG
                 # TODO use timeout instead of wait if this proves useful
@@ -153,9 +182,12 @@ class Xbee:
                 print('no awakening unexpected incoming frame:', in_f)
                 break
             elif in_f['frame_id'] != self.frame_id:
-                print('Error, received frame_id({}) does not match expected frame_id({})'.format(
-                    in_f['frame_id'], self.frame_id
+                print('{} Error, received frame_id({}) does not match expected frame_id({})'.format(
+                    str(hex(self.mac)), in_f['frame_id'], self.frame_id
                 ))
+                # TODO figure put WHY it gets un-synced ! 
+                # |--> Could it be coz of calibration and TX failue ?
+                # TODO reset local frame_id ?
                 break
             elif in_f['type'] == XbeeFrameDecoder.API_REMOTE_AT_RESPONSE:
                 if in_f['AT'] == XbeeFrameDecoder.AT_V_SUPPLY_MONITOR:
@@ -216,21 +248,39 @@ class Xbee:
                         'AT': XbeeFrameDecoder.AT_IS_FORCE_SAMPLE
                     })
                 elif in_f['AT'] == XbeeFrameDecoder.AT_IS_FORCE_SAMPLE:
+                    self.awakening.is_sampling = True
                     self.awakening.record['battery_level'] = in_f['battery_level']
                     self.awakening.record['soil_moisture'] = in_f['soil_moisture']
                     self.awakening.record['temp'] = in_f['temp']
                     self.awakening.record['light'] = in_f['light']
-                    to_rec.append(self.awakening.record)
-                    '''to_send.append({
-                        'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
-                        'frame_id': self.get_next_frame_id(),
-                        'dest_id': in_f['source_id'],
-                        'AT': XbeeFrameDecoder.AT_IS_FORCE_SAMPLE
-                    })'''
-                    print('awakening end after sec:', 
-                        (datetime.now() - self.awakening.start).total_seconds())
-                    # no more to request, clean up awakening
-                    self.awakening = None
+                    if self.is_calibrating():
+                        # record a copy, to avoid overwrite it before it is written
+                        to_rec.append(self.awakening.record.copy())
+                        if self.awakening.sample_cnt > 0:
+                            # re-sample as long as needed
+                            to_send.append({
+                                'type': XbeeFrameDecoder.API_REMOTE_AT_REQUEST,
+                                'frame_id': self.get_next_frame_id(),
+                                'dest_id': in_f['source_id'],
+                                'AT': XbeeFrameDecoder.AT_IS_FORCE_SAMPLE
+                            })
+                            # TODO make it better ? Keep ?
+                            # ... looks like sampling too fast may trigger TX failure
+                            # not a great idea to demay the full process, but need to wait a bit
+                            time.sleep(0.01)
+                            self.awakening.sample_cnt -= 1
+                        else:
+                            # no more to request, clean up awakening
+                            self.awakening = None
+                    elif not self.awakening.has_settled():
+                        # ignore sample, another sample will be scheduled
+                        pass
+                    else:
+                        to_rec.append(self.awakening.record)
+                        print('awakening end after sec:', 
+                            (datetime.now() - self.awakening.start).total_seconds())
+                        # no more to request, clean up awakening
+                        self.awakening = None
         return (to_send, to_rec)
     
     def __str__(self):
@@ -260,7 +310,7 @@ class XbeePopulationModel:
         # list of Xbee objects
         self.register = []
         for p in config['probes']:
-            self.register.append(Xbee(p['id']))
+            self.register.append(Xbee(p))
     
     def execute(self):
         # distribute frames to endpoint it is destined to
