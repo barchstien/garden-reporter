@@ -8,8 +8,8 @@
 */
 struct web_log_t
 {
-    static const unsigned int MAX_ALLOC_BYTES = 2048;
-    static const unsigned int MAX_MSG = 20;
+    static const unsigned int MAX_ALLOC_BYTES = 8192;
+    static const unsigned int MAX_MSG = 50;
 
     web_log_t()
     {

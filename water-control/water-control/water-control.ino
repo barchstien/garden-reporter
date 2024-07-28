@@ -9,6 +9,9 @@
 #include "web_log.hpp"
 #include "wifi.h"
 
+// Should not wrap, coz 2^32 * 0.00245 = 10.5 million liters
+// ... considering max flow being 10L / minute --> 1 million minute --> 1.9 years of non-stop watering
+// ... or 45 years of daily watering for 1 hour (winter included)
 uint32_t flow_cnt = 0;
 uint32_t flow_cnt_last = 0;
 const float flow_cnt_liter_per_edge = 0.00245;
@@ -23,6 +26,10 @@ const unsigned int sec_report_period = (15 * 60); // TODO 15 min
 epoch_time_t last_report_ = -1;
 const unsigned int sec_report_period_when_watering = 60;
 const unsigned int water_loop_period_sec = 5;
+// Max times to try open the valve before giving up
+const unsigned int water_on_max_try = 10;
+// Consider water is on if 1 liter has flown
+const unsigned int water_on_min_trig = (1 / flow_cnt_liter_per_edge);
 
 // Hard limit watering duration, 1.5 hour
 const int64_t MAX_WATER_DURATION_SEC = 5400;
@@ -191,6 +198,10 @@ void water_for_duration(int32_t duration_sec, bool is_manual_triggered)
   }
   WEB_LOG(String(">> Water for ") + (int)(((float)duration_sec / 60.0) + 0.5) + String(" minutes") + manual_suffix);
   //digitalWrite(LED_BUILTIN, HIGH);
+  // save current flow_cnt, so later we can see if water actually flows
+  uint32_t flow_cnt_tmp = flow_cnt;
+  uint32_t water_on_cnt = 0;
+
   valve.water_on();
 
   // Report on first iteration
@@ -238,13 +249,62 @@ void water_for_duration(int32_t duration_sec, bool is_manual_triggered)
     }
     // fade also means delay
     led.fade(water_loop_period_sec, 1000);
+#if 0
+    // ensure water is actually flowing
+    if (flow_cnt <= flow_cnt_tmp + water_on_min_trig)
+    {
+      // water doesn't flow...
+      if (water_on_cnt <= water_on_max_try)
+      {
+        //try to open again
+        valve.water_on();
+        water_on_cnt ++;
+        // push the dealine ahead
+        deadline += water_loop_period_sec;
+      }
+      else
+      {
+        // water doesn't flow, but mx try reached.... give up
+        WEB_LOG(String("FAILED to start water after ") + water_on_cnt + " trials");
+        break;
+      }
+    }
+#endif
+    
   }
-  
+
   //digitalWrite(LED_BUILTIN, LOW);
   valve.water_off();
+  delay(1000);
+#if 0
+  // Loop until water is off
+  flow_cnt_tmp = flow_cnt;
+  delay(1000);
+  unsigned int cnt = 0;
+  while (flow_cnt_tmp != flow_cnt)
+  {
+    valve.water_off();
+    delay(1000);
+    flow_cnt_tmp = flow_cnt;
+    delay(1000);
+    WEB_LOG(String("FAILED to stop water... keep trying..."));
+    // Also report here
+    // or else web log might never reach server if stuck in a loop !
+    if (wifi.is_connected() && cnt % 10 == 0)
+    {
+      // HTTP report
+      led.on();
+      report_status rs = sync_with_server(false);
+      led.off();
+    }
+    cnt ++;
+  }
+#endif
   LOG(" >> STOP Water <<");
-  WEB_LOG(" >> STOP Water <<");
   Serial.println("");
+  // delay to ensure log messages are sorted on web
+  delay(2000);
+  WEB_LOG(" >> STOP Water <<");
 }
 
 
