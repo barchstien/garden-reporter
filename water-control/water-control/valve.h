@@ -30,9 +30,20 @@
  * No much gain to have battery wise, because system would exhasut battery in few days only anyways
  * |--> Doesn't help ! Still can't close valve
  * |--> must be due to new wire twist + clamp
- * |--> Attach wires and solder, use
+ * |--> Attach wires and solder
+ * 
+ * |--> Order of what to do
+ *   1. clean by openinig bleeder
+ *   2. clean by opening solenoid
+ *   3. clean by opening valve body
+ *   4. buy new valve (solenoid alone abd valve + solenoid cost the same...)
+ * 
+ *  None if the above (1. -> 4.) made it work
+ *  |---> Working thanks to :
+ *  I.  pressure reductor before valve
+ *  II. 1000 msec pulse
 */
-#define VALVE_PULSE_MSEC 1000
+#define VALVE_PULSE_MSEC 1000//1000
 #define VALVE_PHASE_OPEN 1
 #define VALVE_PHASE_CLOSE 0
 
@@ -58,6 +69,8 @@ struct valve_t
     pinMode(VALVE_PHASE, OUTPUT);
     delay(250);
     water_off();
+
+    ///// TODO do feedback here toooo!!!!!
     // workaround to be safe
 #if 0
     for (int i=0; i<3; i++)

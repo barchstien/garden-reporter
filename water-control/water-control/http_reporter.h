@@ -12,7 +12,7 @@
 #define HTTP_REPORT "/report"
 #define HTTP_DEBUG "/debug"
 
-#define MAX_REQUEST_TRY 10
+#define MAX_REQUEST_TRY 2
 #define MAX_WAIT_RESPONSE_SEC 10
 
 #define READ_BUFF_SIZE 1024

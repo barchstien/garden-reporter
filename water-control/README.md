@@ -113,6 +113,7 @@ Requires Arduino Libraires (to install with IDE) :
    |--> if power comes back, and server isn't up <--- no so likely..
  * read RTC temp, log it
  * read wifi rssi, log it
+ * suspecting manual trigger to be canceled if can't wifi connect to server
 
 # Notes
 file:///home/bastien/while-true/common/garden-reporter/water-control/index.html?period=1&start-time=12%3A30&duration=66
