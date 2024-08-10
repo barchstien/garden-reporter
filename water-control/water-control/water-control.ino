@@ -28,14 +28,14 @@ const unsigned int sec_report_period_when_watering = 60;
 const unsigned int water_loop_period_sec = 5;
 // Max times to try open the valve before giving up
 const unsigned int water_on_max_try = 10;
-// Consider water is on if 1 liter has flown
+// Consider water is on if 1 liter has flown, ie ~ 400 pulses
 const unsigned int water_on_min_trig = (1 / flow_cnt_liter_per_edge);
 
 // Hard limit watering duration, 1.5 hour
 const int64_t MAX_WATER_DURATION_SEC = 5400;
 
 // delay between loop
-const unsigned int millisec_loop_step = (100);
+const unsigned int millisec_loop_step = (200);
 
 // Twice report period, to avoid missing first watering
 // 20 min minimum !
@@ -249,7 +249,11 @@ void water_for_duration(int32_t duration_sec, bool is_manual_triggered)
     }
     // fade also means delay
     led.fade(water_loop_period_sec, 1000);
+    
 #if 0
+    // when using that block of code
+    // ... water CONSISTENTLY fails to start
+    // ---->>> WHY ???!!
     // ensure water is actually flowing
     if (flow_cnt <= flow_cnt_tmp + water_on_min_trig)
     {
@@ -259,8 +263,10 @@ void water_for_duration(int32_t duration_sec, bool is_manual_triggered)
         //try to open again
         valve.water_on();
         water_on_cnt ++;
+        flow_cnt_tmp = flow_cnt;
         // push the dealine ahead
         deadline += water_loop_period_sec;
+        WEB_LOG(String("Start water trial number: ") + (water_on_cnt + 1));
       }
       else
       {
@@ -275,18 +281,19 @@ void water_for_duration(int32_t duration_sec, bool is_manual_triggered)
 
   //digitalWrite(LED_BUILTIN, LOW);
   valve.water_off();
-  delay(1000);
-#if 0
+  delay(3000);
+#if 1
   // Loop until water is off
   flow_cnt_tmp = flow_cnt;
-  delay(1000);
+  delay(3000);
   unsigned int cnt = 0;
+  // TODO threshold too ?
   while (flow_cnt_tmp != flow_cnt)
   {
     valve.water_off();
-    delay(1000);
+    delay(3000);
     flow_cnt_tmp = flow_cnt;
-    delay(1000);
+    delay(3000);
     WEB_LOG(String("FAILED to stop water... keep trying..."));
     // Also report here
     // or else web log might never reach server if stuck in a loop !
