@@ -11,12 +11,12 @@ class InfluxDBWriter:
     client = None
 
     def __init__(self, config):
-        self.url         = config['influxdb']['hostname']
-        self.measurement = config['influxdb']['measurement']
+        self.url = config['influxdb']['hostname']
         # Get influxdb API token and friends from env_file
         self.token = os.environ['INFLUX_TOKEN']
         self.org = os.environ['ORG']
         self.bucket = os.environ['BUCKET']
+        self.config = config
         
         self.client = InfluxDBClient(
             url = self.url,
@@ -30,9 +30,13 @@ class InfluxDBWriter:
     
     def write(self, record):
         #print('InfluxDBWriter write:', record)
+        measurement = self.config['influxdb']['measurement']['probe']
+        # if calibration is enabled, store as calibration measurement
+        if record.get('calibration', False):
+            measurement = self.config['influxdb']['measurement']['probe-calibration']
         try:
             p = Point(
-                self.measurement) \
+                measurement) \
                 .tag("probe_id", record['source_id'])\
                 .tag("location", record['location'])\
                 .field("batt", float(record['battery_level']))\
@@ -54,8 +58,7 @@ class InfluxDBWriter:
     def write_water_counter(self, record):
         try:
             p = Point(
-                self.measurement) \
-                .tag("topic", "water-web-control")\
+                self.config['influxdb']['measurement']['water-web-control']) \
                 .field("water", float(record['water_liter']))\
                 .field("battery", float(record['battery_volt']))\
                 .field("rssi", float(record['rssi_dbm']))\

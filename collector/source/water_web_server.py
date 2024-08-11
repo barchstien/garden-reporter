@@ -13,7 +13,7 @@ CONFIG_BASE_NAME = "water-web-config.yaml"
 # template used if no config already present
 CONFIG_TEMPLATE = "./" + CONFIG_BASE_NAME
 # config, placed in a docker named volume
-CONFIG_PATH = "/var/lib/water-web-control/" + CONFIG_BASE_NAME
+CONFIG_PATH = "/var/lib/garden-collector/" + CONFIG_BASE_NAME
 
 '''
 Logic that handles http requests from the water control unit

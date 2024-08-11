@@ -9,17 +9,21 @@
 
   influxdb:
     hostname: "http://localhost:8086"
-    measurement: "jardin-pa-bakken"
+    measurement: 
+      probe: "jardin-pa-bakken"
+      water-web-control: "water-web-control"
+      probe-calibration: "jardin-pa-bakken-calibration"
 
   probes:
     - name: "Unit #1 TODO write that on probe"
       id: 0x0013A20041CF2184
       location: "potager sud"
+      calibration: true
       battery:
         v-divider: 6.0
       soil-moisture:
-        immerged-value: 235
-        dry-value: 308
+        immerged-value: 239
+        dry-value: 300
       temperature:
         coef: 0.1173
         offset: -50.0
@@ -57,26 +61,14 @@
         offset: 0
     - name: "Unit #3"
       id: 0x0013A20041CF2186
+      #id: 0x0013A20041F25755
       location: "potager nord"
+      calibration: false
       battery:
         v-divider: 6.0
       soil-moisture:
-        # first got 625 after few sample, but...
-        # after a night in glass pf water : 600
-        # --> must be due to outside temp, see below
-        # 2023/05/18 seen unexpectidly high value, then 109% with 572
-        # --> use 572 coz it correspond to manual watering on probe
-        #immerged-value: 572
-        # seeing values around -76%, while expect around 70%
-        # |--> hack remove 76 + 70 ==> 426
-        immerged-value: 426
-        # first calib got 897, but then leaving it outside got 914
-        # Using 914, on the base that long term calib is better
-        # actually, looks like 35deg gives 914, 25deg 897, and 20deg 896
-        # --> taking value at 25deg : 897
-        # 5 weeks after deployment, seen blisters on moisture probe
-        # ... took it out to re-calibrate dry value : 827
-        dry-value: 827
+        immerged-value: 41
+        dry-value: 595
       temperature:
         coef: 0.1173
         offset: -50.0

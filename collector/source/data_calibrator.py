@@ -36,10 +36,16 @@ class DataCalibrator:
             return
         
         # raw values
-        print("{} >{:04x} rssi:{:d} loc:{} adcs: {: 5.1f} {: 5.1f} {: 5.1f} {: 5.1f}".format(
-            datetime.now(), record['source_id'], record['local_rssi'], record['location'], 
-            record['battery_level'], record['soil_moisture'], record['temp'], record['light']))
+        #print("{} raw>{:04x} rssi:{:d} loc:{} adcs: {: 5.1f} {: 5.1f} {: 5.1f} {: 5.1f}".format(
+        #    datetime.now(), record['source_id'], record['local_rssi'], record['location'], 
+        #    record['battery_level'], record['soil_moisture'], record['temp'], record['light']))
         
+        if p.get('calibration', False):
+            # stamp as calibration record
+            record['calibration'] = True
+            # do not apply calibration
+            return
+
         # Battery
         # ADC to V (1023 = 1.2V)
         record['battery_level'] = (record['battery_level']*1.2/1023.0) * battery_v_divider
@@ -55,7 +61,7 @@ class DataCalibrator:
         # U = ADC * 1.2 / 1023
         # ---> Lux = ADC * 1.2 / 1023 / R * 100 000 / 0.018
         # Ignore above ...
-        # Apply coef and offset at found with ref and linear regression
+        # Apply coef and offset as found with ref and linear regression
         record['light'] = record['light'] * light_coef + light_offset
         # round and trunkate to integer
         record['light'] = int(record['light'] + 0.5)
@@ -88,8 +94,8 @@ class DataCalibrator:
             record['soil_moisture'] = int(0)
         
         
-        print("{} >{:04x} rssi:{:d} loc:{} adcs: {: 5.1f} {: 5.1f} {: 5.1f} {: 5.1f}".format(
-            datetime.now(), record['source_id'], record['local_rssi'], record['location'],
-            record['battery_level'], record['soil_moisture'], record['temp'], record['light']))
+        #print("{} >{:04x} rssi:{:d} loc:{} adcs: {: 5.1f} {: 5.1f} {: 5.1f} {: 5.1f}".format(
+        #    datetime.now(), record['source_id'], record['local_rssi'], record['location'],
+        #    record['battery_level'], record['soil_moisture'], record['temp'], record['light']))
 
 

@@ -1,4 +1,5 @@
 import queue
+from datetime import datetime
 
 '''Consumes bytes, extract frames, parse for ADC values &co'''
 class XbeeFrameDecoder:
@@ -17,6 +18,7 @@ class XbeeFrameDecoder:
     AT_FR_SW_RESET = "FR"
     AT_NI_IDENTIFIER = "NI"
     AT_V_SUPPLY_MONITOR = "%V"
+    AT_HV_HARDWARE_VERSION = "HV"
     
     AT_SM_CYCLE_SLEEP = "SM"
     
@@ -98,7 +100,8 @@ class XbeeFrameDecoder:
             # status error
             status = f[17]
             if status != 0x00:
-                print("AT cmd:", frame['AT'], 
+                print("{}".format(datetime.now()),
+                    "AT cmd:", frame['AT'], 
                     "returned non OK (0): ", status, 
                     ", ie ", XbeeFrameDecoder.AT_CMD_RESPONSE[status])
                 return

@@ -97,6 +97,18 @@ docker run -d --restart always --name garden-collector --group-add dialout --net
 
 # else
 docker run -d --restart always --name garden-collector --group-add dialout -p 8087:8087 --env-file env_file --device=/dev/ttyUSB0 garden-collector
+
+# copy yaml TO container (useless for collector which only loads config on startup)
+docker cp water-web-config.yaml garden-collector:/var/lib/garden-collector/
+docker cp collector.yaml garden-collector:/var/lib/garden-collector/
+# copy yaml FROM container
+docker cp garden-collector:/var/lib/garden-collector/water-web-config.yaml ./
+docker cp garden-collector:/var/lib/garden-collector/collector.yaml ./
+
+# init config
+docker volume create garden-collector
+docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/collector.yaml /var/lib/garden-collector/
+docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/water-web-config.yaml /var/lib/garden-collector/
 ```
 
 # Modules
@@ -107,7 +119,14 @@ Install and launch XCTU config SW
 ```bash
 # launch XCTU
 /opt/Digi/XCTU-NG/app
+
+# serial tcp
+/tmp/garden0
 ```
+probe XCTU profile has sleep disable by default, it has to be enabled manually  
+**WARNING** When sleeping, got to force reboot to reconnect, hard to reconnect  
+**INFO** Using serial/TCP collector disable/re-enable sleep mode on tcp client connect/disconnect  
+
 Load .xpro profiles for collector, and for each probe
 
 ### xbee config notes

@@ -9,13 +9,21 @@ from water_web_server import *
 
 import yaml, time
 import sys, signal
+import hashlib
 
+CONFIG_PATH = '/var/lib/garden-collector/collector.yaml'
+last_config_md5sum = 0
 
 if __name__ == "__main__":
     # open and load config file
-    f = open('collector.yaml')
+    f = open(CONFIG_PATH)
     config = yaml.load(f, Loader=yaml.FullLoader)
     f.close()
+    # save md5 
+    # TODO check md5sum and reload config if needed
+    with open(CONFIG_PATH, 'rb') as file:
+        data = file.read()
+        last_config_md5sum = hashlib.md5(data).hexdigest()
 
     # owns serial to xbee collector device
     serial = SerialHub(config)
@@ -46,7 +54,7 @@ if __name__ == "__main__":
             #### RX
             # Decode bytes, consume frames
             try:
-                b = hub_r_q.get(timeout=1)
+                b = hub_r_q.get(timeout=0.01)
                 if len(b) > 0 :
                     # get frame from bytes
                     decoder.consume(b)
