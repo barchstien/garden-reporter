@@ -85,6 +85,8 @@ pipenv run python3 ./source/serial_tcp_client.py
 /opt/Digi/XCTU-NG/app
 ```
 
+# TODO SETUP log MAX size !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 # Deploy
 TODO run docker compose for grafana and influxdb
  ? Keep collector apart ? to reload it easily ?
@@ -126,6 +128,7 @@ TODO run docker compose for grafana and influxdb
     # list token with 
     docker exec garden-reporter-influxdb influx auth list
     ```
+    See [influxdb docker official](https://hub.docker.com/_/influxdb)
 
 3. start/config grafana
    ```bash
@@ -141,11 +144,13 @@ TODO run docker compose for grafana and influxdb
      - make the user admin to allow creating dashboard
 
 4. create/update collector and water-web-server config 
-   ```bash
-   docker volume create garden-collector
-   docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/collector.yaml /var/lib/garden-collector/
-   docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/water-web-config.yaml /var/lib/garden-collector/
-   ```
+    ```bash
+    docker volume create garden-collector
+    docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/collector.yaml /var/lib/garden-collector/
+    docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/water-web-config.yaml /var/lib/garden-collector/
+    # set rights
+    docker run --rm -it -v garden-collector:/var/lib/garden-collector ubuntu chown -R 1000:1000 /var/lib/garden-collector
+    ```
 
 5. start collector
     ```bash
@@ -153,67 +158,30 @@ TODO run docker compose for grafana and influxdb
     ```
 
 
-
-
-TODO show how to restart collector (if upload config)
-2. compose up
+# Maintenance
 ```bash
-# update envfile collector (influxdb token, org, bucket)
-docker compose up --build -d
-```
-3. config influxdb
+# compose and build Docker file
+docker compose up collector --build -d
+docker compose restart collector
 
-## Influxdb
-See [influxdb docker official](https://hub.docker.com/_/influxdb)
-```bash
-# run setup on existing container
-# TODO align with python code !!!!!!!!!!!!!!!!
-docker exec influxdb2 influx setup \
-  --username $USERNAME \
-  --password $PASSWORD \
-  --org $ORGANIZATION \
-  --bucket $BUCKET \
-  --force
-```
+# influxdb token
+docker exec garden-reporter-influxdb influx auth list
 
-## Grafana
-TODO
-
-## Collector
-```bash
-# init config
-docker volume create garden-collector
-docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/collector.yaml /var/lib/garden-collector/
-docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/water-web-config.yaml /var/lib/garden-collector/
-# set rights
-docker run --rm -it -v garden-collector:/var/lib/garden-collector ubuntu chown -R 1000:1000 /var/lib/garden-collector
-```
-
-# Docker wrestling (before compose)
-```bash
-docker build . -t garden-collector
-
-# TODO make a garden-network with influxdb
-# ... for now use host network
-
-# if influxdb is on host
-docker run -d --restart always --name garden-collector --group-add dialout --network host --env-file env_file --device=/dev/ttyUSB0 garden-collector
-
-# else
-docker run -d --restart always --name garden-collector --group-add dialout -p 8087:8087 --env-file env_file --device=/dev/ttyUSB0 garden-collector
-
-# copy yaml TO container (useless for collector which only loads config on startup)
+# collector config
+# copy yaml TO container (collector needs restart, not water web server)
 docker cp water-web-config.yaml garden-collector:/var/lib/garden-collector/
 docker cp collector.yaml garden-collector:/var/lib/garden-collector/
 # copy yaml FROM container
 docker cp garden-collector:/var/lib/garden-collector/water-web-config.yaml ./
 docker cp garden-collector:/var/lib/garden-collector/collector.yaml ./
-
-# init config
-docker volume create garden-collector
-docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/collector.yaml /var/lib/garden-collector/
-docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/water-web-config.yaml /var/lib/garden-collector/
 ```
+
+# Backup
+TODO, use docker compose too !!!
+
+
+
+
 
 # Modules
 
