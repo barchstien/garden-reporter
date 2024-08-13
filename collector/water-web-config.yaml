@@ -2,4 +2,4 @@ water-control:
   start_time: 2024-07-07T20:00
   period_day: 3
   duration_minute: 45
-  enabled: true
+  enabled: false

@@ -86,6 +86,110 @@ pipenv run python3 ./source/serial_tcp_client.py
 ```
 
 # Deploy
+TODO run docker compose for grafana and influxdb
+ ? Keep collector apart ? to reload it easily ?
+ |--> docker compose should be fine for all !
+
+1. create env_file
+    expects **env_file** as 
+    ```bash
+    # used by collector
+    export INFLUX_TOKEN=should-be-generated-with-influx-auth-later
+    
+    # used by influxdb and collector
+    export ORG=potager-org
+    export BUCKET=potager-bucket
+    
+    # used by influxdb
+    export USERNAME=potager
+    # 8 character minimum
+    export PASSWORD=potagerpotager
+    ```
+
+2. start/config influxdb
+    ```bash
+    # start influxdb
+    docker compose up influxdb -d
+    
+    # setup influxdb
+    source env_file
+    docker exec garden-reporter-influxdb influx setup \
+      --username $USERNAME \
+      --password $PASSWORD \
+      --org $ORG \
+      --bucket $BUCKET \
+      --force
+    
+    # generate token
+    docker exec garden-reporter-influxdb influx auth create --all-access --org $ORG
+    # copy/paste token to env_file
+    # list token with 
+    docker exec garden-reporter-influxdb influx auth list
+    ```
+
+3. start/config grafana
+   ```bash
+   docker compose up grafana -d
+   ```
+   Got to web ui http://192.168.1.X:3000  
+   Default pass is admin:admin  
+   Add :
+   - an influxdb data source using the generated TOKEN  
+     - use the real ip (not localhost) in url
+     - Disable all Auth, only fill the token later
+   - a user to access on daily basis
+     - make the user admin to allow creating dashboard
+
+4. create/update collector and water-web-server config 
+   ```bash
+   docker volume create garden-collector
+   docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/collector.yaml /var/lib/garden-collector/
+   docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/water-web-config.yaml /var/lib/garden-collector/
+   ```
+
+5. start collector
+    ```bash
+    docker compose up collector --build -d
+    ```
+
+
+
+
+TODO show how to restart collector (if upload config)
+2. compose up
+```bash
+# update envfile collector (influxdb token, org, bucket)
+docker compose up --build -d
+```
+3. config influxdb
+
+## Influxdb
+See [influxdb docker official](https://hub.docker.com/_/influxdb)
+```bash
+# run setup on existing container
+# TODO align with python code !!!!!!!!!!!!!!!!
+docker exec influxdb2 influx setup \
+  --username $USERNAME \
+  --password $PASSWORD \
+  --org $ORGANIZATION \
+  --bucket $BUCKET \
+  --force
+```
+
+## Grafana
+TODO
+
+## Collector
+```bash
+# init config
+docker volume create garden-collector
+docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/collector.yaml /var/lib/garden-collector/
+docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/water-web-config.yaml /var/lib/garden-collector/
+# set rights
+docker run --rm -it -v garden-collector:/var/lib/garden-collector ubuntu chown -R 1000:1000 /var/lib/garden-collector
+```
+
+# Docker wrestling (before compose)
 ```bash
 docker build . -t garden-collector
 
@@ -210,11 +314,11 @@ socat pty,link=/tmp/garden0,raw,echo=0 tcp:192.168.1.66:8087
 ```bash
 # install
 # env-file contains basic setups
+# keep ? : --env-file ./env_file_influxdb \
 docker run -d --restart always -p 8086:8086 \
-    --env-file ./env_file_influxdb \
     -v garden-reporter-influxdb:/var/lib/influxdb2 \
-    --memory=5000m \
-    --name garden-reporter-influxdb influxdb
+    --memory=4000m \
+    --name garden-reporter-influxdb influxdb:2
 
 # docker stop/rm/start garden-reporter
 # ... have persistent data with named volume

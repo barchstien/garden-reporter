@@ -1,0 +1,51 @@
+services:
+  influxdb:
+    image: influxdb:2
+    container_name: garden-reporter-influxdb
+    restart: always
+    ports:
+      - '8086:8086'
+    volumes:
+      - garden-reporter-influx-data:/var/lib/influxdb2
+      - garden-reporter-influx-config:/etc/influxdb2
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+  grafana:
+    image: grafana/grafana
+    container_name: garden-reporter-grafana
+    restart: always
+    ports:
+      - '3000:3000'
+    volumes:
+      - garden-reporter-grafana:/var/lib/grafana
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+  collector:
+    image: garden-collector
+    build:
+      context: .
+    container_name: garden-reporter-collector
+    restart: always
+    env_file: ./env_file
+    network_mode: host
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+    group_add:
+      - dialout
+    volumes:
+      - garden-collector:/var/lib/garden-collector
+
+volumes:
+  garden-reporter-influx-data:
+  garden-reporter-influx-config:
+  garden-reporter-grafana:
+  garden-collector:
+    external: true
+
+secrets:
+  influx-env-file:
+   file: ./env_file
