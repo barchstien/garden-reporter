@@ -78,7 +78,7 @@
               "type": "influxdb",
               "uid": "_AJng9AVz"
             },
-            "query": "import \"date\"\nimport \"strings\"\n\nfrom(bucket: \"gr-bucket\")\n  |> range(start: -30d)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"batt\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )\n  |>last()\n  |> map(fn: (r) => ({r with _value: uint(v: date.truncate(t: now(), unit: 1m)) - uint(v: date.truncate(t: r._time, unit: 1m))}))\n  // nanosec to minutes\n  |> toFloat()\n  |> map(fn: (r) => ({r with _value: r._value / 60000000000.0}))\n",
+            "query": "import \"date\"\nimport \"strings\"\n\nfrom(bucket: \"potager-bucket\")\n  |> range(start: -30d)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"batt\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )\n  |>last()\n  |> map(fn: (r) => ({r with _value: uint(v: date.truncate(t: now(), unit: 1m)) - uint(v: date.truncate(t: r._time, unit: 1m))}))\n  // nanosec to minutes\n  |> toFloat()\n  |> map(fn: (r) => ({r with _value: r._value / 60000000000.0}))\n",
             "refId": "A"
           }
         ]
@@ -157,7 +157,7 @@
               "type": "influxdb",
               "uid": "_AJng9AVz"
             },
-            "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"batt\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )",
+            "query": "from(bucket: \"potager-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"batt\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )",
             "refId": "A"
           }
         ]
@@ -332,7 +332,7 @@
             "type": "influxdb",
             "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
           },
-          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\"\n    and (r._field == \"batt\" or r._field == \"v_supply\")\n  )\n  |> filter(fn: (r) => r.location == \"${location}\")\n  |> toFloat()\n  |> map(fn: (r) => ({\n    r with _value: \n    if r._field == \"v_supply\" \n    then r._value / 1000.0\n    else r._value\n  }))\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
+          "query": "from(bucket: \"potager-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\"\n    and (r._field == \"batt\" or r._field == \"v_supply\")\n  )\n  |> filter(fn: (r) => r.location == \"${location}\")\n  |> toFloat()\n  |> map(fn: (r) => ({\n    r with _value: \n    if r._field == \"v_supply\" \n    then r._value / 1000.0\n    else r._value\n  }))\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
           "refId": "A"
         }
       ],
@@ -469,7 +469,7 @@
             "type": "influxdb",
             "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
           },
-          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"rssi\"\n  )\n  |> filter(fn: (r) => r.location == \"${location}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
+          "query": "from(bucket: \"potager-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"rssi\"\n  )\n  |> filter(fn: (r) => r.location == \"${location}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
           "refId": "A"
         }
       ],
@@ -564,7 +564,7 @@
             "type": "influxdb",
             "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
           },
-          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"error_ack\" or r._field == \"error_cca\"\n  )\n  |> filter(fn: (r) => r.location == \"${location}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: sum, createEmpty: false)",
+          "query": "from(bucket: \"potager-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"error_ack\" or r._field == \"error_cca\"\n  )\n  |> filter(fn: (r) => r.location == \"${location}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: sum, createEmpty: false)",
           "refId": "A"
         }
       ],
@@ -671,7 +671,7 @@
             "type": "influxdb",
             "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
           },
-          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"temp\"\n  )\n  |> filter(fn: (r) => r.location == \"${location}\")\n  |> elapsed(unit: 1s)\n  |> drop(columns: [\"_value\"])\n  |> map(fn: (r) => ({r with elapsed: r.elapsed - 900}))\n  |> aggregateWindow(column: \"elapsed\", every: v.windowPeriod, fn: max)",
+          "query": "from(bucket: \"potager-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"temp\"\n  )\n  |> filter(fn: (r) => r.location == \"${location}\")\n  |> elapsed(unit: 1s)\n  |> drop(columns: [\"_value\"])\n  |> map(fn: (r) => ({r with elapsed: r.elapsed - 900}))\n  |> aggregateWindow(column: \"elapsed\", every: v.windowPeriod, fn: max)",
           "refId": "A"
         }
       ],
@@ -771,7 +771,7 @@
             "type": "influxdb",
             "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
           },
-          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"temp\"\n  )\n  |> filter(fn: (r) => r.location == \"${location}\")\n  |> elapsed(unit: 1ms)\n  |> drop(columns: [\"_value\"])\n  |> map(fn: (r) => ({r with elapsed: r.elapsed - 900000}))\n  |> aggregateWindow(column: \"elapsed\", every: v.windowPeriod, fn: mean)",
+          "query": "from(bucket: \"potager-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"temp\"\n  )\n  |> filter(fn: (r) => r.location == \"${location}\")\n  |> elapsed(unit: 1ms)\n  |> drop(columns: [\"_value\"])\n  |> map(fn: (r) => ({r with elapsed: r.elapsed - 900000}))\n  |> aggregateWindow(column: \"elapsed\", every: v.windowPeriod, fn: mean)",
           "refId": "A"
         }
       ],
@@ -794,13 +794,13 @@
           "type": "influxdb",
           "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
         },
-        "definition": "import \"influxdata/influxdb/schema\"\n\nschema.measurementTagValues(\n    bucket: \"gr-bucket\",\n    tag: \"location\",\n    measurement: \"jardin-pa-bakken\",\n    start: v.timeRangeStart,\n    stop: v.timeRangeStop\n)",
+        "definition": "import \"influxdata/influxdb/schema\"\n\nschema.measurementTagValues(\n    bucket: \"potager-bucket\",\n    tag: \"location\",\n    measurement: \"jardin-pa-bakken\",\n    start: v.timeRangeStart,\n    stop: v.timeRangeStop\n)",
         "hide": 0,
         "includeAll": false,
         "multi": false,
         "name": "location",
         "options": [],
-        "query": "import \"influxdata/influxdb/schema\"\n\nschema.measurementTagValues(\n    bucket: \"gr-bucket\",\n    tag: \"location\",\n    measurement: \"jardin-pa-bakken\",\n    start: v.timeRangeStart,\n    stop: v.timeRangeStop\n)",
+        "query": "import \"influxdata/influxdb/schema\"\n\nschema.measurementTagValues(\n    bucket: \"potager-bucket\",\n    tag: \"location\",\n    measurement: \"jardin-pa-bakken\",\n    start: v.timeRangeStart,\n    stop: v.timeRangeStop\n)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,

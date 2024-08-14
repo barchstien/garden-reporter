@@ -86,32 +86,106 @@ pipenv run python3 ./source/serial_tcp_client.py
 ```
 
 # Deploy
+Use docker compose with compose.yaml
+It's about doing :
 ```bash
-docker build . -t garden-collector
+docker compose up --build -d
+```
+With extra few steps for 1st time deploy 
 
-# TODO make a garden-network with influxdb
-# ... for now use host network
+1. create env_file  
+    Used to set some const and secrets  
+    expects **env_file** as :
+    ```bash
+    # used by collector
+    export INFLUX_TOKEN=should-be-generated-with-influx-auth-later
+    
+    # used by influxdb and collector
+    export ORG=potager-org
+    export BUCKET=potager-bucket
+    
+    # used by influxdb
+    export USERNAME=potager
+    # 8 character minimum
+    export PASSWORD=potagerpotager
+    ```
 
-# if influxdb is on host
-docker run -d --restart always --name garden-collector --group-add dialout --network host --env-file env_file --device=/dev/ttyUSB0 garden-collector
+2. start/config influxdb
+    ```bash
+    # start influxdb
+    docker compose up influxdb -d
+    
+    # setup influxdb
+    source env_file
+    docker exec garden-reporter-influxdb influx setup \
+      --username $USERNAME \
+      --password $PASSWORD \
+      --org $ORG \
+      --bucket $BUCKET \
+      --force
+    
+    # generate token
+    docker exec garden-reporter-influxdb influx auth create --all-access --org $ORG
+    # copy/paste token to env_file
+    # list token with 
+    docker exec garden-reporter-influxdb influx auth list
+    ```
+    See [influxdb docker official](https://hub.docker.com/_/influxdb)
 
-# else
-docker run -d --restart always --name garden-collector --group-add dialout -p 8087:8087 --env-file env_file --device=/dev/ttyUSB0 garden-collector
+3. start/config grafana
+   ```bash
+   docker compose up grafana -d
+   ```
+   Got to web ui http://192.168.1.X:3000  
+   Default pass is admin:admin  
+   Add :
+   - an influxdb data source using the generated TOKEN  
+     - use the real ip (not localhost) in url
+     - Disable all Auth, only fill the token lower in the page
+   - a user to access on daily basis
+     - make the user admin to allow creating dashboard
 
-# copy yaml TO container (useless for collector which only loads config on startup)
+4. create/update collector and water-web-server config 
+    ```bash
+    docker volume create garden-collector
+    docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/collector.yaml /var/lib/garden-collector/
+    docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/water-web-config.yaml /var/lib/garden-collector/
+    # set rights
+    docker run --rm -it -v garden-collector:/var/lib/garden-collector ubuntu chown -R 1000:1000 /var/lib/garden-collector
+    ```
+
+5. start collector
+    ```bash
+    docker compose up collector --build -d
+    ```
+
+
+# Maintenance
+```sh
+# compose and build Docker file
+docker compose up collector --build -d
+docker compose restart collector
+
+# influxdb token
+docker exec garden-reporter-influxdb influx auth list
+
+# collector config
+# copy yaml TO container (collector needs restart, not water web server)
 docker cp water-web-config.yaml garden-collector:/var/lib/garden-collector/
 docker cp collector.yaml garden-collector:/var/lib/garden-collector/
 # copy yaml FROM container
 docker cp garden-collector:/var/lib/garden-collector/water-web-config.yaml ./
 docker cp garden-collector:/var/lib/garden-collector/collector.yaml ./
-
-# init config
-docker volume create garden-collector
-docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/collector.yaml /var/lib/garden-collector/
-docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/water-web-config.yaml /var/lib/garden-collector/
 ```
 
-# Modules
+# Backup
+TODO, use docker compose too !!!
+
+
+
+
+
+# Dev notes
 
 ## xbee
 Configure xbees with XCTU
@@ -175,22 +249,11 @@ pipenv shell
 pipenv run <cmd>
 ```
 
-### docker
-Run collector in docker, see [./restart_container.sh](restart_container.sh)  
-Using a named volume for retaining config. Especially required for water-web-control which read and write to config
-
 ### influxdb token and secrets
 ```bash
 # export influx API token
 # env_file line format is foo=bar
 source env_file
-export INFLUX_TOKEN
-export ORG
-export BUCKET
-
-# OR use convenient script for it
-source dev_setup_env.sh
-
 # run
 pipenv run python3 collector.py
 ```
@@ -207,18 +270,8 @@ socat pty,link=/tmp/garden0,raw,echo=0 tcp:192.168.1.66:8087
 ```
 
 ## influxdb
+**TODO** Use docker compose for that !!!!  
 ```bash
-# install
-# env-file contains basic setups
-docker run -d --restart always -p 8086:8086 \
-    --env-file ./env_file_influxdb \
-    -v garden-reporter-influxdb:/var/lib/influxdb2 \
-    --memory=5000m \
-    --name garden-reporter-influxdb influxdb
-
-# docker stop/rm/start garden-reporter
-# ... have persistent data with named volume
-
 # config with
 docker exec -it garden-reporter-influxdb influx
 
@@ -232,111 +285,5 @@ docker cp garden-reporter-influxdb:/tmp/$bckdate ./backup_influxdb/
 docker cp ./backup_influxdb/$bckdate garden-reporter-influxdb:/tmp/backup
 # --full also restores dash boards, tokens, etc
 docker exec -it garden-reporter-influxdb bash -c "influx restore /tmp/backup --full"
-
-```
-
-## grafana
-```bash
-docker run -d --restart always -p 3000:3000 \
-    -v grafana:/var/lib/grafana \
-    --memory=5000m \
-    --name garden-reporter-grafana grafana/grafana
-```
-### source config
-All was working, then I had to re-laucnh to apply max use of RAM
-Then grafana couldn't reach influxdb, complaining about IP .53 not reachable
-... no-one has such IP
-After loging on as admin, found influxdb config URL to be : http://garden-reporter-influxdb:8086
---> Directly set to host server IP (.66) --> working again !
-
-
-# server crash investigations
-```sh
-bastien@gnome-server:~$ sudo apt upgrade 
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-Calculating upgrade... Done
-The following packages have been kept back:
-  python3-update-manager update-manager-core vim vim-common vim-runtime vim-tiny xxd
-The following packages will be upgraded:
-  ubuntu-advantage-tools ubuntu-pro-client ubuntu-pro-client-l10n
-3 upgraded, 0 newly installed, 0 to remove and 7 not upgraded.
-Need to get 241 kB of archives.
-After this operation, 102 kB of additional disk space will be used.
-Do you want to continue? [Y/n] 
-Get:1 http://fr.archive.ubuntu.com/ubuntu jammy-updates/main amd64 ubuntu-pro-client-l10n amd64 32.3~22.04 [20.3 kB]
-Get:2 http://fr.archive.ubuntu.com/ubuntu jammy-updates/main amd64 ubuntu-pro-client amd64 32.3~22.04 [209 kB]
-Get:3 http://fr.archive.ubuntu.com/ubuntu jammy-updates/main amd64 ubuntu-advantage-tools all 32.3~22.04 [10.9 kB]
-Fetched 241 kB in 0s (1222 kB/s)                   
-Preconfiguring packages ...
-(Reading database ... 117511 files and directories currently installed.)
-Preparing to unpack .../ubuntu-pro-client-l10n_32.3~22.04_amd64.deb ...
-Unpacking ubuntu-pro-client-l10n (32.3~22.04) over (31.2.3~22.04) ...
-Preparing to unpack .../ubuntu-pro-client_32.3~22.04_amd64.deb ...
-Unpacking ubuntu-pro-client (32.3~22.04) over (31.2.3~22.04) ...
-Preparing to unpack .../ubuntu-advantage-tools_32.3~22.04_all.deb ...
-Unpacking ubuntu-advantage-tools (32.3~22.04) over (31.2.3~22.04) ...
-Setting up ubuntu-pro-client (32.3~22.04) ...
-Installing new version of config file /etc/apparmor.d/ubuntu_pro_apt_news ...
-Setting up ubuntu-pro-client-l10n (32.3~22.04) ...
-Setting up ubuntu-advantage-tools (32.3~22.04) ...
-Processing triggers for man-db (2.10.2-1) ...
-Scanning processes...                                                                         
-Scanning candidates...                                                                        
-Scanning processor microcode...                                                               
-Scanning linux images...                                                                      
-
-Running kernel seems to be up-to-date.
-
-Restarting services...
- systemctl restart containerd.service cron.service irqbalance.service multipathd.service packagekit.service polkit.service rsyslog.service snapd.service ssh.service systemd-journald.service systemd-networkd.service systemd-resolved.service systemd-timesyncd.service systemd-udevd.service udisks2.service upower.service
-Job for systemd-timesyncd.service failed.
-See "systemctl status systemd-timesyncd.service" and "journalctl -xeu systemd-timesyncd.service" for details.
-Job for systemd-journald.service failed because the control process exited with error code.
-See "systemctl status systemd-journald.service" and "journalctl -xeu systemd-journald.service" for details.
-Job for udisks2.service failed because a fatal signal was delivered to the control process.
-See "systemctl status udisks2.service" and "journalctl -xeu udisks2.service" for details.
-Job for containerd.service failed because a fatal signal was delivered to the control process.
-See "systemctl status containerd.service" and "journalctl -xeu containerd.service" for details.
-Job for upower.service failed because the control process exited with error code.
-See "systemctl status upower.service" and "journalctl -xeu upower.service" for details.
-Job for systemd-resolved.service failed because of unavailable resources or another system error.
-See "systemctl status systemd-resolved.service" and "journalctl -xeu systemd-resolved.service" for details.
-Job for snapd.service failed because the control process exited with error code.
-See "systemctl status snapd.service" and "journalctl -xeu snapd.service" for details.
-Service restarts being deferred:
- systemctl restart ModemManager.service
- systemctl restart dbus.service
- systemctl restart docker.service
- systemctl restart getty@tty1.service
- systemctl restart networkd-dispatcher.service
- systemctl restart openvpn-server@server.service
- systemctl restart systemd-logind.service
- systemctl restart unattended-upgrades.service
- systemctl restart wpa_supplicant.service
-
-No containers need to be restarted.
-
-No user sessions are running outdated binaries.
-
-No VM guests are running outdated hypervisor (qemu) binaries on this host.
-debconf: DbDriver "config": could not write /var/cache/debconf/config.dat-new: Input/output error
-E: Problem executing scripts DPkg::Post-Invoke 'if [ -d /var/lib/update-notifier ]; then touch /var/lib/update-notifier/dpkg-run-stamp; fi; /usr/lib/update-notifier/update-motd-updates-available 2>/dev/null || true'
-E: Sub-process returned an error code
-E: Sub-process [ ! -f /usr/lib/ubuntu-advantage/apt-esm-json-hook ] || /usr/lib/ubuntu-advantage/apt-esm-json-hook || true returned an error code (100)
-E: Failure running hook [ ! -f /usr/lib/ubuntu-advantage/apt-esm-json-hook ] || /usr/lib/ubuntu-advantage/apt-esm-json-hook || true
-bastien@gnome-server:~$ 
-bastien@gnome-server:~$ 
-bastien@gnome-server:~$ 
-bastien@gnome-server:~$ 
-bastien@gnome-server:~$ htop
-htop: command not found
-bastien@gnome-server:~$ top
-top: command not found
-bastien@gnome-server:~$ sudo shutdown -r now
-sudo: error while loading shared libraries: libsudo_util.so.0: cannot open shared object file: Input/output error
-bastien@gnome-server:~$ 
-bastien@gnome-server:~$ 
 
 ```
