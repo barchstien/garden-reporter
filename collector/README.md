@@ -85,15 +85,17 @@ pipenv run python3 ./source/serial_tcp_client.py
 /opt/Digi/XCTU-NG/app
 ```
 
-# TODO SETUP log MAX size !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 # Deploy
-TODO run docker compose for grafana and influxdb
- ? Keep collector apart ? to reload it easily ?
- |--> docker compose should be fine for all !
+Use docker compose with compose.yaml
+It's about doing :
+```bash
+docker compose up --build -d
+```
+With extra few steps for 1st time deploy 
 
-1. create env_file
-    expects **env_file** as 
+1. create env_file  
+    Used to set some const and secrets  
+    expects **env_file** as :
     ```bash
     # used by collector
     export INFLUX_TOKEN=should-be-generated-with-influx-auth-later
@@ -139,7 +141,7 @@ TODO run docker compose for grafana and influxdb
    Add :
    - an influxdb data source using the generated TOKEN  
      - use the real ip (not localhost) in url
-     - Disable all Auth, only fill the token later
+     - Disable all Auth, only fill the token lower in the page
    - a user to access on daily basis
      - make the user admin to allow creating dashboard
 
@@ -159,7 +161,7 @@ TODO run docker compose for grafana and influxdb
 
 
 # Maintenance
-```bash
+```sh
 # compose and build Docker file
 docker compose up collector --build -d
 docker compose restart collector
