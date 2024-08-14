@@ -61,7 +61,3 @@ volumes:
   garden-reporter-grafana:
   garden-collector:
     external: true
-
-secrets:
-  influx-env-file:
-   file: ./env_file
