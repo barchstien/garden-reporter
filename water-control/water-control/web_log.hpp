@@ -8,6 +8,7 @@
 */
 struct web_log_t
 {
+    // 1/4 of 32KB SRAM of Nano 33 iot (SAMD21 Cortex-M0+)
     static const unsigned int MAX_ALLOC_BYTES = 8192;
     static const unsigned int MAX_MSG = 50;
 

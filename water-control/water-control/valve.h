@@ -43,9 +43,18 @@
  *  I.  pressure reductor before valve
  *  II. 1000 msec pulse
 */
-#define VALVE_PULSE_MSEC 1000//1000
+/**
+ * 11/08/2024
+ *   800 msec OK
+ *   400      OK
+ *   200      OK
+ *   100      OK
+*/
+#define VALVE_PULSE_MSEC 100
 #define VALVE_PHASE_OPEN 1
 #define VALVE_PHASE_CLOSE 0
+
+#define MAX_WATER_ON_TRY 5
 
 /**
 * Controle DRV8874 Single Brushed DC Motor Driver Carrier
@@ -63,50 +72,83 @@
 */
 struct valve_t
 {
-  void init()
+  /**
+   * @param WATER_ON_MIN_TRIG min number of flow trig to consider water as ON
+   * @param WATER_ON_MIN_TRIG_DELAY_MSEC delay to wait for flow triggers/pulses
+  */
+  valve_t(int WATER_ON_MIN_TRIG, int WATER_ON_MIN_TRIG_DELAY_MSEC) :
+    WATER_ON_MIN_TRIG_(WATER_ON_MIN_TRIG),
+    WATER_ON_MIN_TRIG_DELAY_MSEC_(WATER_ON_MIN_TRIG_DELAY_MSEC)
+  {}
+
+  /**
+   * @param flow_cnt_ptr pointer to flow pulse counter, to check that water flows or not
+  */
+  void init(uint32_t* flow_cnt_ptr)
   {
+    flow_cnt_ptr_ = flow_cnt_ptr;
     pinMode(VALVE_ENABLE, OUTPUT);
     pinMode(VALVE_PHASE, OUTPUT);
     delay(250);
-    water_off();
+    int pulse_applied_cnt = 0;
+    water_off(&pulse_applied_cnt);
+  }
 
-    ///// TODO do feedback here toooo!!!!!
-    // workaround to be safe
-#if 0
-    for (int i=0; i<3; i++)
+  /**
+   * @param num_of_pulse that was applied
+   * @return true if valve opened and water started flowing, else false
+  */
+  bool water_on(int* num_of_pulse)
+  {
+    // Loop until water is on or max try occured
+    int32_t flow_cnt_tmp = -1;
+    unsigned int cnt = 0;
+    while (flow_cnt_tmp == -1 || (*flow_cnt_ptr_ <= (flow_cnt_tmp + WATER_ON_MIN_TRIG_) && cnt < MAX_WATER_ON_TRY))
     {
-      delay(2000);
-      water_off();
+      water_on_();
+      flow_cnt_tmp = *flow_cnt_ptr_;
+      // wait a bit ot be sure water does flow
+      delay(WATER_ON_MIN_TRIG_DELAY_MSEC_);
+      cnt ++;
     }
-#endif
-    // TODO bring water off loop here
-    // ... using pointer to flow_cnt !!!!!
-    // TODO check if water is on using flow meter
-    // ... and re water_on() if no flow, up to 10 times ?
-    // 1st on/off cycle always fails... Why ?
-    // Do an on/off now to work around
-    //delay(1000);
-    //water_on();
-    //delay(3000);
-    //water_off();
-  }
-
-  void water_on()
-  {
-    digitalWrite(VALVE_PHASE, VALVE_PHASE_OPEN);
-    digitalWrite(VALVE_ENABLE, 1);
-    delay(VALVE_PULSE_MSEC);
-    digitalWrite(VALVE_ENABLE, 0);
+    // also return number of pulses used to caller
+    *num_of_pulse = cnt;
+    if (*flow_cnt_ptr_ <= (flow_cnt_tmp + WATER_ON_MIN_TRIG_))
+    {
+      // failed to start water
+      return false;
+    }
     is_on_ = true;
+    return true;
   }
 
-  void water_off()
+  /**
+   * @param num_of_pulse that was applied
+   * @return true if valve closed and water stopped flowing, else false
+  */
+  bool water_off(int* num_of_pulse)
   {
-    digitalWrite(VALVE_PHASE, VALVE_PHASE_CLOSE);
-    digitalWrite(VALVE_ENABLE, 1);
-    delay(VALVE_PULSE_MSEC);
-    digitalWrite(VALVE_ENABLE, 0);
+    int32_t flow_cnt_tmp = -1;
+    unsigned int cnt = 0;
+    while (flow_cnt_tmp == -1 || (*flow_cnt_ptr_ >= (flow_cnt_tmp + WATER_ON_MIN_TRIG_) && cnt < 10))
+    {
+      water_off_();
+      // wait for valve to close
+      delay(2000);
+      flow_cnt_tmp = *flow_cnt_ptr_;
+      // wait a bit ot be sure water does not flow
+      delay(WATER_ON_MIN_TRIG_DELAY_MSEC_);
+      cnt ++;
+    }
+    // also return number of pulses used to caller
+    *num_of_pulse = cnt;
+    if (*flow_cnt_ptr_ >= (flow_cnt_tmp + WATER_ON_MIN_TRIG_))
+    {
+      // failed to stop water
+      return false;
+    }
     is_on_ = false;
+    return true;
   }
 
   bool is_on() const
@@ -115,5 +157,29 @@ struct valve_t
   }
 
 private:
- bool is_on_{false};
+  bool is_on_{false};
+
+  /** Pointer to variable updated by trigger from water flow counter */
+  uint32_t* flow_cnt_ptr_;
+
+  /** Min number of pulses received to consider water to be ON */
+  const uint32_t WATER_ON_MIN_TRIG_;
+  /** Delay to wait for when checking if water is ON/OFF */
+  const uint32_t WATER_ON_MIN_TRIG_DELAY_MSEC_;
+
+  void water_on_()
+  {
+    digitalWrite(VALVE_PHASE, VALVE_PHASE_OPEN);
+    digitalWrite(VALVE_ENABLE, 1);
+    delay(VALVE_PULSE_MSEC);
+    digitalWrite(VALVE_ENABLE, 0);
+  }
+
+  void water_off_()
+  {
+    digitalWrite(VALVE_PHASE, VALVE_PHASE_CLOSE);
+    digitalWrite(VALVE_ENABLE, 1);
+    delay(VALVE_PULSE_MSEC);
+    digitalWrite(VALVE_ENABLE, 0);
+  }
 };

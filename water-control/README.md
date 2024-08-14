@@ -109,10 +109,14 @@ Requires Arduino Libraires (to install with IDE) :
 |7| bit 0 |
 
 # TODO
+ * Use RTC board square wave output at 1KHz, to get better msec precision for valve pulse ?
+   |--> require to unmount from arduibox to solder new pin...
+   |--> easy to setup 
+   |--> only enable/use when doing valve pulse ?
+        OR ? Could totally replace millis() ?
+        With 48MHz M0 and 1024Hz sqw wave, it means 1 interrupt every 48K cycles... not bad
  * save in RTC flash (alarm), next epoch time and perdio/duration
    |--> if power comes back, and server isn't up <--- no so likely..
- * read RTC temp, log it
- * read wifi rssi, log it
  * suspecting manual trigger to be canceled if can't wifi connect to server
 
 # Notes
