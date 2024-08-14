@@ -78,7 +78,7 @@
               "type": "influxdb",
               "uid": "_AJng9AVz"
             },
-            "query": "import \"date\"\nimport \"strings\"\n\nfrom(bucket: \"gr-bucket\")\n  |> range(start: -30d)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"batt\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )\n  |>last()\n  |> map(fn: (r) => ({r with _value: uint(v: date.truncate(t: now(), unit: 1m)) - uint(v: date.truncate(t: r._time, unit: 1m))}))\n  // nanosec to minutes\n  |> toFloat()\n  |> map(fn: (r) => ({r with _value: r._value / 60000000000.0}))\n",
+            "query": "import \"date\"\nimport \"strings\"\n\nfrom(bucket: \"potager-bucket\")\n  |> range(start: -30d)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"batt\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )\n  |>last()\n  |> map(fn: (r) => ({r with _value: uint(v: date.truncate(t: now(), unit: 1m)) - uint(v: date.truncate(t: r._time, unit: 1m))}))\n  // nanosec to minutes\n  |> toFloat()\n  |> map(fn: (r) => ({r with _value: r._value / 60000000000.0}))\n",
             "refId": "A"
           }
         ]
@@ -228,7 +228,7 @@
             "type": "influxdb",
             "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
           },
-          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"temp\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )\n  |> last()\n  |> group()\n  |> drop(columns: [\"_time\", \"_start\", \"_stop\", \"_field\", \"_measurement\", \"probe_id\"])",
+          "query": "from(bucket: \"potager-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"temp\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )\n  |> last()\n  |> group()\n  |> drop(columns: [\"_time\", \"_start\", \"_stop\", \"_field\", \"_measurement\", \"probe_id\"])",
           "refId": "A"
         }
       ],
@@ -341,7 +341,7 @@
             "type": "influxdb",
             "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
           },
-          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"temp\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )",
+          "query": "from(bucket: \"potager-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"temp\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )",
           "refId": "A"
         }
       ],
@@ -426,7 +426,7 @@
             "type": "influxdb",
             "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
           },
-          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"moist\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )\n  |> last()\n  |> group()\n  |> drop(columns: [\"_time\", \"_start\", \"_stop\", \"_field\", \"_measurement\", \"probe_id\"])",
+          "query": "from(bucket: \"potager-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"moist\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )\n  |> last()\n  |> group()\n  |> drop(columns: [\"_time\", \"_start\", \"_stop\", \"_field\", \"_measurement\", \"probe_id\"])",
           "refId": "A"
         }
       ],
@@ -527,7 +527,7 @@
             "type": "influxdb",
             "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
           },
-          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"moist\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )",
+          "query": "from(bucket: \"potager-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"moist\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )",
           "refId": "A"
         }
       ],
@@ -599,7 +599,7 @@
             "type": "influxdb",
             "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
           },
-          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"light\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )\n  |> last()\n  |> group()\n  |> drop(columns: [\"_time\", \"_start\", \"_stop\", \"_field\", \"_measurement\", \"probe_id\"])",
+          "query": "from(bucket: \"potager-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"light\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )\n  |> last()\n  |> group()\n  |> drop(columns: [\"_time\", \"_start\", \"_stop\", \"_field\", \"_measurement\", \"probe_id\"])",
           "refId": "A"
         }
       ],
@@ -705,7 +705,7 @@
             "type": "influxdb",
             "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
           },
-          "query": "from(bucket: \"gr-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"light\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )",
+          "query": "from(bucket: \"potager-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken\" and\n    r._field == \"light\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )",
           "refId": "A"
         }
       ],
@@ -737,13 +737,13 @@
           "type": "influxdb",
           "uid": "${DS_GARDEN-COLLECTOR-INFLUXDB}"
         },
-        "definition": "import \"influxdata/influxdb/schema\"\n\nschema.measurementTagValues(\n    bucket: \"gr-bucket\",\n    tag: \"location\",\n    measurement: \"jardin-pa-bakken\",\n    start: v.timeRangeStart,\n    stop: v.timeRangeStop\n)",
+        "definition": "import \"influxdata/influxdb/schema\"\n\nschema.measurementTagValues(\n    bucket: \"potager-bucket\",\n    tag: \"location\",\n    measurement: \"jardin-pa-bakken\",\n    start: v.timeRangeStart,\n    stop: v.timeRangeStop\n)",
         "hide": 0,
         "includeAll": false,
         "multi": true,
         "name": "location",
         "options": [],
-        "query": "import \"influxdata/influxdb/schema\"\n\nschema.measurementTagValues(\n    bucket: \"gr-bucket\",\n    tag: \"location\",\n    measurement: \"jardin-pa-bakken\",\n    start: v.timeRangeStart,\n    stop: v.timeRangeStop\n)",
+        "query": "import \"influxdata/influxdb/schema\"\n\nschema.measurementTagValues(\n    bucket: \"potager-bucket\",\n    tag: \"location\",\n    measurement: \"jardin-pa-bakken\",\n    start: v.timeRangeStart,\n    stop: v.timeRangeStop\n)",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
