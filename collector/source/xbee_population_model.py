@@ -181,14 +181,15 @@ class Xbee:
                 # no need to go any further if no awakening is going on
                 print('no awakening unexpected incoming frame:', in_f)
                 break
-            elif in_f['frame_id'] != self.frame_id:
-                print('{} Error, received frame_id({}) does not match expected frame_id({})'.format(
-                    str(hex(self.mac)), in_f['frame_id'], self.frame_id
-                ))
-                # TODO figure put WHY it gets un-synced ! 
-                # |--> Could it be coz of calibration and TX failue ?
-                # TODO reset local frame_id ?
-                break
+            #elif in_f['frame_id'] != self.frame_id:
+            #    print('{} Error, received frame_id({}) does not match expected frame_id({})'.format(
+            #        str(hex(self.mac)), in_f['frame_id'], self.frame_id
+            #    ))
+            #    # TODO figure put WHY it gets un-synced ! 
+            #    # |--> Could it be coz of calibration and TX failue ?
+            #    # TODO reset local frame_id ?
+            #    # Don't be picky, just accept the frame !
+            #    #break
             elif in_f['type'] == XbeeFrameDecoder.API_REMOTE_AT_RESPONSE:
                 if in_f['AT'] == XbeeFrameDecoder.AT_V_SUPPLY_MONITOR:
                     ## xbee monitor its own supply
