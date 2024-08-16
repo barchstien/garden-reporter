@@ -13,6 +13,10 @@ Control a solenoid valve, measure the outgoing water flow, report and take order
    - [Official doc](https://www.pololu.com/product/4035)
    - [board schematic](../water-control/datasheet/drv887x-single-brushed-dc-motor-driver-carrier-schematic.pdf)
    - [drv8874 datasheet](../water-control/datasheet/drv8874.pdf)
+ * Rainbird electro valve with 9V solenoid
+   - 100-DVF
+   - Rain Bird TBOS latching solenoid (does datasheet exists ?)
+     Model ? TBOSPSOL or K80920  
  * Adafruit DS3231 breakout board
    - [Official doc](https://www.adafruit.com/product/3013)
    - Note SAMD31 does have an RTC, but not crystal, so no good stability
@@ -105,10 +109,15 @@ Requires Arduino Libraires (to install with IDE) :
 |7| bit 0 |
 
 # TODO
+ * Use RTC board square wave output at 1KHz, to get better msec precision for valve pulse ?
+   |--> require to unmount from arduibox to solder new pin...
+   |--> easy to setup 
+   |--> only enable/use when doing valve pulse ?
+        OR ? Could totally replace millis() ?
+        With 48MHz M0 and 1024Hz sqw wave, it means 1 interrupt every 48K cycles... not bad
  * save in RTC flash (alarm), next epoch time and perdio/duration
    |--> if power comes back, and server isn't up <--- no so likely..
- * read RTC temp, log it
- * read wifi rssi, log it
+ * suspecting manual trigger to be canceled if can't wifi connect to server
 
 # Notes
 file:///home/bastien/while-true/common/garden-reporter/water-control/index.html?period=1&start-time=12%3A30&duration=66

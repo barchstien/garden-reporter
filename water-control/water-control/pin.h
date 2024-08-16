@@ -14,7 +14,7 @@
 #define ALLOW_WATER     7
 #define BATT_READ       A0
 
-// just for reference, ie not used directly
+// just for reference, ie not used in code
 // i2c used for RTC
 #define I2C_SDA         A4
 #define I2C_SCL         A5

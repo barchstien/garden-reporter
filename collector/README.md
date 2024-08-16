@@ -69,6 +69,7 @@ Returns **application/json** with params:
  * 'sec_since_1970': current time in sec since EPOCH
 
 ### water-control /debug
+**Warning: DEPRECATED**
 water-control makes a GET debug to **/debug**, with params :
  * 'debug': text
 
@@ -267,6 +268,10 @@ nohup pipenv run python3 main.py > log.txt &
 socat tcp-listen:8087,reuseaddr file:/dev/ttyUSB0,nonblock,b9600,raw,echo=0 
 # virtual serial
 socat pty,link=/tmp/garden0,raw,echo=0 tcp:192.168.1.66:8087
+
+# standalone/debug water web server
+# from collector folder
+pipenv run python -u ./source/water_web_server.py
 ```
 
 ## influxdb
