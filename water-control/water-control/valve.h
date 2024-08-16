@@ -42,13 +42,14 @@
  *  |---> Working thanks to :
  *  I.  pressure reductor before valve
  *  II. 1000 msec pulse
-*/
-/**
+ * 
  * 11/08/2024
+ * Changed solenoid
  *   800 msec OK
  *   400      OK
  *   200      OK
  *   100      OK
+ * ---> now using 100 msec
 */
 #define VALVE_PULSE_MSEC 100
 #define VALVE_PHASE_OPEN 1

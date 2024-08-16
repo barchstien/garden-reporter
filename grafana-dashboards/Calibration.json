@@ -1,0 +1,644 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_INFLUXDB",
+      "label": "influxdb",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "influxdb",
+      "pluginName": "InfluxDB"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "11.1.3"
+    },
+    {
+      "type": "datasource",
+      "id": "influxdb",
+      "name": "InfluxDB",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": false,
+      "tags": [
+        "journalier"
+      ],
+      "targetBlank": false,
+      "title": "Journalier",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    },
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": false,
+      "tags": [
+        "location"
+      ],
+      "targetBlank": false,
+      "title": "Location",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#ccccdc",
+            "mode": "palette-classic",
+            "seriesBy": "last"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMax": 25,
+            "axisSoftMin": 0,
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "dashed+area"
+            }
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 23,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB}"
+          },
+          "query": "from(bucket: \"potager-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken-calibration\" and\n    r._field == \"temp\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )\n  //|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "location"
+            ],
+            "valueLabel": "location"
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#ccccdc",
+            "mode": "palette-classic",
+            "seriesBy": "last"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "dashed+area"
+            }
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 7
+      },
+      "id": 20,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB}"
+          },
+          "query": "from(bucket: \"potager-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken-calibration\" and\n    r._field == \"moist\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "location"
+            ],
+            "valueLabel": "location"
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#ccccdc",
+            "mode": "palette-classic",
+            "seriesBy": "last"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "dashed+area"
+            }
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "id": 19,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB}"
+          },
+          "query": "from(bucket: \"potager-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jardin-pa-bakken-calibration\" and\n    r._field == \"light\"\n  )\n  |> filter(fn: (r) =>\n    r.location =~ /${location:regex}/\n  )\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "location"
+            ],
+            "valueLabel": "location"
+          }
+        }
+      ],
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 39,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "datasource": {
+          "type": "influxdb",
+          "uid": "${DS_INFLUXDB}"
+        },
+        "definition": "import \"influxdata/influxdb/schema\"\n\nschema.measurementTagValues(\n    bucket: \"potager-bucket\",\n    tag: \"location\",\n    measurement: \"jardin-pa-bakken-calibration\",\n    start: v.timeRangeStart,\n    stop: v.timeRangeStop\n)",
+        "hide": 0,
+        "includeAll": false,
+        "multi": true,
+        "name": "location",
+        "options": [],
+        "query": {
+          "0": "i",
+          "1": "m",
+          "2": "p",
+          "3": "o",
+          "4": "r",
+          "5": "t",
+          "6": " ",
+          "7": "\"",
+          "8": "i",
+          "9": "n",
+          "10": "f",
+          "11": "l",
+          "12": "u",
+          "13": "x",
+          "14": "d",
+          "15": "a",
+          "16": "t",
+          "17": "a",
+          "18": "/",
+          "19": "i",
+          "20": "n",
+          "21": "f",
+          "22": "l",
+          "23": "u",
+          "24": "x",
+          "25": "d",
+          "26": "b",
+          "27": "/",
+          "28": "s",
+          "29": "c",
+          "30": "h",
+          "31": "e",
+          "32": "m",
+          "33": "a",
+          "34": "\"",
+          "35": "\n",
+          "36": "\n",
+          "37": "s",
+          "38": "c",
+          "39": "h",
+          "40": "e",
+          "41": "m",
+          "42": "a",
+          "43": ".",
+          "44": "m",
+          "45": "e",
+          "46": "a",
+          "47": "s",
+          "48": "u",
+          "49": "r",
+          "50": "e",
+          "51": "m",
+          "52": "e",
+          "53": "n",
+          "54": "t",
+          "55": "T",
+          "56": "a",
+          "57": "g",
+          "58": "V",
+          "59": "a",
+          "60": "l",
+          "61": "u",
+          "62": "e",
+          "63": "s",
+          "64": "(",
+          "65": "\n",
+          "66": " ",
+          "67": " ",
+          "68": " ",
+          "69": " ",
+          "70": "b",
+          "71": "u",
+          "72": "c",
+          "73": "k",
+          "74": "e",
+          "75": "t",
+          "76": ":",
+          "77": " ",
+          "78": "\"",
+          "79": "p",
+          "80": "o",
+          "81": "t",
+          "82": "a",
+          "83": "g",
+          "84": "e",
+          "85": "r",
+          "86": "-",
+          "87": "b",
+          "88": "u",
+          "89": "c",
+          "90": "k",
+          "91": "e",
+          "92": "t",
+          "93": "\"",
+          "94": ",",
+          "95": "\n",
+          "96": " ",
+          "97": " ",
+          "98": " ",
+          "99": " ",
+          "100": "t",
+          "101": "a",
+          "102": "g",
+          "103": ":",
+          "104": " ",
+          "105": "\"",
+          "106": "l",
+          "107": "o",
+          "108": "c",
+          "109": "a",
+          "110": "t",
+          "111": "i",
+          "112": "o",
+          "113": "n",
+          "114": "\"",
+          "115": ",",
+          "116": "\n",
+          "117": " ",
+          "118": " ",
+          "119": " ",
+          "120": " ",
+          "121": "m",
+          "122": "e",
+          "123": "a",
+          "124": "s",
+          "125": "u",
+          "126": "r",
+          "127": "e",
+          "128": "m",
+          "129": "e",
+          "130": "n",
+          "131": "t",
+          "132": ":",
+          "133": " ",
+          "134": "\"",
+          "135": "j",
+          "136": "a",
+          "137": "r",
+          "138": "d",
+          "139": "i",
+          "140": "n",
+          "141": "-",
+          "142": "p",
+          "143": "a",
+          "144": "-",
+          "145": "b",
+          "146": "a",
+          "147": "k",
+          "148": "k",
+          "149": "e",
+          "150": "n",
+          "151": "\"",
+          "152": ",",
+          "153": "\n",
+          "154": " ",
+          "155": " ",
+          "156": " ",
+          "157": " ",
+          "158": "s",
+          "159": "t",
+          "160": "a",
+          "161": "r",
+          "162": "t",
+          "163": ":",
+          "164": " ",
+          "165": "v",
+          "166": ".",
+          "167": "t",
+          "168": "i",
+          "169": "m",
+          "170": "e",
+          "171": "R",
+          "172": "a",
+          "173": "n",
+          "174": "g",
+          "175": "e",
+          "176": "S",
+          "177": "t",
+          "178": "a",
+          "179": "r",
+          "180": "t",
+          "181": ",",
+          "182": "\n",
+          "183": " ",
+          "184": " ",
+          "185": " ",
+          "186": " ",
+          "187": "s",
+          "188": "t",
+          "189": "o",
+          "190": "p",
+          "191": ":",
+          "192": " ",
+          "193": "v",
+          "194": ".",
+          "195": "t",
+          "196": "i",
+          "197": "m",
+          "198": "e",
+          "199": "R",
+          "200": "a",
+          "201": "n",
+          "202": "g",
+          "203": "e",
+          "204": "S",
+          "205": "t",
+          "206": "o",
+          "207": "p",
+          "208": "\n",
+          "209": ")",
+          "query": "import \"influxdata/influxdb/schema\"\n\nschema.measurementTagValues(\n    bucket: \"potager-bucket\",\n    tag: \"location\",\n    measurement: \"jardin-pa-bakken-calibration\",\n    start: v.timeRangeStart,\n    stop: v.timeRangeStop\n)"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-5d",
+    "to": "now"
+  },
+  "timepicker": {
+    "hidden": false
+  },
+  "timezone": "",
+  "title": "Calibration",
+  "uid": "bduwvhwjus7pcb",
+  "version": 3,
+  "weekStart": ""
+}
