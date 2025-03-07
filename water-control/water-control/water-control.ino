@@ -1,4 +1,3 @@
-#include "battery.h"
 #include "button.h"
 #include "epoch_time_t.h"
 #include "led.h"
@@ -54,7 +53,6 @@ void flow_trig_isr()
   flow_cnt ++;
 }
 
-battery_t battery;
 button_t button;
 epoch_time_sync_t epoch_time_sync;
 led_t led(&epoch_time_sync);
@@ -132,7 +130,7 @@ report_status sync_with_server(bool allow_clock_adjust)
 
   http_reporter_t::command_t cmd = reporter.report(
     water_liter,
-    battery.read_volt(),
+    0,
     next_water_schedule,
     server_cmd.enabled,
     last_water_schedule,
@@ -226,19 +224,12 @@ void water_for_duration(int32_t duration_sec, bool is_manual_triggered)
   // ... and check if config get changed
   while(epoch_time_sync.now() < deadline)
   {
-    // Cancel if button is off or battery low
+    // Cancel if button is off
     if (button.allow_water() == false)
     {
       LOG("Cancel watering, by order of button");
       Serial.println("");
       WEB_LOG("Cancel watering, by order of button");
-      break;
-    }
-    if (battery.can_use_water() == false)
-    {
-      LOG("Cancel watering, by order of battery");
-      Serial.println("");
-      WEB_LOG("Cancel watering, by order of battery");
       break;
     }
     if (wifi.is_connected() && epoch_time_sync.now() >= http_report_deadline)
@@ -327,14 +318,14 @@ void loop()
     {
       led.on();
       wifi.connect();
-      if (button.allow_water() && battery.can_use_water() && server_cmd.enabled)
+      if (button.allow_water() && server_cmd.enabled)
       {
         water_for_duration(server_cmd.duration_minute * 60, false);
       }
       else
       {
         // First arg should be String, so other operands can be auto-cast to String
-        WEB_LOG(String("Scheduled water skipped button:") + button.allow_water() + " battery:" + battery.can_use_water() + " web enabled:" + server_cmd.enabled);
+        WEB_LOG(String("Scheduled water skipped button:") + button.allow_water() + " web enabled:" + server_cmd.enabled);
       }
 
       // Re-schedule
@@ -372,8 +363,8 @@ void loop()
     else
     {
       LOG("-- Manual trigger water");
-      // check button on/off and battery
-      if (button.allow_water() && battery.can_use_water())
+      // check button on/off
+      if (button.allow_water())
       {
         led.on();
         wifi.connect();
@@ -391,7 +382,7 @@ void loop()
       else
       {
         // First arg should be String, so other operands can be auto-cast to String
-        WEB_LOG(String("Manual water skipped button:") + button.allow_water() + " battery:" + battery.can_use_water());
+        WEB_LOG(String("Manual water skipped button:") + button.allow_water());
       }
     }
     button.reset_start_water_push();
