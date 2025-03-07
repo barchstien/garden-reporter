@@ -12,8 +12,9 @@
 // ... or 45 years of daily watering for 1 hour (winter included)
 uint32_t flow_cnt = 0;
 uint32_t flow_cnt_last = 0;
-const float flow_cnt_liter_per_edge = 0.00245;
-//const float flow_cnt_liter_per_edge = 0.00237;
+//const float flow_cnt_liter_per_edge = 0.00245;
+// Use 1/10 fluid ounce (fl oz), ie 1/10 * 28.4 mL
+const float flow_cnt_liter_per_edge = 0.00284;
 
 uint32_t start_water_cnt = 0;
 uint32_t start_water_cnt_last = 0;

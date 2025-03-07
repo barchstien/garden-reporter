@@ -50,12 +50,28 @@
  *   200      OK
  *   100      OK
  * ---> now using 100 msec
+ * 
+ * 22/08/2024 Manual water 30min
+ * Web reports 109L, counter 126L
+ * |--> 109 * 1.16 = 126.44 L
+ * |--> Measure again, see if it's the same factor
+ *      ... else it means measurement in unreliable...
+ * Also, current factor for 1 pulse is 0.00245 L
+ * 0.00245 * 1.16 = 0.002842
+ * Knowing that 1 fluid ounce (fl oz) is 28.413 mL => 0.02841
+ * Could it be that 1 pulse => 1/10 fl oz ?
+ * 
+ * 27/08/2024
+ * Again... 5 pulses, tried 6 times, can't open water...
+ * Could it be pulse length ? 
+ * |--> doing retry and increasing pulse length
 */
 #define VALVE_PULSE_MSEC 100
 #define VALVE_PHASE_OPEN 1
 #define VALVE_PHASE_CLOSE 0
 
-#define MAX_WATER_ON_TRY 5
+#define MAX_WATER_ON_TRY 50
+#define VALVE_PULSE_STEP_MSEC 20
 
 /**
 * Controle DRV8874 Single Brushed DC Motor Driver Carrier
@@ -106,7 +122,8 @@ struct valve_t
     unsigned int cnt = 0;
     while (flow_cnt_tmp == -1 || (*flow_cnt_ptr_ <= (flow_cnt_tmp + WATER_ON_MIN_TRIG_) && cnt < MAX_WATER_ON_TRY))
     {
-      water_on_();
+      // pulse increases by VALVE_PULSE_STEP_MSEC at every try
+      water_on_(VALVE_PULSE_MSEC + cnt * VALVE_PULSE_STEP_MSEC);
       flow_cnt_tmp = *flow_cnt_ptr_;
       // wait a bit ot be sure water does flow
       delay(WATER_ON_MIN_TRIG_DELAY_MSEC_);
@@ -168,11 +185,15 @@ private:
   /** Delay to wait for when checking if water is ON/OFF */
   const uint32_t WATER_ON_MIN_TRIG_DELAY_MSEC_;
 
-  void water_on_()
+  void water_on_(int pulse_msec=-1)
   {
+    if (pulse_msec == -1)
+    {
+      pulse_msec = VALVE_PULSE_MSEC;
+    }
     digitalWrite(VALVE_PHASE, VALVE_PHASE_OPEN);
     digitalWrite(VALVE_ENABLE, 1);
-    delay(VALVE_PULSE_MSEC);
+    delay(pulse_msec);
     digitalWrite(VALVE_ENABLE, 0);
   }
 
