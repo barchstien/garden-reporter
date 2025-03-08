@@ -1,8 +1,8 @@
+#include "ball_valve.h"
 #include "button.h"
 #include "epoch_time_t.h"
 #include "led.h"
 #include "http_reporter.h"
-#include "valve.h"
 #include "web_log.hpp"
 #include "wifi.h"
 
@@ -24,16 +24,6 @@ const unsigned int sec_report_period = (15 * 60); // TODO 15 min
 epoch_time_t last_report_ = -1;
 const unsigned int sec_report_period_when_watering = 60;
 const unsigned int water_loop_period_sec = 5;
-// Max times to try open the valve before giving up
-const unsigned int water_on_max_try = 10;
-// Consider water is on if 1/2 liter has flown, ie ~ 400 pulses / 2
-// TODO clarify that with time waited in valve
-// Currently waiting 10 sec in valve, then check threshold
-// Flow is around 4.5 L / minute (measured)
-// |--> 4.5 / 6 = 0.75 L
-// |--> which is 50% more than threshold
-const unsigned int WATER_ON_MIN_TRIG = (1 / flow_cnt_liter_per_edge) / 2;
-const unsigned int WATER_ON_MIN_TRIG_DELAY_MSEC = 10000;
 
 // Hard limit watering duration, 1.5 hour
 const int64_t MAX_WATER_DURATION_SEC = 5400;
@@ -57,7 +47,7 @@ button_t button;
 epoch_time_sync_t epoch_time_sync;
 led_t led(&epoch_time_sync);
 web_log_t web_log;
-valve_t valve(WATER_ON_MIN_TRIG, WATER_ON_MIN_TRIG_DELAY_MSEC);
+ball_valve_t ball_valve;
 wifi_t wifi;
 http_reporter_t reporter;
 
@@ -95,7 +85,7 @@ void setup()
   epoch_time_sync.init();
   button.init();
   led.init();
-  valve.init(&flow_cnt);
+  ball_valve.init();
 
   // Suspecting low power sleep to make USB serial unstable !!!
   // |--> confirm later, use normal delay/interrupt for now
@@ -134,7 +124,7 @@ report_status sync_with_server(bool allow_clock_adjust)
     next_water_schedule,
     server_cmd.enabled,
     last_water_schedule,
-    valve.is_on(),
+    ball_valve.is_on(),
     epoch_time_sync.uptime_sec(),
     wifi.rssi_dbm(),
     epoch_time_sync.rtc_temp_celsius(),
@@ -201,21 +191,8 @@ void water_for_duration(int32_t duration_sec, bool is_manual_triggered)
   }
   WEB_LOG(String(">> Water for ") + (int)(((float)duration_sec / 60.0) + 0.5) + String(" minutes") + manual_suffix);
   //digitalWrite(LED_BUILTIN, HIGH);
-  // save current flow_cnt, so later we can see if water actually flows
-  uint32_t flow_cnt_tmp = flow_cnt;
-  uint32_t water_on_cnt = 0;
 
-  int pulse_applied_cnt = 0;
-  if (valve.water_on(&pulse_applied_cnt) == false)
-  {
-    WEB_LOG(String("FAILED to start water after ") + pulse_applied_cnt + " pulses... give up...");
-    // FAILURE, set deadline to past, ie water loop won't be done
-    deadline = epoch_time_sync.now();
-  }
-  else
-  {
-    WEB_LOG(String("Started water after ") + pulse_applied_cnt + " pulses");
-  }
+  ball_valve.water_on();
 
   // Report on first iteration
   epoch_time_t http_report_deadline = epoch_time_sync.now();
@@ -257,25 +234,10 @@ void water_for_duration(int32_t duration_sec, bool is_manual_triggered)
     led.fade(water_loop_period_sec, 1000);
   }
 
-  while (valve.water_off(&pulse_applied_cnt) == false)
-  {
-    WEB_LOG(String("FAILED to stop water with" ) + pulse_applied_cnt + " pulses... keep trying...");
-    // Also report here
-    // or else web log will never reach server if stuck in this loop !
-    if (wifi.is_connected())
-    {
-      // HTTP report
-      led.on();
-      report_status rs = sync_with_server(false);
-      led.off();
-    }
-  }
+  ball_valve.water_off();
 
   LOG(" >> STOP Water <<");
   Serial.println("");
-  // delay to ensure log messages are sorted on web
-  delay(2000);
-  WEB_LOG(String(" >> STOP Water << with ") + pulse_applied_cnt + " pulses");
 }
 
 
