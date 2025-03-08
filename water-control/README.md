@@ -19,20 +19,17 @@ Control a solenoid valve, measure the outgoing water flow, report and take order
    - Rain Bird TBOS latching solenoid (does datasheet exists ?)
      Model ? TBOSPSOL or K80920  
  * Ball Valve 
-   Normally closed, closes using a spring once power is off
+   Normally closed, closes using a spring once power is off 
    - can control it using H-bridge meant for electrovalve
    - no need for battery anymore
+   - TF20-B2-B 9-24VDC 
+   - 3sec open/close motor stop when fully opened
  * Power supply
-   - Replaces UPS, no need for battery anymore
-   - mouser : 967-DRL30-12-1  
+   - HDR-30-15
+   - 15V 2A DIN rail
  * Adafruit DS3231 breakout board
    - [Official doc](https://www.adafruit.com/product/3013)
    - Note SAMD31 does have an RTC, but not crystal, so no good stability
- * UPS 9v:
-   - Provide uninterrupted 9V, use lithium batteries, power from USB-C
-   - commercial name : Type-C 15W 3A 18650 Lithium Battery Charger Module DC-DC Step Up Booster Fast Charge UPS Power Supply / Converter 9V
-   - Any 9V UPS with equivalent current is fine too
-   - got it from aliexpress
  * Interface
    - LED
    - Start watering push button
@@ -80,7 +77,7 @@ Requires Arduino Libraires (to install with IDE) :
 |                                     |
 |                                     |
 |                                     |
-|-----------------------------Gnd-9V--|
+|-----------------------------Gnd-15V-|
 ```
 **Note:** [Pin #] as on drawing
 | Pin # | Function |
