@@ -8,23 +8,28 @@ Control a solenoid valve, measure the outgoing water flow, report and take order
  * Arduibox (DIN RAIL + power supply + PCB)
    - [Datasheet](../water-control/datasheet/Datasheet_ArduiBox_Rev_B-2.pdf)
    - [Construction manual](../water-control/datasheet/Construction_manual_ArduiBox_rev_B-4.pdf)
- * Solenoid single coil driver (N-mos H bridge ++)
+ * H bridge (N-mos)
    - commercial name : DRV8874 Single Brushed DC Motor Driver Carrier
    - [Official doc](https://www.pololu.com/product/4035)
    - [board schematic](../water-control/datasheet/drv887x-single-brushed-dc-motor-driver-carrier-schematic.pdf)
    - [drv8874 datasheet](../water-control/datasheet/drv8874.pdf)
- * Rainbird electro valve with 9V solenoid
+ * DEPRECATED - hard to drive, blaming too low pressure
+   Rainbird electro valve with 9V solenoid
    - 100-DVF
    - Rain Bird TBOS latching solenoid (does datasheet exists ?)
      Model ? TBOSPSOL or K80920  
+ * Ball Valve 
+   Normally closed, closes using a spring once power is off 
+   - can control it using H-bridge meant for electrovalve
+   - no need for battery anymore
+   - TF20-B2-B 9-24VDC 
+   - 3sec open/close motor stop when fully opened
+ * Power supply
+   - HDR-30-15
+   - 15V 2A DIN rail
  * Adafruit DS3231 breakout board
    - [Official doc](https://www.adafruit.com/product/3013)
    - Note SAMD31 does have an RTC, but not crystal, so no good stability
- * UPS 9v:
-   - Provide uninterrupted 9V, use lithium batteries, power from USB-C
-   - commercial name : Type-C 15W 3A 18650 Lithium Battery Charger Module DC-DC Step Up Booster Fast Charge UPS Power Supply / Converter 9V
-   - Any 9V UPS with equivalent current is fine too
-   - got it from aliexpress
  * Interface
    - LED
    - Start watering push button
@@ -33,6 +38,11 @@ Control a solenoid valve, measure the outgoing water flow, report and take order
 
 ## Schematics
 TODO
+ALSO check that rplacing 9V by 12V is fine !!!!!!!!!!!
+Input power (now 9V) goes to :
+ - arduibox voltage regulatr that takes 9 to 30 VDC
+ - power rails of H-bridge takes 4.5 to 37V DC
+|--> should be all fine !
 
 ## Power use
 | Function  | Consumption mA  |
@@ -67,7 +77,7 @@ Requires Arduino Libraires (to install with IDE) :
 |                                     |
 |                                     |
 |                                     |
-|-----------------------------Gnd-9V--|
+|-----------------------------Gnd-15V-|
 ```
 **Note:** [Pin #] as on drawing
 | Pin # | Function |
@@ -83,8 +93,8 @@ Requires Arduino Libraires (to install with IDE) :
 |8| bit 2 |
 |9| bit 1 |
 |10| bit 0 |
-|11| valve 0V/9V |
-|12| valve 9V/0V |
+|11| valve 0V |
+|12| valve +15V |
 
 
 ## Button interface

@@ -12,7 +12,7 @@
 #define BIT2            6
 #define START_TRIG      10
 #define ALLOW_WATER     7
-#define BATT_READ       A0
+#define BATT_READ       A0  // NOT USED ANYMORE
 
 // just for reference, ie not used in code
 // i2c used for RTC
