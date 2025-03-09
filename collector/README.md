@@ -96,6 +96,7 @@ With extra few steps for 1st time deploy
 
 1. create env_file  
     Used to set some const and secrets  
+    **WARNING** need to rebuild container (or maybe delete ?)... at least restart isn't enough !
     expects **env_file** as :
     ```bash
     # used by collector
@@ -145,8 +146,10 @@ With extra few steps for 1st time deploy
      - Disable all Auth, only fill the token lower in the page
    - a user to access on daily basis
      - make the user admin to allow creating dashboard
+  **Warning** : export JSON modules to be used externally
 
 4. create/update collector and water-web-server config 
+    Update env_file with influxdb token
     ```bash
     docker volume create garden-collector
     docker run --rm -it -v $(pwd):/tmp/garden-collector -v garden-collector:/var/lib/garden-collector ubuntu cp /tmp/garden-collector/collector.yaml /var/lib/garden-collector/

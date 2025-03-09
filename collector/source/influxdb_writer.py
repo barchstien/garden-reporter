@@ -17,6 +17,8 @@ class InfluxDBWriter:
         self.org = os.environ['ORG']
         self.bucket = os.environ['BUCKET']
         self.config = config
+        # debug. It's ok to print coz whoever has access to logs has access to env_file
+        print(f'Token: {self.token}\nOrg: {self.org}\nBucket: {self.bucket}\nConfig: {self.config}')
         
         self.client = InfluxDBClient(
             url = self.url,

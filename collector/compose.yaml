@@ -4,6 +4,7 @@ services:
     image: influxdb:2
     container_name: garden-reporter-influxdb
     restart: always
+    env_file: ./env_file
     ports:
       - '8086:8086'
     volumes:

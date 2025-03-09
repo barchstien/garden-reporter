@@ -18,7 +18,7 @@
     - name: "Unit #1 TODO write that on probe"
       id: 0x0013A20041CF2184
       location: "potager sud"
-      calibration: true
+      calibration: false
       battery:
         v-divider: 6.0
       soil-moisture:
