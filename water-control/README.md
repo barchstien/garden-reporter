@@ -93,8 +93,8 @@ Requires Arduino Libraires (to install with IDE) :
 |8| bit 2 |
 |9| bit 1 |
 |10| bit 0 |
-|11| valve 0V/9V |
-|12| valve 9V/0V |
+|11| valve 0V |
+|12| valve +15V |
 
 
 ## Button interface
