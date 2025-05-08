@@ -15,15 +15,17 @@
       probe-calibration: "jardin-pa-bakken-calibration"
 
   probes:
-    - name: "Unit #1 TODO write that on probe"
+    - name: "Unit #1"
       id: 0x0013A20041CF2184
       location: "potager sud"
       calibration: false
       battery:
         v-divider: 6.0
       soil-moisture:
-        immerged-value: 239
-        dry-value: 300
+        # got 56 inside, then outside around 80 (been moving probe)
+        # is it really related to in/out condition ?
+        immerged-value: 70
+        dry-value: 546
       temperature:
         coef: 0.1173
         offset: -50.0
@@ -31,8 +33,8 @@
         # 95.8 = 1.2 / 1023.0 / light_R (68) * 100000.0 / 0.018
         # gives max 98039
         # scale to probe #2 220 ~= 95.8 * 2.3 
-        coef: 220.0
-        offset: 0
+        coef: 403.0
+        offset: 826.0
     - name: "Unit #2"
       id: 0x0013A20041ECE6E8
       location: "noisetier"

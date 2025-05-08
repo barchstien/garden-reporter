@@ -175,11 +175,11 @@ docker exec garden-reporter-influxdb influx auth list
 
 # collector config
 # copy yaml TO container (collector needs restart, not water web server)
-docker cp water-web-config.yaml garden-collector:/var/lib/garden-collector/
-docker cp collector.yaml garden-collector:/var/lib/garden-collector/
+docker cp water-web-config.yaml garden-reporter-collector:/var/lib/garden-collector/
+docker cp collector.yaml garden-reporter-collector:/var/lib/garden-collector/
 # copy yaml FROM container
-docker cp garden-collector:/var/lib/garden-collector/water-web-config.yaml ./
-docker cp garden-collector:/var/lib/garden-collector/collector.yaml ./
+docker cp garden-reporter-collector:/var/lib/garden-collector/water-web-config.yaml ./
+docker cp garden-reporter-collector:/var/lib/garden-collector/collector.yaml ./
 ```
 
 # Backup
