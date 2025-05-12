@@ -55,6 +55,7 @@
         # 903
         # re-calibrate 21/05/2023 : 897
         dry-value: 897
+        disabled: true
       temperature:
         coef: 0.1173
         offset: -50.0
@@ -87,6 +88,7 @@
         immerged-value: 0
         # dummy
         dry-value: 0
+        disabled: true
       temperature:
         coef: 0.1173
         offset: -50.0

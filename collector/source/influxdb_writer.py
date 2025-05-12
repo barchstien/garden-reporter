@@ -42,10 +42,11 @@ class InfluxDBWriter:
                 .tag("probe_id", record['source_id'])\
                 .tag("location", record['location'])\
                 .field("batt", float(record['battery_level']))\
-                .field("moist", float(record['soil_moisture']))\
                 .field("temp", float(record['temp']))\
                 .field("light", int(record['light']))\
                 .field("rssi", float(record['local_rssi']))
+            if 'soil_moisture' in record:
+                p.field("moist", float(record['soil_moisture']))
             if record['error_cca'] != None:
                 p.field("error_cca", record['error_cca'])
             if record['error_ack'] != None:
