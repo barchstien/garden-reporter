@@ -103,7 +103,8 @@ class XbeeFrameDecoder:
                 print("{}".format(datetime.now()),
                     "AT cmd:", frame['AT'], 
                     "returned non OK (0): ", status, 
-                    ", ie ", XbeeFrameDecoder.AT_CMD_RESPONSE[status])
+                    ", ie ", XbeeFrameDecoder.AT_CMD_RESPONSE[status], 
+                    ", source: ", hex(frame['source_id']))
                 return
             #print("---- AT response:", frame['AT'])
             if frame['AT'] == self.AT_IS_FORCE_SAMPLE:

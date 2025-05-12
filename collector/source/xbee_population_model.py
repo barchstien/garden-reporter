@@ -278,7 +278,8 @@ class Xbee:
                         pass
                     else:
                         to_rec.append(self.awakening.record)
-                        print('awakening end after sec:', 
+                        print(self.mac, self.config['location'], 
+                            'awakening end after sec:', 
                             (datetime.now() - self.awakening.start).total_seconds())
                         # no more to request, clean up awakening
                         self.awakening = None

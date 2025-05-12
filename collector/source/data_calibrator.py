@@ -24,6 +24,7 @@ class DataCalibrator:
             temp_offset = float(p['temperature']['offset'])
             moisture_dry = float(p['soil-moisture']['dry-value'])
             moisture_immerged = float(p['soil-moisture']['immerged-value'])
+            moisture_disabled = bool(p['soil-moisture'].get('disabled', False))
             light_coef = float(p['light']['coef'])
             light_offset = float(p['light']['offset'])
             # get location
@@ -84,14 +85,17 @@ class DataCalibrator:
         # max = dry
         # range = max - min
         # % = 100 - (record - min) / range * 100
-        moisture_range = moisture_dry - moisture_immerged
-        if moisture_range != 0:
-            record['soil_moisture'] = \
-                100.0 - (float(record['soil_moisture']) - moisture_immerged) / moisture_range * 100.0
-            # round and make an integer
-            record['soil_moisture'] = int(record['soil_moisture'] + 0.5)
+        if not moisture_disabled:
+            moisture_range = moisture_dry - moisture_immerged
+            if moisture_range != 0:
+                record['soil_moisture'] = \
+                    100.0 - (float(record['soil_moisture']) - moisture_immerged) / moisture_range * 100.0
+                # round and make an integer
+                record['soil_moisture'] = int(record['soil_moisture'] + 0.5)
+            else:
+                record['soil_moisture'] = int(0)
         else:
-            record['soil_moisture'] = int(0)
+            del record['soil_moisture']
         
         
         #print("{} >{:04x} rssi:{:d} loc:{} adcs: {: 5.1f} {: 5.1f} {: 5.1f} {: 5.1f}".format(
