@@ -1,6 +1,6 @@
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 import re, json, time
-from datetime import datetime
+from datetime import datetime, timedelta
 import urllib.parse
 import yaml
 import threading
@@ -211,7 +211,11 @@ class WaterWebRequestHandler(BaseHTTPRequestHandler):
         with open('source/static/index.html', 'rb') as file:
             content = file.read()
             # config
-            content = re.sub(b'{{start_time}}', config['start_time'].encode(), content)
+            start_time = datetime.strptime(config['start_time'], '%Y-%m-%dT%H:%M')
+            now = datetime.now()
+            while start_time < now :
+                start_time += timedelta(days=config['period_day'])
+            content = re.sub(b'{{start_time}}', start_time.strftime('%Y-%m-%d %H:%M').encode(), content)
             content = re.sub(b'{{period_day}}', str(config['period_day']).encode(), content)
             content = re.sub(b'{{duration_minute}}', str(config['duration_minute']).encode(), content)
             checked = b''
