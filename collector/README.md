@@ -58,7 +58,6 @@ water-control makes a GET report to **/report**
 GET params are :
  * last scheduled watering (?)
  * next schedule watering
- * battery voltage
  * water liter value
  * watering now
  * uptime
