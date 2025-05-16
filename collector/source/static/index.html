@@ -18,7 +18,6 @@
                     if (status.water_schedule_enabled == '0') {
                         document.getElementById("next_scheduled_watering").innerHTML += " <i>(disabled)</i>";
                     }
-                    document.getElementById("battery_status").innerHTML = status.battery_status;
                     document.getElementById("watering_now").innerHTML = status.watering_now;
                     document.getElementById("uptime_day").innerHTML = status.uptime_day;
                     document.getElementById("last_report").innerHTML = status.last_report;
@@ -252,14 +251,6 @@
             </div>
             <div class="input-row">
                 <div class="label-column">
-                    Battery % (Volt):
-                </div>
-                <div class="input-column" id="battery_status">
-                    {{battery_status_string}}
-                </div>
-            </div>
-            <div class="input-row">
-                <div class="label-column">
                     Watering now:
                 </div>
                 <div class="input-column" id="watering_now">
@@ -286,10 +277,6 @@
             <div class="input-row">
                 
             </div>
-            
-
-            <!-- TODO also add message in text ? 
-                 To fit things like (running on battery, with batt level ?) -->
 
             <div  class="ascii-art-footer">
                 <div  class="ascii-art-footer-inner">
