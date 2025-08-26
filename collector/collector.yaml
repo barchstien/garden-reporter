@@ -24,7 +24,8 @@
       soil-moisture:
         # got 56 inside, then outside around 80 (been moving probe)
         # is it really related to in/out condition ?
-        immerged-value: 70
+        # With 56, seen 101% humidity --> 50
+        immerged-value: 50
         dry-value: 546
       temperature:
         coef: 0.1173
@@ -33,7 +34,8 @@
         # 95.8 = 1.2 / 1023.0 / light_R (68) * 100000.0 / 0.018
         # gives max 98039
         # scale to probe #2 220 ~= 95.8 * 2.3 
-        coef: 408.1
+        #coef: 408.1 # looks too high coz always double of Nord
+        coef: 200.0
         offset: 0
     - name: "Unit #2"
       id: 0x0013A20041ECE6E8
@@ -70,7 +72,8 @@
       battery:
         v-divider: 6.0
       soil-moisture:
-        immerged-value: 41
+        # just trial and error, assuming that when raining heavily, values should converge
+        immerged-value: 100
         dry-value: 595
       temperature:
         coef: 0.1173
