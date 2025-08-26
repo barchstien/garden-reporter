@@ -450,7 +450,7 @@
           },
           "decimals": 0,
           "mappings": [],
-          "max": 100000,
+          "max": 110000,
           "min": 100,
           "thresholds": {
             "mode": "absolute",
@@ -550,6 +550,6 @@
   "timezone": "",
   "title": "Comparaison des Lieux",
   "uid": "fdx2z7dr5wwzkf",
-  "version": 5,
+  "version": 9,
   "weekStart": ""
 }
