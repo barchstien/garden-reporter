@@ -25,7 +25,8 @@
         # got 56 inside, then outside around 80 (been moving probe)
         # is it really related to in/out condition ?
         # With 56, seen 101% humidity --> 50
-        immerged-value: 50
+        # With 50, seen 104% --> use 30
+        immerged-value: 30
         dry-value: 546
       temperature:
         coef: 0.1173
@@ -73,7 +74,7 @@
         v-divider: 6.0
       soil-moisture:
         # just trial and error, assuming that when raining heavily, values should converge
-        immerged-value: 100
+        immerged-value: 41
         dry-value: 595
       temperature:
         coef: 0.1173

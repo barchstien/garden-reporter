@@ -118,4 +118,3 @@ Capacitor sensor
  * c 8.2 pF ceramic : [80-C315C829D2G] 200VDC
 
 
-
